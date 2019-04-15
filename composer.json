@@ -1,0 +1,34 @@
+{
+    "name": "laramore/laramore",
+    "description": "Describe your table fields in the model and let Laravel the rest",
+    "keywords": ["ORM", "Laravel", "Model", "Migration", "Automatic", "Auto", "Fields", "Field", "Uuid", "Meta", "Table", "Database", "Validations"],
+    "license": "MIT",
+    "require": {
+        "php": ">=7.1.3",
+        "illuminate/database": ">=5.0",
+        "nesbot/carbon": ">=1.0.0",
+        "symfony/http-kernel": ">=4.0.0",
+        "mustache/mustache": "^2.12"
+    },
+    "authors": [
+        {
+            "name": "Nastuzzi Samy",
+            "email": "samy@nastuzzi.fr"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Laramore\\": "src/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "./vendor/bin/phpcs src",
+            "./vendor/bin/phpmd src text phpmd.xml"
+        ]
+    },
+    "require-dev": {
+        "phpmd/phpmd": "^2.6",
+        "squizlabs/php_codesniffer": "^3.3"
+    }
+}
