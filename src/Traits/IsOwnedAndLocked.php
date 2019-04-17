@@ -1,4 +1,12 @@
 <?php
+/**
+ * Add an owner and a lock management.
+ *
+ * @author Samy Nastuzzi <samy@nastuzzi.fr>
+ *
+ * @copyright Copyright (c) 2019
+ * @license MIT
+ */
 
 namespace Laramore\Traits;
 
@@ -24,7 +32,7 @@ trait IsOwnedAndLocked
         return $this->owner;
     }
 
-    public function isOwned()
+    public function isOwned(): bool
     {
         return (bool) $this->getOwner();
     }
@@ -37,12 +45,16 @@ trait IsOwnedAndLocked
             throw new \Exception('The field has no owner, cannot lock it');
         }
 
+        $this->locking();
+
         $this->locked = true;
 
         return $this;
     }
 
-    public function isLocked()
+    abstract protected function locking();
+
+    public function isLocked(): bool
     {
         return $this->locked;
     }

@@ -100,53 +100,38 @@ interface IsAField
     public function setProperty(string $key, $value);
 
     /**
-     * Define if the field must be defined before the model creation.
+     * Handle all calls to define field properies.
      *
-     * @param  boolean $required
+     * @param  string $method
+     * @param  array  $args
      * @return static
      */
-    public function required(bool $required=true);
+    public function __call(string $method, array $args);
 
     /**
-     * Indicate that the field is fillable, assignable.
+     * Return a property value.
      *
-     * @param  boolean $fillable
-     * @return static
+     * @param  string $key
+     * @return mixed
      */
-    public function fillable(bool $fillable=true);
+    public function __get(string $key);
 
     /**
-     * Indicate that the field is visible when exporting.
+     * Set a property value.
      *
-     * @param  boolean $visible
-     * @return static
+     * @param  string $key
+     * @param  mixed  $value
+     * @return mixed
      */
-    public function visible(bool $visible=true);
+    public function __set(string $key, $value);
 
     /**
-     * Indicate that the field is not visible, hidden when exporting.
+     * Indicate if a property exists.
      *
-     * @param  boolean $hidden
-     * @return static
+     * @param  string $key
+     * @return boolean
      */
-    public function hidden(bool $hidden=true);
-
-    /**
-     * Indicate that the field is nullable.
-     *
-     * @param  boolean $nullable
-     * @return static
-     */
-    public function nullable(bool $nullable=true);
-
-    /**
-     * Give the default value for the field.
-     * If set to null, the default value is null and this defines the nullability of the field.
-     *
-     * @param  mixed $value
-     * @return static
-     */
-    public function default($value=null);
+    public function __isset(string $key): bool;
 
     /**
      * Cast the value in the correct format.

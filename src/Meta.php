@@ -160,13 +160,13 @@ class Meta
 
     public function has($name)
     {
-        return isset($this->all()[$name]);
+        return isset($this->allFields()[$name]);
     }
 
     public function get($name)
     {
         if ($this->has($name)) {
-            return $this->all()[$name];
+            return $this->allFields()[$name];
         } else {
             throw new \Exception($name.' real or link field does not exist');
         }
@@ -259,7 +259,7 @@ class Meta
     {
         $this->checkLock();
 
-        foreach ($this->all() as $field) {
+        foreach ($this->allFields() as $field) {
             $field->lock();
         }
 
