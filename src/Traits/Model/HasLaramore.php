@@ -46,6 +46,10 @@ trait HasLaramore
         // Define all model metas.
         $this->setKeyName($meta->getPrimary());
         $this->setTable($meta->getTableName());
+
+        if ($meta->hasTimestamps()) {
+            $this->timestamps = true;
+        }
     }
 
     /**
@@ -107,7 +111,7 @@ trait HasLaramore
      * @param  string $key
      * @return mixed
      *
-     * @throws Exception if the field does not exist.
+     * @throws Exception Except if the field does not exist.
      */
     public static function getField(string $key)
     {
@@ -202,8 +206,7 @@ trait HasLaramore
         // If the attribute is listed as a date, we will convert it to a DateTime
         // instance on retrieval, which makes it quite convenient to work with
         // date fields without having to create a mutator for each property.
-        if (in_array($key, $this->getDates()) &&
-        ! is_null($value)) {
+        if (in_array($key, $this->getDates()) && !is_null($value)) {
             return $this->asDateTime($value);
         }
 
@@ -253,7 +256,7 @@ trait HasLaramore
      * @param  mixed $key
      * @return mixed
      *
-     * @throws \LogicException
+     * @throws \LogicException Except if the relation does not exist.
      */
     protected function getRelationshipFromMeta($key)
     {
@@ -269,20 +272,20 @@ trait HasLaramore
      * @param  mixed $key
      * @param  mixed $value
      * @return mixed
+     *
+     * @throws Exception Except if the field is not fillable.
      */
     public function setAttribute($key, $value)
     {
-        // First we will check for the presence of a mutator for the set operation
-        // which simply lets the developers tweak the attribute as it is set on
-        // the model, such as "json_encoding" an listing of data for storage.
         if ($this->hasSetMutator($key)) {
+            // First we will check for the presence of a mutator for the set operation
+            // which simply lets the developers tweak the attribute as it is set on
+            // the model, such as "json_encoding" an listing of data for storage.
             return $this->setMutatedAttributeValue($key, $value);
-        }
-
-        // If an attribute is listed as a "date", we'll convert it from a DateTime
-        // instance into a form proper for storage on the database tables using
-        // the connection grammar's date format. We will auto set the values.
-        else if ($value && $this->isDateAttribute($key)) {
+        } else if ($value && $this->isDateAttribute($key)) {
+            // If an attribute is listed as a "date", we'll convert it from a DateTime
+            // instance into a form proper for storage on the database tables using
+            // the connection grammar's date format. We will auto set the values.
             $this->attributes[$key] = $this->fromDateTime($value);
 
             return $this;
@@ -343,7 +346,7 @@ trait HasLaramore
      * Create a new Eloquent query builder for the model.
      * Override the original method.
      *
-     * @param  \Illuminate\Database\Query\Builder $query
+     * @param  mixed $query
      * @return \Illuminate\Database\Eloquent\Builder|static
      */
     public function newEloquentBuilder($query)

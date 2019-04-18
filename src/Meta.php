@@ -19,6 +19,7 @@ use Laramore\CompositeFields\CompositeField;
 use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField
 };
+use Laramore\Traits\Model\HasLaramore;
 use Laramore\Traits\IsPrepared;
 use Laramore\Template;
 
@@ -35,6 +36,7 @@ class Meta
     protected $links;
 
     protected $hasPrimary = false;
+    protected $hasTimestamps = false;
     protected $primary;
     protected $index;
     protected $unique;
@@ -216,9 +218,9 @@ class Meta
     public function allFields()
     {
         return array_merge(
-        $this->fields,
-        $this->composites,
-        $this->links
+	        $this->fields,
+	        $this->composites,
+	        $this->links
         );
     }
 
@@ -227,7 +229,7 @@ class Meta
         $fillable = [];
 
         foreach ($this->getFields() as $name => $field) {
-            if ($field->hasRule(Field::FILLABLE)) {
+            if ($field->fillable) {
                 $fillable[] = $name;
             }
         }
@@ -240,7 +242,7 @@ class Meta
         $visible = [];
 
         foreach ($this->getFields() as $name => $field) {
-            if ($field->hasRule(Field::VISIBLE)) {
+            if ($field->visible) {
                 $visible[] = $name;
             }
         }
@@ -358,24 +360,32 @@ class Meta
     public function useTimestamps()
     {
         try {
-            $this->set(($this->modelClass::CREATED_AT ?? 'created_at'), Timestamp::class(
-            Field::NOT_NULLABLE | Field::VISIBLE
-            )->useCurrent());
-            $this->set(($this->modelClass::UPDATED_AT ?? 'updated_at'), Timestamp::class(
-            Field::NULLABLE | Field::VISIBLE
-            )->useCurrent());
+            $this->set(
+            ($this->modelClass::CREATED_AT ?? 'created_at'),
+            Timestamp::field(Field::NOT_NULLABLE | Field::VISIBLE)->useCurrent()
+            );
+
+            $this->set(
+            ($this->modelClass::UPDATED_AT ?? 'updated_at'),
+            Timestamp::field(Field::NULLABLE | Field::VISIBLE)->useCurrent()
+            );
         } catch (\Exception $e) {
             throw new \Exception('Can not set timestamps. Maybe already set ?');
         }
 
-        // // We make sure Laravel knows we have timestamps
-        // $this->modelClass->timestamps = true;
+        $this->hasTimestamps = true;
+
         return $this;
     }
 
     public function timestamps()
     {
         return $this->useTimestamps();
+    }
+
+    public function hasTimestamps()
+    {
+        return $this->hasTimestamps;
     }
 
     public function __get($name)
