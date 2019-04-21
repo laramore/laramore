@@ -15,10 +15,7 @@ class Increment extends Number
     // Default rules
     public const DEFAULT_INCREMENT = (self::VISIBLE | self::NOT_ZERO | self::UNSIGNED | self::POSITIVE | self::CORRECT_SIGN);
 
-    protected function __construct($rules='DEFAULT_INCREMENT')
-    {
-        parent::__construct($rules);
-    }
+    protected static $defaultRules = self::DEFAULT_INCREMENT;
 
     public function getDefaultProperties(): array
     {

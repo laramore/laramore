@@ -21,8 +21,8 @@ trait IsOwnedAndLocked
             throw new \Exception('An owner has already been set');
         }
 
-        $this->name = $name;
         $this->owner = $owner;
+        $this->name = $name;
 
         return $this;
     }

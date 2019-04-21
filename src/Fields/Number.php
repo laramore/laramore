@@ -33,7 +33,7 @@ class Number extends Field
 
     // Except if the value is 0
     public const NOT_ZERO = 4096;
-    // STRICT
+
     public function getDefaultProperties(): array
     {
         return [

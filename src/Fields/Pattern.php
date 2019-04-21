@@ -31,10 +31,7 @@ class Pattern extends Text
     // Default rules
     public const DEFAULT_PATTERN = (self::NOT_NULLABLE | self::VISIBLE | self::FILLABLE | self::FIX_IF_WRONG);
 
-    protected function __construct($rules='DEFAULT_PATTERN', $default=null)
-    {
-        parent::__construct($rules, $default);
-    }
+    protected static $defaultRules = self::DEFAULT_PATTERN;
 
     public function pattern(string $pattern)
     {

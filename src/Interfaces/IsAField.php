@@ -16,14 +16,6 @@ use Laramore\Builder;
 interface IsAField
 {
     /**
-     * Call the constructor and generate the field.
-     *
-     * @param  mixed ...$args
-     * @return static
-     */
-    public static function field(...$args);
-
-    /**
      * Define the owner of the field.
      *
      * @param  mixed  $owner
@@ -98,6 +90,14 @@ interface IsAField
      * @return static
      */
     public function setProperty(string $key, $value);
+
+    /**
+     * Define the name of the field.
+     *
+     * @param  string $name
+     * @return static
+     */
+    public function name(string $name);
 
     /**
      * Handle all calls to define field properies.

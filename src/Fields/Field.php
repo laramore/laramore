@@ -14,17 +14,13 @@ use Illuminate\Support\Str;
 use Laramore\Interfaces\IsAField;
 use Laramore\Traits\Field\HasRules;
 
-abstract class Field implements IsAField
+abstract class Field extends BaseField
 {
     use HasRules {
         HasRules::addRule as private addRuleFromHasRule;
     }
 
     protected $rules;
-    protected static $readOnlyProperties = [
-        'type'
-    ];
-    protected $properties = [];
 
     /**
      * Set of rules.
@@ -57,89 +53,27 @@ abstract class Field implements IsAField
     // Default rules
     public const DEFAULT_FIELD = (self::NOT_NULLABLE | self::VISIBLE | self::FILLABLE);
 
-    protected function __construct($rules='DEFAULT_FIELD')
+    protected static $defaultRules = self::DEFAULT_FIELD;
+
+    protected function __construct($rules=null)
     {
-        $this->addRules($rules);
+        $this->addRules($rules ?: self::$defaultRules);
     }
 
-    public static function field(...$args)
+    /**
+     * Call the constructor and generate the field.
+     *
+     * @param  array|integer|null $rules
+     * @return static
+     */
+    public static function field($rules=null)
     {
-        return new static(...$args);
-    }
-
-    public function __call(string $method, array $args)
-    {
-        $this->checkLock();
-
-        if (count($args) === 0) {
-            $this->setProperty($method, true);
-        } else if (count($args) === 1) {
-            $this->setProperty($method, $args[0]);
-        } else {
-            $this->setProperty($method, $args);
-        }
-
-        return $this;
-    }
-
-    public function __get(string $key)
-    {
-        return $this->getProperty($key);
-    }
-
-    public function __set(string $key, $value)
-    {
-        return $this->setProperty($key, $value);
-    }
-
-    public function __isset(string $key): bool
-    {
-        return $this->hasProperty($key);
-    }
-
-    public function getProperties(): array
-    {
-        return $this->properties;
-    }
-
-    public function hasProperty(string $key): bool
-    {
-        return isset($this->properties[$key]);
-    }
-
-    public function getProperty(string $key)
-    {
-        if (property_exists($this, $key)) {
-            return $this->$key;
-        } else if ($this->hasProperty($key)) {
-            return $this->properties[$key];
-        } else if (defined($const = 'self::'.strtoupper(Str::snake($key)))) {
-            return $this->hasRule(constant($const));
-        } else {
-            throw new \Exception('Value does not exist');
-        }
-    }
-
-    public function setProperty(string $key, $value)
-    {
-        $this->checkLock();
-
-        if (in_array($key, static::$readOnlyProperties)) {
-            throw new \Exception("The propery $key cannot be set");
-        } else if (method_exists($this, $key)) {
-            $this->$key($value);
-        } else {
-            $this->properties[$key] = $value;
-        }
-
-        return $this;
+        return new static($rules);
     }
 
     public function name(string $name)
     {
-        $this->checkLock();
-
-        $this->properties['name'] = $name;
+        parent::name($name);
 
         // The attribute name is by default the same as the field name.
         if (!$this->hasProperty('attname')) {

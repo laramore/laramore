@@ -10,12 +10,8 @@
 
 namespace Laramore\Traits\Field;
 
-use Laramore\Traits\IsOwnedAndLocked;
-
 trait HasRules
 {
-    use IsOwnedAndLocked;
-
     /**
      * Indicate if a rule is in a sum of rules.
      *

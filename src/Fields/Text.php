@@ -43,10 +43,7 @@ class Text extends Field
     // Default rules
     public const DEFAULT_TEXT = (self::NOT_NULLABLE | self::NOT_BLANK | self::VISIBLE | self::FILLABLE);
 
-    protected function __construct($rules='DEFAULT_TEXT')
-    {
-        parent::__construct($rules);
-    }
+    protected static $defaultRules = self::DEFAULT_TEXT;
 
     public function getDefaultProperties(): array
     {

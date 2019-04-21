@@ -11,5 +11,5 @@
 namespace Laramore\Interfaces;
 
 interface IsAPrimaryField extends IsAField
-}
 {
+}

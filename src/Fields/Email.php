@@ -34,10 +34,7 @@ class Email extends Pattern
     // Default rules
     public const DEFAULT_EMAIL = (self::NOT_NULLABLE | self::VISIBLE | self::FILLABLE | self::ACCEPT_USERNAME);
 
-    protected function __construct($rules='DEFAULT_EMAIL', $default=null)
-    {
-        parent::__construct($rules, $default);
-    }
+    protected static $defaultRules = self::DEFAULT_EMAIL;
 
     public function cdn($cdn='')
     {

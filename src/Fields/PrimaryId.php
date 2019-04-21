@@ -18,8 +18,5 @@ class PrimaryId extends Increment implements IsAPrimaryField
     // Default rules
     public const DEFAULT_PRIMARY = (self::NOT_NULLABLE | self::VISIBLE | self::NOT_ZERO | self::UNSIGNED | self::POSITIVE | self::CORRECT_SIGN);
 
-    protected function __construct($rules='DEFAULT_PRIMARY')
-    {
-        parent::__construct($rules);
-    }
+    protected static $defaultRules = self::DEFAULT_PRIMARY;
 }
