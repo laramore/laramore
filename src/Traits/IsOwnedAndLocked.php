@@ -24,8 +24,12 @@ trait IsOwnedAndLocked
         $this->owner = $owner;
         $this->name = $name;
 
+        $this->owning();
+
         return $this;
     }
+
+    abstract protected function owning();
 
     public function getOwner()
     {

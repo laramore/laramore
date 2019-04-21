@@ -11,7 +11,7 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
-use Laramore\Interfaces\IsAField;
+use Laramore\Meta;
 use Laramore\Traits\Field\HasRules;
 
 abstract class Field extends BaseField
@@ -152,9 +152,16 @@ abstract class Field extends BaseField
         return $this;
     }
 
+    protected function owning()
+    {
+        if (!($this->getOwner() instanceof Meta) && !($this->getOwner() instanceof CompositeField)) {
+            throw new \Exception('A field should be owned by a Meta or a CompositeField');
+        }
+    }
+
     protected function locking()
     {
-        if (is_null($this->default)) {
+        if ($this->hasProperty('default') && is_null($this->default)) {
             if ($this->hasRule(self::NOT_NULLABLE, self::STRICT)) {
                 throw new \Exception("This field cannot be null and defined as null by default");
             } else if (!$this->hasRule(self::NULLABLE) && !$this->hasRule(self::REQUIRED, self::STRICT)) {

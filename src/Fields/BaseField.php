@@ -71,9 +71,9 @@ abstract class BaseField implements IsAField
             return $this->properties[$key];
         } else if (defined($const = 'self::'.strtoupper(Str::snake($key)))) {
             return $this->hasRule(constant($const));
-        } else {
-            throw new \Exception('Value does not exist');
         }
+
+        return null;
     }
 
     public function setProperty(string $key, $value)

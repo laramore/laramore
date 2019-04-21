@@ -12,10 +12,8 @@ namespace Laramore;
 
 use Illuminate\Support\Str;
 use Laramore\Fields\{
-	Field, Timestamp
+	Field, CompositeField, LinkField, Timestamp
 };
-use Laramore\LinkFields\LinkField;
-use Laramore\CompositeFields\CompositeField;
 use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField
 };
@@ -181,13 +179,9 @@ class Meta
             throw new \Exception('It is not allowed to reset the field '.$name);
         }
 
-        if ($value instanceof Field) {
+        if ($value instanceof CompositeField) {
             $value = $this->manipulateField($value)->own($this, $name);
-            $this->fields[$value->name] = $value;
-        } else if ($value instanceof CompositeField) {
-            $value->own($this, $name);
-
-            $this->composites[$value->name] = $this->manipulateField($value);
+            $this->composites[$value->name] = $value;
 
             foreach ($value->getFields() as $field) {
                 if (!$field->isOwned() || $field->getOwner() !== $value) {
@@ -198,7 +192,7 @@ class Meta
             }
         } else if ($value instanceof LinkField) {
             if (!$this->preparing && !$this->prepared) {
-                throw new \Exception('You cannot set link fields. You must prepare this meta before the other one via the `__meta` method.');
+                throw new \Exception('You cannot set link fields. You must prepare this meta before the others via the `__meta` method.');
             }
 
             if ($value->isOwned()) {
@@ -209,7 +203,11 @@ class Meta
                 throw new \Exception('The link field must be owned by a child of the oposite meta.');
             }
 
-            $this->links[$name] = $value;
+            $value = $this->manipulateField($value);
+            $this->links[$value->name] = $value;
+        } else if ($value instanceof Field) {
+            $value = $this->manipulateField($value)->own($this, $name);
+            $this->fields[$value->name] = $value;
         } else {
             throw new \Exception('To set a specific field, you have to give a Field object/string');
         }
@@ -262,7 +260,15 @@ class Meta
         $this->checkLock();
 
         foreach ($this->allFields() as $field) {
-            $field->lock();
+            if ($field->getOwner() === $this) {
+                $field->lock();
+            }
+        }
+
+        foreach ($this->allFields() as $field) {
+            if (!$field->isLocked()) {
+                throw new \Exception('All fields are not locked by their owner');
+            }
         }
 
         $this->locked = true;
@@ -361,13 +367,13 @@ class Meta
     {
         try {
             $this->set(
-            ($this->modelClass::CREATED_AT ?? 'created_at'),
-            Timestamp::field(Field::NOT_NULLABLE | Field::VISIBLE)->useCurrent()
+	            ($this->modelClass::CREATED_AT ?? 'created_at'),
+	            Timestamp::field(Field::NOT_NULLABLE | Field::VISIBLE)->useCurrent()
             );
 
             $this->set(
-            ($this->modelClass::UPDATED_AT ?? 'updated_at'),
-            Timestamp::field(Field::NULLABLE | Field::VISIBLE)->useCurrent()
+	            ($this->modelClass::UPDATED_AT ?? 'updated_at'),
+            	Timestamp::field(Field::NULLABLE | Field::VISIBLE)->useCurrent()
             );
         } catch (\Exception $e) {
             throw new \Exception('Can not set timestamps. Maybe already set ?');
