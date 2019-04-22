@@ -11,10 +11,9 @@
 
 namespace Laramore\Fields;
 
-class Pattern extends Text
+abstract class Pattern extends Text
 {
     protected $type = 'string';
-    protected $pattern = '//';
 
     /**
      * Set of rules.
@@ -29,17 +28,13 @@ class Pattern extends Text
     public const FIX_IF_WRONG = 65536;
 
     // Default rules
-    public const DEFAULT_PATTERN = (self::NOT_NULLABLE | self::VISIBLE | self::FILLABLE | self::FIX_IF_WRONG);
+    public const DEFAULT_PATTERN = (self::FIX_IF_WRONG | self::DEFAULT_TEXT);
 
     protected static $defaultRules = self::DEFAULT_PATTERN;
 
-    public function pattern(string $pattern)
+    public function getPattern()
     {
-        $this->checkLock();
-
-        $this->pattern = $pattern;
-
-        return $this;
+        return $this->pattern;
     }
 
     public function setValue($model, $value)
@@ -50,7 +45,7 @@ class Pattern extends Text
             return $value;
         }
 
-        if (!preg_match($this->pattern, $value)) {
+        if (!preg_match($this->getPattern(), $value)) {
             if ($this->hasRule(self::MATCH_PATTERN, self::STRICT)) {
                 throw new \Exception('The value does not match the pattern of the field `'.$this->name.'`');
             }

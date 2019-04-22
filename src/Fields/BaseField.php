@@ -69,7 +69,7 @@ abstract class BaseField implements IsAField
             return $this->$key;
         } else if ($this->hasProperty($key)) {
             return $this->properties[$key];
-        } else if (defined($const = 'self::'.strtoupper(Str::snake($key)))) {
+        } else if (defined($const = 'static::'.strtoupper(Str::snake($key)))) {
             return $this->hasRule(constant($const));
         }
 
@@ -84,6 +84,12 @@ abstract class BaseField implements IsAField
             throw new \Exception("The propery $key cannot be set");
         } else if (method_exists($this, $key)) {
             $this->$key($value);
+        } else if (defined($const = 'static::'.strtoupper(Str::snake($key)))) {
+            if ($value) {
+                $this->addRule(constant($const));
+            } else {
+                $this->removeRule(constant($const));
+            }
         } else {
             $this->properties[$key] = $value;
         }

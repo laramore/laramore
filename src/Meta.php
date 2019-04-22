@@ -250,9 +250,6 @@ class Meta
 
     protected function preparing()
     {
-        foreach ($this->getComposites() as $field) {
-            $field->prepare();
-        }
     }
 
     public function lock()

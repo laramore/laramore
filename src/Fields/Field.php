@@ -57,7 +57,9 @@ abstract class Field extends BaseField
 
     protected function __construct($rules=null)
     {
-        $this->addRules($rules ?: self::$defaultRules);
+        $this->properties = $this->getDefaultProperties();
+
+        $this->addRules($rules ?: static::$defaultRules);
     }
 
     /**

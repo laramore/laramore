@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 class Foreign extends CompositeField
 {
     protected static $defaultFields = [
-        'id' => Increment::class,
+        'id' => Number::class,
     ];
     protected static $defaultLinks = [
         'reversed' => HasMany::class,
@@ -26,7 +26,7 @@ class Foreign extends CompositeField
 
     public function reversedName(string $reversedName=null)
     {
-        $this->properties['reversed'] = $this->linksName['reversed'] = $reversedName ?: '*{modelname}';
+        $this->linksName['reversed'] = $reversedName ?: '*{modelname}';
 
         return $this;
     }
@@ -40,10 +40,12 @@ class Foreign extends CompositeField
         return $this;
     }
 
-    public function own($owner, string $name)
+    public function owning()
     {
-        parent::own($owner, $name);
+        parent::owning();
+
         $this->links['reversed']->to = $this->getOwner()->getModelClass();
+        $this->properties['reversed'] = $this->links['reversed']->name;
 
         return $this;
     }
@@ -53,18 +55,6 @@ class Foreign extends CompositeField
         if (!$this->on) {
             throw new \Exception('Related model settings needed. Set it by calling `on` method');
         }
-    }
-
-    protected function preparing()
-    {
-        $this->links[0]->own($this, $this->generateLinkName())
-        ->to($this->getOwner()->getModel())
-        ->from($this->on)
-        ->on($this->fields[0]->getName());
-
-        $this->to::getSchema()->set($this->links[0]->getName(), $this->links[0]);
-
-        return $this;
     }
 
     public function getValue($model, $value)

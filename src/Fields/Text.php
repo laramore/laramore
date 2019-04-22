@@ -41,7 +41,7 @@ class Text extends Field
     public const DOTS_ON_RESIZING = 16384;
 
     // Default rules
-    public const DEFAULT_TEXT = (self::NOT_NULLABLE | self::NOT_BLANK | self::VISIBLE | self::FILLABLE);
+    public const DEFAULT_TEXT = (self::NOT_BLANK | self::DEFAULT_FIELD);
 
     protected static $defaultRules = self::DEFAULT_TEXT;
 

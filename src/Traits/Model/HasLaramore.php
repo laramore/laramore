@@ -44,7 +44,7 @@ trait HasLaramore
         $this->visible = $meta->getVisibleFields();
 
         // Define all model metas.
-        $this->setKeyName($meta->getPrimary());
+        $this->setKeyName($meta->getPrimary()->attname);
         $this->setTable($meta->getTableName());
 
         if ($meta->hasTimestamps()) {
