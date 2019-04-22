@@ -13,11 +13,11 @@ class HasMany extends LinkField
     {
         parent::owning();
 
-        if (is_null($this->on)) {
-            throw new \Exception('You need to specify `on`');
+        if (is_null($this->off)) {
+            throw new \Exception('You need to specify `off`');
         }
 
-        $this->on::getMeta()->set($this->name, $this);
+        $this->off::getMeta()->set($this->name, $this);
     }
 
     public function setValue($model, $value)
@@ -27,7 +27,7 @@ class HasMany extends LinkField
 
     public function relationValue($model)
     {
-        return $model->hasMany($this->to, $this->on, $this->from);
+        return $model->hasMany($this->on, $this->to);
     }
 
     public function whereValue($model, ...$args)

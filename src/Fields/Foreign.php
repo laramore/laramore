@@ -17,7 +17,7 @@ class Foreign extends CompositeField
     {
         $this->checkLock();
 
-        $this->properties['on'] = $this->fields['id']->on = $this->links['reversed']->on = $model;
+        $this->properties['on'] = $this->fields['id']->on = $this->links['reversed']->off = $model;
 
         $this->reversedName($reversedName);
 
@@ -31,27 +31,29 @@ class Foreign extends CompositeField
         return $this;
     }
 
-    public function to(string $column)
+    public function from(string $column)
     {
         $this->checkLock();
-
-        $this->properties['on'] = $this->links['reversed']->from = $this->fields['id']->to = $column;
 
         return $this;
     }
 
     public function owning()
     {
+        $this->links['reversed']->on = $this->getOwner()->getModelClass();
+
         parent::owning();
 
-        $this->links['reversed']->to = $this->getOwner()->getModelClass();
         $this->properties['reversed'] = $this->links['reversed']->name;
+        $this->properties['from'] = $this->fields['id']->from = $this->links['reversed']->to = $this->fields['id']->attname;
 
         return $this;
     }
 
     protected function locking()
     {
+        parent::locking();
+
         if (!$this->on) {
             throw new \Exception('Related model settings needed. Set it by calling `on` method');
         }
@@ -67,11 +69,11 @@ class Foreign extends CompositeField
         $model->setAttribute($this->fields[0]->getName(), $value->{$this->on});
         $model->setRelation($this->name, $value);
     }
-
-    public function relationValue($model)
-    {
-        return $model->belongsTo($this->to, $this->fields[0]->getName(), $this->on);
-    }
+    //
+    // public function relationValue($model)
+    // {
+    //     return $model->belongsTo($this->from, $this->fields[0]->getName(), $this->on);
+    // }
 
     public function whereValue($query, ...$args)
     {

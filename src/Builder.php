@@ -81,11 +81,11 @@ class Builder extends BuilderBase
                 break;
         }
 
-        $schema = get_class($this->model)::getSchema();
+        $meta = $this->model::getMeta();
 
-        if ($schema->has($name)) {
-            $this->where(function ($query) use ($schema, $name, $parameters) {
-                return $schema->get($name)->whereValue($query, ...$parameters);
+        if ($meta->has($name)) {
+            $this->where(function ($query) use ($meta, $name, $parameters) {
+                return $meta->get($name)->whereValue($query, ...$parameters);
             }, null, null, $boolean);
 
             if ($find) {

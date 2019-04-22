@@ -207,12 +207,14 @@ abstract class CompositeField extends BaseField
         }
     }
 
-    public function lock()
+    protected function locking()
     {
-        parent::lock();
-
         $this->lockFields();
         $this->lockLinks();
+
+        if ((count($this->fields) + count($this->links)) === 0) {
+            throw new \Exception('A composite field needs at least one field or link');
+        }
 
         return $this;
     }
@@ -239,13 +241,6 @@ abstract class CompositeField extends BaseField
     public function getUnique()
     {
         return $this->unique;
-    }
-
-    protected function locking()
-    {
-        if ((count($this->fields) + count($this->links)) === 0) {
-            throw new \Exception('A composite field needs at least one field or link');
-        }
     }
 
     public function castValue($value)

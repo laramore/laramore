@@ -18,13 +18,10 @@ use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField
 };
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Traits\IsPrepared;
 use Laramore\Template;
 
 class Meta
 {
-    use IsPrepared;
-
     protected $modelClass;
     protected $modelClassName;
     protected $tableName;
@@ -175,6 +172,8 @@ class Meta
     // TODO: Ajouter les conf par défaut pour chaque field s'il n'existe pas => StringField: [length: 256]
     public function set($name, $value)
     {
+		$this->checkLock();
+
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);
         }
@@ -191,10 +190,6 @@ class Meta
                 $this->fields[$field->name] = $this->manipulateField($field);
             }
         } else if ($value instanceof LinkField) {
-            if (!$this->preparing && !$this->prepared) {
-                throw new \Exception('You cannot set link fields. You must prepare this meta before the others via the `__meta` method.');
-            }
-
             if ($value->isOwned()) {
                 if ($value->name !== $name) {
                     throw new \Exception('The link field name must be the same than the given one.');
@@ -246,10 +241,6 @@ class Meta
         }
 
         return $visible;
-    }
-
-    protected function preparing()
-    {
     }
 
     public function lock()

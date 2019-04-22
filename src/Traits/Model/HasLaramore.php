@@ -76,9 +76,6 @@ trait HasLaramore
         // Generate all meta data defined by the user in the current model.
         static::__meta(static::$meta, static::$meta->fields);
 
-        // Prepare all fields, all relations.
-        static::$meta->prepare();
-
         return static::$meta;
     }
 
@@ -163,8 +160,8 @@ trait HasLaramore
 
         if (static::hasField($key)) {
             $field = static::getField($key);
-
             if (count($args) === 0) {
+                dd($field->relationValue($this));
                 return $field->relationValue($this);
             } else {
                 return $field->whereValue($this, ...$args);
