@@ -268,11 +268,12 @@ trait HasLaramore
      *
      * @param  mixed $key
      * @param  mixed $value
+     * @param  bool  $force
      * @return mixed
      *
      * @throws Exception Except if the field is not fillable.
      */
-    public function setAttribute($key, $value)
+    public function setAttribute($key, $value, bool $force=false)
     {
         if ($this->hasSetMutator($key)) {
             // First we will check for the presence of a mutator for the set operation
@@ -316,7 +317,7 @@ trait HasLaramore
             }
 
             // If the field is not fillable, throw an exception.
-            if (!$this->isFillable($key)) {
+            if (!$this->isFillable($key) && !$force) {
                 throw new \Exception('The field '.$key.' is not fillable');
             }
 
