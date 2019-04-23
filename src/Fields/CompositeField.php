@@ -4,8 +4,9 @@ namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
 use Laramore\Meta;
+use Laramore\Interfaces\IsAFieldOwner;
 
-abstract class CompositeField extends BaseField
+abstract class CompositeField extends BaseField implements IsAFieldOwner
 {
     protected $fields = [];
     protected $links = [];
@@ -151,6 +152,66 @@ abstract class CompositeField extends BaseField
         return static::class;
     }
 
+    public function hasField(string $name)
+    {
+        return isset($this->getFields()[$name]);
+    }
+
+    public function getField(string $name)
+    {
+        if ($this->hasField($name)) {
+            return $this->getFields()[$name];
+        } else {
+            throw new \Exception($name.' field does not exist');
+        }
+    }
+
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    public function hasLink(string $name)
+    {
+        return isset($this->getLinks()[$name]);
+    }
+
+    public function getLink(string $name)
+    {
+        if ($this->hasLink($name)) {
+            return $this->getLinks()[$name];
+        } else {
+            throw new \Exception($name.' link field does not exist');
+        }
+    }
+
+    public function getLinks()
+    {
+        return $this->links;
+    }
+
+    public function has(string $name)
+    {
+        return isset($this->allFields()[$name]);
+    }
+
+    public function get(string $name)
+    {
+        if ($this->has($name)) {
+            return $this->allFields()[$name];
+        } else {
+            throw new \Exception($name.' real or link field does not exist');
+        }
+    }
+
+    public function allFields()
+    {
+        return array_merge(
+	        $this->fields,
+	        $this->links
+        );
+    }
+
     public function replaceInTemplate(string $template, array $keyValues)
     {
         foreach ($keyValues as $varName => $value) {
@@ -233,20 +294,12 @@ abstract class CompositeField extends BaseField
         }
     }
 
-    public function getFields()
-    {
-        return array_values($this->fields);
-    }
-
     public function getUnique()
     {
         return $this->unique;
     }
 
-    public function castValue($value)
-    {
-        return $this->castValue($value);
-    }
+    abstract public function castValue($value);
 
     public function getValue($mode, $value)
     {

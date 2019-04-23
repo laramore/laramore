@@ -12,15 +12,15 @@ namespace Laramore;
 
 use Illuminate\Support\Str;
 use Laramore\Fields\{
-	Field, CompositeField, LinkField, Timestamp
+	BaseField, Field, CompositeField, LinkField, Timestamp
 };
 use Laramore\Interfaces\{
-	IsAField, IsAPrimaryField
+	IsAField, IsAPrimaryField, IsAFieldOwner
 };
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Template;
 
-class Meta
+class Meta implements IsAFieldOwner
 {
     protected $modelClass;
     protected $modelClassName;
@@ -89,7 +89,7 @@ class Meta
         $this->tableName = $tableName;
     }
 
-    protected function manipulateField($field)
+    protected function manipulateField(BaseField $field)
     {
         if ($field instanceof IsAPrimaryField) {
             $this->primary($field);
@@ -98,12 +98,12 @@ class Meta
         return $field;
     }
 
-    public function hasField($name)
+    public function hasField(string $name)
     {
         return isset($this->getFields()[$name]);
     }
 
-    public function getField($name)
+    public function getField(string $name)
     {
         if ($this->hasField($name)) {
             return $this->getFields()[$name];
@@ -112,17 +112,31 @@ class Meta
         }
     }
 
+	public function setField(string $name, Field $field)
+	{
+		$this->checkLock();
+
+        if ($this->has($name)) {
+            throw new \Exception('It is not allowed to reset the field '.$name);
+        }
+
+        $field = $this->manipulateField($field)->own($this, $name);
+        $this->fields[$field->name] = $field;
+
+		return $this;
+	}
+
     public function getFields()
     {
         return $this->fields;
     }
 
-    public function hasLink($name)
+    public function hasLink(string $name)
     {
         return isset($this->getLinks()[$name]);
     }
 
-    public function getLink($name)
+    public function getLink(string $name)
     {
         if ($this->hasLink($name)) {
             return $this->getLinks()[$name];
@@ -131,17 +145,39 @@ class Meta
         }
     }
 
+	public function setLink(string $name, LinkField $link)
+	{
+		$this->checkLock();
+
+        if ($this->has($name)) {
+            throw new \Exception('It is not allowed to reset the field '.$name);
+        }
+
+        if ($link->isOwned()) {
+            if ($link->name !== $name) {
+                throw new \Exception('The link field name must be the same than the given one.');
+            }
+        } else {
+            throw new \Exception('The link field must be owned by a child of the oposite meta.');
+        }
+
+        $link = $this->manipulateField($link);
+        $this->links[$link->name] = $link;
+
+		return $this;
+	}
+
     public function getLinks()
     {
         return $this->links;
     }
 
-    public function hasComposite($name)
+    public function hasComposite(string $name)
     {
         return isset($this->getComposites()[$name]);
     }
 
-    public function getComposite($name)
+    public function getComposite(string $name)
     {
         if ($this->hasComposite($name)) {
             return $this->getComposites()[$name];
@@ -150,17 +186,39 @@ class Meta
         }
     }
 
+	public function setComposite(string $name, CompositeField $composite)
+	{
+		$this->checkLock();
+
+        if ($this->has($name)) {
+            throw new \Exception('It is not allowed to reset the field '.$name);
+        }
+
+		$composite = $this->manipulateField($composite)->own($this, $name);
+		$this->composites[$composite->name] = $composite;
+
+		foreach ($composite->getFields() as $field) {
+			if (!$field->isOwned() || $field->getOwner() !== $composite) {
+				throw new \Exception('The field '.$name.' must be owned by the composed field '.$value->name);
+			}
+
+			$this->fields[$field->name] = $this->manipulateField($field);
+		}
+
+		return $this;
+	}
+
     public function getComposites()
     {
         return $this->composites;
     }
 
-    public function has($name)
+    public function has(string $name)
     {
         return isset($this->allFields()[$name]);
     }
 
-    public function get($name)
+    public function get(string $name)
     {
         if ($this->has($name)) {
             return $this->allFields()[$name];
@@ -170,39 +228,14 @@ class Meta
     }
 
     // TODO: Ajouter les conf par défaut pour chaque field s'il n'existe pas => StringField: [length: 256]
-    public function set($name, $value)
+    public function set(string $name, BaseField $field)
     {
-		$this->checkLock();
-
-        if ($this->has($name)) {
-            throw new \Exception('It is not allowed to reset the field '.$name);
-        }
-
-        if ($value instanceof CompositeField) {
-            $value = $this->manipulateField($value)->own($this, $name);
-            $this->composites[$value->name] = $value;
-
-            foreach ($value->getFields() as $field) {
-                if (!$field->isOwned() || $field->getOwner() !== $value) {
-                    throw new \Exception('The field '.$name.' must be owned by the composed field '.$value->name);
-                }
-
-                $this->fields[$field->name] = $this->manipulateField($field);
-            }
-        } else if ($value instanceof LinkField) {
-            if ($value->isOwned()) {
-                if ($value->name !== $name) {
-                    throw new \Exception('The link field name must be the same than the given one.');
-                }
-            } else {
-                throw new \Exception('The link field must be owned by a child of the oposite meta.');
-            }
-
-            $value = $this->manipulateField($value);
-            $this->links[$value->name] = $value;
-        } else if ($value instanceof Field) {
-            $value = $this->manipulateField($value)->own($this, $name);
-            $this->fields[$value->name] = $value;
+        if ($field instanceof CompositeField) {
+			return $this->setComposite($name, $field);
+        } else if ($field instanceof LinkField) {
+			return $this->setLink($name, $field);
+        } else if ($field instanceof Field) {
+			return $this->setField($name, $field);
         } else {
             throw new \Exception('To set a specific field, you have to give a Field object/string');
         }
@@ -395,4 +428,14 @@ class Meta
             return $this->setTableName($value);
         }
     }
+
+	public function setFieldValue($model, $field, $value)
+	{
+		return $field->setValue($model, $value);
+	}
+
+	public function getFieldValue($model, $field, $value)
+	{
+		return $field->getValue($model, $value);
+	}
 }

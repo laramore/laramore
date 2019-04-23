@@ -11,8 +11,9 @@
 namespace Laramore\Traits\Model;
 
 use Laramore\Meta;
-use Laramore\CompositeFields\CompositeField;
-use Laramore\LinkFields\LinkField;
+use Laramore\Fields\{
+    Field, CompositeField, LinkField
+};
 use Laramore\FieldManager;
 use Laramore\Builder;
 use Illuminate\Support\Str;
@@ -212,7 +213,9 @@ trait HasLaramore
         // If the user did not set any custom methods to handle this attribute,
         // we call the field getter.
         if (static::hasField($key)) {
-            return static::getField($key)->getValue($this, $value);
+            $field = static::getField($key);
+
+            return $field->getOwner()->getFieldValue($this, $field, $value);
         }
 
         return $value;
@@ -308,23 +311,20 @@ trait HasLaramore
         if (static::hasField($key)) {
             $field = static::getField($key);
 
-            // A composite field cannot set an attribute with its name.
-            if ($field instanceof CompositeField || $field instanceof LinkField) {
-                // Call the method to set the composed fields.
-                $field->setValue($this, $value);
-
-                return $this;
-            }
-
             // If the field is not fillable, throw an exception.
-            if (!$this->isFillable($key) && !$force) {
+            if ($field instanceof Field && !$this->isFillable($key) && !$force) {
                 throw new \Exception('The field '.$key.' is not fillable');
             }
 
-            $value = $field->setValue($this, $value);
+            $value = $field->getOwner()->setFieldValue($this, $field, $value);
+
+            if ($field instanceof Field) {
+                $this->attributes[$key] = $value;
+            }
+        } else {
+            $this->attributes[$key] = $value;
         }
 
-        $this->attributes[$key] = $value;
 
         return $this;
     }
