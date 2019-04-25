@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "13b361157a7d48db3570d404712de22e",
+    "content-hash": "7d9606972f4cada54a2fc4184f1f865f",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -284,31 +284,30 @@
             "time": "2019-04-08T12:54:41+00:00"
         },
         {
-            "name": "mustache/mustache",
-            "version": "v2.12.0",
+            "name": "nastuzzi-samy/reflection-namespace",
+            "version": "v0.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/bobthecow/mustache.php.git",
-                "reference": "fe8fe72e9d580591854de404cc59a1b83ca4d19e"
+                "url": "https://github.com/NastuzziSamy/reflection-namespace.git",
+                "reference": "fe98b22b1907b61531865ffded0ff637a83cf40b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/bobthecow/mustache.php/zipball/fe8fe72e9d580591854de404cc59a1b83ca4d19e",
-                "reference": "fe8fe72e9d580591854de404cc59a1b83ca4d19e",
+                "url": "https://api.github.com/repos/NastuzziSamy/reflection-namespace/zipball/fe98b22b1907b61531865ffded0ff637a83cf40b",
+                "reference": "fe98b22b1907b61531865ffded0ff637a83cf40b",
                 "shasum": ""
             },
-            "require": {
-                "php": ">=5.2.4"
-            },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "~1.11",
-                "phpunit/phpunit": "~3.7|~4.0|~5.0"
+                "phpmd/phpmd": "^2.6",
+                "phpstan/phpstan": "^0.10.5",
+                "phpunit/phpunit": "^7.5",
+                "squizlabs/php_codesniffer": "^3.3"
             },
             "type": "library",
             "autoload": {
-                "psr-0": {
-                    "Mustache": "src/"
-                }
+                "files": [
+                    "src/ReflectionNamespace.php"
+                ]
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
@@ -316,18 +315,12 @@
             ],
             "authors": [
                 {
-                    "name": "Justin Hileman",
-                    "email": "justin@justinhileman.info",
-                    "homepage": "http://justinhileman.com"
+                    "name": "NastuzziSamy",
+                    "email": "samy@nastuzzi.fr"
                 }
             ],
-            "description": "A Mustache implementation in PHP.",
-            "homepage": "https://github.com/bobthecow/mustache.php",
-            "keywords": [
-                "mustache",
-                "templating"
-            ],
-            "time": "2017-07-11T12:54:05+00:00"
+            "description": "Reflect a namespace, give its classes, its sub-namespaces and more",
+            "time": "2019-04-14T16:59:36+00:00"
         },
         {
             "name": "nesbot/carbon",

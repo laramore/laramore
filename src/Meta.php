@@ -112,9 +112,9 @@ class Meta implements IsAFieldOwner
         }
     }
 
-	public function setField(string $name, Field $field)
-	{
-		$this->checkLock();
+    public function setField(string $name, Field $field)
+    {
+        $this->checkLock();
 
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);
@@ -123,8 +123,8 @@ class Meta implements IsAFieldOwner
         $field = $this->manipulateField($field)->own($this, $name);
         $this->fields[$field->name] = $field;
 
-		return $this;
-	}
+        return $this;
+    }
 
     public function getFields()
     {
@@ -145,9 +145,9 @@ class Meta implements IsAFieldOwner
         }
     }
 
-	public function setLink(string $name, LinkField $link)
-	{
-		$this->checkLock();
+    public function setLink(string $name, LinkField $link)
+    {
+        $this->checkLock();
 
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);
@@ -164,8 +164,8 @@ class Meta implements IsAFieldOwner
         $link = $this->manipulateField($link);
         $this->links[$link->name] = $link;
 
-		return $this;
-	}
+        return $this;
+    }
 
     public function getLinks()
     {
@@ -186,27 +186,27 @@ class Meta implements IsAFieldOwner
         }
     }
 
-	public function setComposite(string $name, CompositeField $composite)
-	{
-		$this->checkLock();
+    public function setComposite(string $name, CompositeField $composite)
+    {
+        $this->checkLock();
 
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);
         }
 
-		$composite = $this->manipulateField($composite)->own($this, $name);
-		$this->composites[$composite->name] = $composite;
+        $composite = $this->manipulateField($composite)->own($this, $name);
+        $this->composites[$composite->name] = $composite;
 
-		foreach ($composite->getFields() as $field) {
-			if (!$field->isOwned() || $field->getOwner() !== $composite) {
-				throw new \Exception('The field '.$name.' must be owned by the composed field '.$value->name);
-			}
+        foreach ($composite->getFields() as $field) {
+            if (!$field->isOwned() || $field->getOwner() !== $composite) {
+                throw new \Exception('The field '.$name.' must be owned by the composed field '.$value->name);
+            }
 
-			$this->fields[$field->name] = $this->manipulateField($field);
-		}
+            $this->fields[$field->name] = $this->manipulateField($field);
+        }
 
-		return $this;
-	}
+        return $this;
+    }
 
     public function getComposites()
     {
@@ -231,11 +231,11 @@ class Meta implements IsAFieldOwner
     public function set(string $name, BaseField $field)
     {
         if ($field instanceof CompositeField) {
-			return $this->setComposite($name, $field);
+            return $this->setComposite($name, $field);
         } else if ($field instanceof LinkField) {
-			return $this->setLink($name, $field);
+            return $this->setLink($name, $field);
         } else if ($field instanceof Field) {
-			return $this->setField($name, $field);
+            return $this->setField($name, $field);
         } else {
             throw new \Exception('To set a specific field, you have to give a Field object/string');
         }
@@ -283,12 +283,6 @@ class Meta implements IsAFieldOwner
         foreach ($this->allFields() as $field) {
             if ($field->getOwner() === $this) {
                 $field->lock();
-            }
-        }
-
-        foreach ($this->allFields() as $field) {
-            if (!$field->isLocked()) {
-                throw new \Exception('All fields are not locked by their owner');
             }
         }
 
@@ -429,13 +423,13 @@ class Meta implements IsAFieldOwner
         }
     }
 
-	public function setFieldValue($model, $field, $value)
-	{
-		return $field->setValue($model, $value);
-	}
+    public function setFieldValue($model, $field, $value)
+    {
+        return $field->setValue($model, $value);
+    }
 
-	public function getFieldValue($model, $field, $value)
-	{
-		return $field->getValue($model, $value);
-	}
+    public function getFieldValue($model, $field, $value)
+    {
+        return $field->getValue($model, $value);
+    }
 }

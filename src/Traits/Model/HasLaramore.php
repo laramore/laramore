@@ -36,8 +36,7 @@ trait HasLaramore
 
         // Should be locked by a specific Provider later.
         if (!$meta->isLocked()) {
-            $meta->lock();
-            // TODO: throw new \Exception('The meta is not locked and cannot be used correctly');
+            throw new \Exception('The meta is not locked and cannot be used correctly');
         }
 
         // Define here fillable and visible fields.
@@ -70,8 +69,12 @@ trait HasLaramore
      *
      * @return Meta
      */
-    protected static function generateMeta()
+    public static function prepareMeta()
     {
+        if (static::$meta) {
+            throw new \Exception('The Meta cannot be prepared twice');
+        }
+
         static::$meta = new Meta(static::class);
 
         // Generate all meta data defined by the user in the current model.
@@ -87,7 +90,11 @@ trait HasLaramore
      */
     public static function getMeta()
     {
-        return (static::$meta ?? static::generateMeta());
+        if (!static::$meta) {
+            throw new \Exception('The Meta needs to be prepared first');
+        }
+
+        return static::$meta;
     }
 
     /**
@@ -269,9 +276,9 @@ trait HasLaramore
      * Set a given attribute on the model.
      * Override the original method.
      *
-     * @param  mixed $key
-     * @param  mixed $value
-     * @param  bool  $force
+     * @param  mixed   $key
+     * @param  mixed   $value
+     * @param  boolean $force
      * @return mixed
      *
      * @throws Exception Except if the field is not fillable.
@@ -324,7 +331,6 @@ trait HasLaramore
         } else {
             $this->attributes[$key] = $value;
         }
-
 
         return $this;
     }

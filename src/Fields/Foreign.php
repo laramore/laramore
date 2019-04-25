@@ -82,16 +82,16 @@ class Foreign extends CompositeField
     public function setValue($model, $value)
     {
         $value = $this->castValue($value);
-		$model->setAttribute($this->getField('id')->name, $value->{$this->to}, true);
-		$this->setRelationValue($model, $value);
+        $model->setAttribute($this->getField('id')->name, $value->{$this->to}, true);
+        $this->setRelationValue($model, $value);
 
-		return $value;
+        return $value;
     }
 
-	protected function setRelationValue($model, $value)
-	{
-		$model->setRelation($this->name, $value);
-	}
+    protected function setRelationValue($model, $value)
+    {
+        $model->setRelation($this->name, $value);
+    }
 
     public function relationValue($model)
     {
@@ -116,16 +116,16 @@ class Foreign extends CompositeField
         return $query->where($this->getField('id')->attname, $operator, $value);
     }
 
-	public function setFieldValue($model, $field, $value)
-	{
-		$value = $field->setValue($model, $value);
-		$this->setRelationValue($model, $this->castValue($value));
+    public function setFieldValue($model, $field, $value)
+    {
+        $value = $field->setValue($model, $value);
+        $this->setRelationValue($model, $this->castValue($value));
 
-		return $value;
-	}
+        return $value;
+    }
 
-	public function getFieldValue($model, $field, $value)
-	{
-		return $field->getValue($model, $value);
-	}
+    public function getFieldValue($model, $field, $value)
+    {
+        return $field->getValue($model, $value);
+    }
 }
