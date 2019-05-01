@@ -30,8 +30,6 @@ trait HasLaramore
      */
     public function __construct(...$args)
     {
-        parent::__construct(...$args);
-
         $meta = static::getMeta();
 
         // Should be locked by a specific Provider later.
@@ -42,14 +40,13 @@ trait HasLaramore
         // Define here fillable and visible fields.
         $this->fillable = $meta->getFillableFields();
         $this->visible = $meta->getVisibleFields();
+        $this->timestamps = $meta->hasTimestamps();
 
         // Define all model metas.
         $this->setKeyName($meta->getPrimary()->attname);
         $this->setTable($meta->getTableName());
 
-        if ($meta->hasTimestamps()) {
-            $this->timestamps = true;
-        }
+        parent::__construct(...$args);
     }
 
     /**
@@ -319,7 +316,7 @@ trait HasLaramore
             $field = static::getField($key);
 
             // If the field is not fillable, throw an exception.
-            if ($field instanceof Field && !$this->isFillable($key) && !$force) {
+            if ($field instanceof Field && $this->exists && !$this->isFillable($key) && !$force) {
                 throw new \Exception('The field '.$key.' is not fillable');
             }
 
