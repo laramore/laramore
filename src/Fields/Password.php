@@ -41,11 +41,6 @@ class Password extends Pattern
         ]);
     }
 
-    protected function owning()
-    {
-        parent::owning();
-    }
-
     protected function locking()
     {
         parent::locking();

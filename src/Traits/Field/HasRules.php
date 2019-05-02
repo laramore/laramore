@@ -120,7 +120,7 @@ trait HasRules
         $rules = self::getAvailableRules();
 
         foreach ($rules as $key => $value) {
-            if (!$this->hasRule($value)) {
+            if (!is_int($value) || !$this->hasRule($value)) {
                 unset($rules[$key]);
             }
         }

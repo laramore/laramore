@@ -17,10 +17,13 @@ use Laramore\Fields\{
 use Laramore\FieldManager;
 use Laramore\Builder;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 
 trait HasLaramore
 {
     protected static $meta;
+
+    protected $required = [];
 
     /**
      * Prepare the model during the creation of the object.
@@ -40,10 +43,12 @@ trait HasLaramore
         // Define here fillable and visible fields.
         $this->fillable = $meta->getFillableFields();
         $this->visible = $meta->getVisibleFields();
+        $this->visible = $meta->getRequiredFields();
         $this->timestamps = $meta->hasTimestamps();
 
         // Define all model metas.
         $this->setKeyName($meta->getPrimary()->attname);
+        $this->setIncrementing($meta->getPrimary()->type === 'increment');
         $this->setTable($meta->getTableName());
 
         parent::__construct(...$args);
@@ -165,8 +170,8 @@ trait HasLaramore
 
         if (static::hasField($key)) {
             $field = static::getField($key);
+
             if (count($args) === 0) {
-                dd($field->relationValue($this));
                 return $field->relationValue($this);
             } else {
                 return $field->whereValue($this, ...$args);
@@ -175,7 +180,19 @@ trait HasLaramore
             if (Str::startsWith($key, 'cast_')) {
                 return $this->cast(Str::after($key, 'cast_'), $args[0]);
             } else {
-                return parent::__call($method, $args);
+                $parts = explode('_', $key);
+
+                if (static::getMeta()->has($fieldName = array_pop($parts))) {
+                    $field = static::getMeta()->get($fieldName);
+                    $name = Str::camel(implode('_', $parts)).'Value';
+                    if (\method_exists($field, $name)) {
+                        return $field->$name($this, $this->{$fieldName}, ...$args);
+                    } else {
+                        throw new \Exception('This method does not exists for the field');
+                    }
+                } else {
+                    return parent::__call($method, $args);
+                }
             }
         }
     }
@@ -317,7 +334,11 @@ trait HasLaramore
 
             // If the field is not fillable, throw an exception.
             if ($field instanceof Field && $this->exists && !$this->isFillable($key) && !$force) {
-                throw new \Exception('The field '.$key.' is not fillable');
+            if ($field instanceof Field && !$this->isFillable($key) && !$force) {
+                throw new MassAssignmentException(sprintf(
+                    'Add [%s] to fillable property to allow mass assignment on [%s].',
+                    $key, get_class($this)
+                ));
             }
 
             $value = $field->getOwner()->setFieldValue($this, $field, $value);
@@ -330,6 +351,40 @@ trait HasLaramore
         }
 
         return $this;
+    }
+
+    /**
+     * Set the array of model attributes. No checking is done.
+     *
+     * @param  array   $attributes
+     * @param  boolean $sync
+     * @return $this
+     */
+    public function setRawAttributes(array $attributes, $sync=false)
+    {
+        foreach ($attributes as $key => $value) {
+            $this->setAttribute($key, $value, true);
+        }
+
+        if ($sync) {
+            $this->syncOriginal();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Insert the given attributes and set the ID on the model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  array                                 $attributes
+     * @return void
+     */
+    protected function insertAndSetId(\Illuminate\Database\Eloquent\Builder $query, $attributes)
+    {
+        $id = $query->insertGetId($attributes, $keyName = $this->getKeyName());
+
+        $this->setAttribute($keyName, $id, true);
     }
 
     /**
