@@ -36,7 +36,12 @@ class Meta implements IsAFieldOwner
     protected $index;
     protected $unique;
 
+    protected $fieldManagerClass = FieldManager::class;
+    protected $modelObserverClass = ModelObserver::class;
+
     protected $fieldManager;
+    protected $modelObserver;
+
     protected $locked = false;
 
     public function __construct($modelClass)
@@ -57,7 +62,8 @@ class Meta implements IsAFieldOwner
             $this->useTimestamps();
         }
 
-        $this->fieldManager = new FieldManager($this);
+        $this->fieldManager = new $this->fieldManagerClass($this);
+        $this->modelObserver = new $this->modelObserverClass($this);
     }
 
     public function getModelClass()
@@ -250,35 +256,39 @@ class Meta implements IsAFieldOwner
         );
     }
 
-    public function getFillableFields()
+    public function getTypedFields(string $type)
     {
-        $fillable = [];
+        $fields = [];
 
         foreach ($this->getFields() as $name => $field) {
-            if ($field->fillable) {
-                $fillable[] = $name;
+            if ($field->$type) {
+                $fields[] = $name;
             }
         }
 
-        return $fillable;
+        return $fields;
+    }
+
+    public function getFillableFields()
+    {
+        return $this->getTypedFields('fillable');
     }
 
     public function getVisibleFields()
     {
-        $visible = [];
+        return $this->getTypedFields('visible');
+    }
 
-        foreach ($this->getFields() as $name => $field) {
-            if ($field->visible) {
-                $visible[] = $name;
-            }
-        }
-
-        return $visible;
+    public function getRequiredFields()
+    {
+        return $this->getTypedFields('required');
     }
 
     public function lock()
     {
         $this->checkLock();
+
+        $this->modelObserver->observeAllEvents();
 
         foreach ($this->allFields() as $field) {
             if ($field->getOwner() === $this) {
