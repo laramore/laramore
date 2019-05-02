@@ -64,7 +64,7 @@ class Foreign extends CompositeField
 
     public function castValue($value)
     {
-        if ($value instanceof $this->on) {
+        if (is_null($value) || $value instanceof $this->on) {
             return $value;
         } else {
             $model = new $this->on;

@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
+use Laramore\Meta;
 use Laramore\Interfaces\IsAField;
 use Laramore\Traits\IsOwnedAndLocked;
 
@@ -112,6 +113,20 @@ abstract class BaseField implements IsAField
         }
 
         $this->properties['name'] = $name;
+    }
+
+    public function getMeta()
+    {
+        do {
+            $owner = $this->getOwner();
+        } while (!($owner instanceof Meta));
+
+        return $owner;
+    }
+
+    public function getModelClass()
+    {
+        return $this->getMeta()->getModelClass;
     }
 
     /**

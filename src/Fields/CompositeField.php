@@ -14,6 +14,10 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     protected $linksName = [];
     protected $uniques = [];
 
+    protected $notPropagatedProperties = [
+        'name', 'attname', 'type'
+    ];
+
     protected static $defaultFields = [];
     protected static $defaultLinks = [];
     protected static $defaultFieldNameTemplate = '${name}_${fieldname}';
@@ -51,6 +55,19 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     public static function composite(array $fields=null, array $links=null)
     {
         return new static($fields, $links);
+    }
+
+    public function setProperty(string $key, $value)
+    {
+        parent::setProperty($key, $value);
+
+        if (!in_array($key, $this->notPropagatedProperties)) {
+            foreach ($this->getFields() as $field) {
+                $field->setProperty($key, $value);
+            }
+        }
+
+        return $this;
     }
 
     protected function generateField($field): Field

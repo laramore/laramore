@@ -51,7 +51,7 @@ abstract class Field extends BaseField
     public const REQUIRED = 32;
 
     // Default rules
-    public const DEFAULT_FIELD = (self::NOT_NULLABLE | self::VISIBLE | self::FILLABLE);
+    public const DEFAULT_FIELD = (self::VISIBLE | self::FILLABLE);
 
     protected static $defaultRules = self::DEFAULT_FIELD;
 
@@ -85,7 +85,7 @@ abstract class Field extends BaseField
         return $this;
     }
 
-    public function required(bool $required=true): array
+    public function required(bool $required=true)
     {
         $this->checkLock();
 
