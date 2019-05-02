@@ -23,4 +23,9 @@ class Boolean extends Field
     {
         return is_null($value) ? $value : (bool) $value;
     }
+
+    public function isValue($model, $value, $boolean=true)
+    {
+        return $value === $boolean;
+    }
 }
