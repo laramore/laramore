@@ -316,7 +316,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         return $this->unique;
     }
 
-    abstract public function castValue($value);
+    abstract public function castValue($model, $value);
 
     public function getValue($mode, $value)
     {
@@ -325,7 +325,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
 
     public function setValue($mode, $value)
     {
-        $value = $this->castValue($value);
+        $value = $this->castValue($model, $value);
 
         $model->setAttribute($this->name, $value);
     }

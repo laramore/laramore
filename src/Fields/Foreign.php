@@ -62,7 +62,7 @@ class Foreign extends CompositeField
         parent::locking();
     }
 
-    public function castValue($value)
+    public function castValue($model, $value)
     {
         if (is_null($value) || $value instanceof $this->on) {
             return $value;
@@ -81,7 +81,7 @@ class Foreign extends CompositeField
 
     public function setValue($model, $value)
     {
-        $value = $this->castValue($value);
+        $value = $this->castValue($model, $value);
         $model->setAttribute($this->getField('id')->name, $value->{$this->to}, true);
         $this->setRelationValue($model, $value);
 
@@ -119,7 +119,7 @@ class Foreign extends CompositeField
     public function setFieldValue($model, $field, $value)
     {
         $value = $field->setValue($model, $value);
-        $this->setRelationValue($model, $this->castValue($value));
+        $this->setRelationValue($model, $this->castValue($model, $value));
 
         return $value;
     }

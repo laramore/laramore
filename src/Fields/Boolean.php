@@ -19,7 +19,7 @@ class Boolean extends Field
         ];
     }
 
-    public function castValue($value)
+    public function castValue($model, $value)
     {
         return is_null($value) ? $value : (bool) $value;
     }

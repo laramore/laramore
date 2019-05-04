@@ -32,19 +32,19 @@ abstract class LinkField extends BaseField
         }
     }
 
-    public function castValue($value)
+    public function castValue($model, $value)
     {
         return $value;
     }
 
     public function getValue($model, $value)
     {
-        return $this->castValue($value);
+        return $this->castValue($model, $value);
     }
 
     public function setValue($model, $value)
     {
-        $value = $this->castValue($value);
+        $value = $this->castValue($model, $value);
 
         return $value;
     }

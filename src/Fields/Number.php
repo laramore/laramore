@@ -98,7 +98,7 @@ class Number extends Field
         return $this;
     }
 
-    public function castValue($value)
+    public function castValue($model, $value)
     {
         return is_null($value) ? $value : (int) $value;
     }

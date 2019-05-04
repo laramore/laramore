@@ -139,7 +139,7 @@ interface IsAField
      * @param  mixed $value
      * @return mixed
      */
-    public function castValue($value);
+    public function castValue($model, $value);
 
     /**
      * Give the field value for a specific model.
