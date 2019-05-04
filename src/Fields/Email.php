@@ -27,7 +27,7 @@ class Email extends Pattern
     public const ONLY_SAME_CDN = 262144;
 
     // Default rules
-    public const DEFAULT_EMAIL = (self::NOT_NULLABLE | self::VISIBLE | self::FILLABLE | self::ACCEPT_USERNAME);
+    public const DEFAULT_EMAIL = (self::NOT_NULLABLE | self::ACCEPT_USERNAME | self::DEFAULT_FIELD);
 
     protected static $defaultRules = self::DEFAULT_EMAIL;
 

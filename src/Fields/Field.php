@@ -51,7 +51,7 @@ abstract class Field extends BaseField
     public const REQUIRED = 32;
 
     // Default rules
-    public const DEFAULT_FIELD = (self::VISIBLE | self::FILLABLE);
+    public const DEFAULT_FIELD = (self::VISIBLE | self::FILLABLE | self::REQUIRED);
 
     protected static $defaultRules = self::DEFAULT_FIELD;
 
@@ -131,7 +131,7 @@ abstract class Field extends BaseField
 
         if ($nullable) {
             $this->addRuleFromHasRule(self::NULLABLE);
-            $this->removeRule(self::NOT_NULLABLE);
+            $this->removeRule(self::NOT_NULLABLE | self::REQUIRED);
         } else {
             $this->removeRule(self::NULLABLE);
         }
@@ -149,7 +149,7 @@ abstract class Field extends BaseField
             $this->nullable();
         }
 
-        $this->properties['default'] = $this->castValue($value);
+        $this->properties['default'] = $this->castValue($model, $value);
 
         return $this;
     }
@@ -187,19 +187,19 @@ abstract class Field extends BaseField
         return $this->addRuleFromHasRule($rule);
     }
 
-    public function castValue($value)
+    public function castValue($model, $value)
     {
         return $value;
     }
 
     public function getValue($model, $value)
     {
-        return $this->castValue($value);
+        return $this->castValue($model, $value);
     }
 
     public function setValue($model, $value)
     {
-        $value = $this->castValue($value);
+        $value = $this->castValue($model, $value);
 
         if (is_null($value) && $this->hasRule(self::NOT_NULLABLE, self::STRICT)) {
             throw new \Exception($this->name.' can not be null');

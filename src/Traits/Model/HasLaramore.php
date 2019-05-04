@@ -43,7 +43,7 @@ trait HasLaramore
         // Define here fillable and visible fields.
         $this->fillable = $meta->getFillableFields();
         $this->visible = $meta->getVisibleFields();
-        $this->visible = $meta->getRequiredFields();
+        $this->required = $meta->getRequiredFields();
         $this->timestamps = $meta->hasTimestamps();
 
         // Define all model metas.
@@ -333,7 +333,6 @@ trait HasLaramore
             $field = static::getField($key);
 
             // If the field is not fillable, throw an exception.
-            if ($field instanceof Field && $this->exists && !$this->isFillable($key) && !$force) {
             if ($field instanceof Field && !$this->isFillable($key) && !$force) {
                 throw new MassAssignmentException(sprintf(
                     'Add [%s] to fillable property to allow mass assignment on [%s].',

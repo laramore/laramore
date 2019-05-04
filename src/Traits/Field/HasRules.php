@@ -77,9 +77,7 @@ trait HasRules
     {
         $this->checkLock();
 
-        if ($this->hasRule($rule)) {
-            $this->rules ^= $rule;
-        }
+        $this->rules ^= ($this->rules & $rule);
 
         return $this;
     }
@@ -117,7 +115,7 @@ trait HasRules
      */
     public function getRules(): array
     {
-        $rules = self::getAvailableRules();
+        $rules = static::getAvailableRules();
 
         foreach ($rules as $key => $value) {
             if (!is_int($value) || !$this->hasRule($value)) {
