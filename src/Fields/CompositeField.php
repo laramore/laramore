@@ -81,11 +81,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     protected function generateField($field): Field
     {
         if (is_array($field)) {
-            if (is_array($field[1])) {
-                return $field[0]::field(...$field[1]);
-            } else {
-                return $field[0]::field($field[1]);
-            }
+            return array_shift($field)::field(...$field);
         } else if (is_string($field)) {
             return $field::field();
         } else {
@@ -96,11 +92,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     protected function generateLink($link): LinkField
     {
         if (is_array($link)) {
-            if (is_array($link[1])) {
-                return $link[0]::link(...$link[1]);
-            } else {
-                return $link[0]::link($link[1]);
-            }
+            return array_shift($link)::field(...$link);
         } else if (is_string($link)) {
             return $link::link();
         } else {

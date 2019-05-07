@@ -65,6 +65,6 @@ class Email extends Pattern
             return $value.'@'.$this->getCdn();
         }
 
-        return $default;
+        return parent::fixValue($model, $value);
     }
 }

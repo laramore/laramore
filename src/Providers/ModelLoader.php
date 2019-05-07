@@ -13,11 +13,10 @@ namespace Laramore\Providers;
 use Illuminate\Support\ServiceProvider;
 use ReflectionNamespace;
 use Laramore\Traits\Model\HasLaramore;
+use Laramore\Meta;
 
 class ModelLoader extends ServiceProvider
 {
-    protected static $metas = [];
-
     /**
      * Prepare all metas and lock them.
      *
@@ -26,11 +25,11 @@ class ModelLoader extends ServiceProvider
     public function register()
     {
         $modelNamespace = new ReflectionNamespace('App\Models');
-        $metas = [];
+        $this->app['metas'] = collect();
 
         foreach ($modelNamespace->getClasses() as $modelClass) {
             if (in_array(HasLaramore::class, $modelClass->getTraitNames())) {
-                static::$metas[] = $modelClass->getName()::prepareMeta();
+                $modelClass->getName()::prepareMeta();
             }
         }
 
@@ -45,11 +44,11 @@ class ModelLoader extends ServiceProvider
     protected function bootedCallback()
     {
         return function () {
-            foreach (static::$metas as $meta) {
+            foreach (Meta::getMetas() as $meta) {
                 $meta->lock();
             }
 
-            foreach (static::$metas as $meta) {
+            foreach (Meta::getMetas() as $meta) {
                 if (!$meta->isLocked()) {
                     throw new \Exception('All metas are not locked properly');
                 }
