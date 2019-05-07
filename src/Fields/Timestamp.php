@@ -8,7 +8,6 @@
  * @license MIT
  */
 
-
 namespace Laramore\Fields;
 
 class Timestamp extends Field

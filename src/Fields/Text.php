@@ -8,13 +8,10 @@
  * @license MIT
  */
 
-
 namespace Laramore\Fields;
 
 class Text extends Field
 {
-    protected $length;
-
     /**
      * Set of rules.
      * Common to all string fields.

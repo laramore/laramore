@@ -1,4 +1,12 @@
 <?php
+/**
+ * Define a foreign field.
+ *
+ * @author Samy Nastuzzi <samy@nastuzzi.fr>
+ *
+ * @copyright Copyright (c) 2019
+ * @license MIT
+ */
 
 namespace Laramore\Fields;
 

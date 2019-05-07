@@ -8,7 +8,6 @@
  * @license MIT
  */
 
-
 namespace Laramore\Fields;
 
 use Laramore\Interfaces\IsAPrimaryField;

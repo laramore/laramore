@@ -8,13 +8,10 @@
  * @license MIT
  */
 
-
 namespace Laramore\Fields;
 
 abstract class Pattern extends Text
 {
-    protected $type = 'string';
-
     /**
      * Set of rules.
      * Common to all pattern fields.
