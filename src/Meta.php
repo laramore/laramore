@@ -445,6 +445,31 @@ class Meta implements IsAFieldOwner
         }
     }
 
+	public function getMigrationProperties(): array
+	{
+		$properties = [];
+
+        foreach ($this->getFields() as $field) {
+            $properties[$field->attname] = $field->getMigrationProperties();
+        }
+
+        return $properties;
+	}
+
+	public function getMigrationContraints(): array
+	{
+		$properties = [];
+
+        foreach ($this->getComposites() as $field) {
+            $properties = array_merge(
+				$properties,
+				$field->getMigrationContraints(),
+			);
+        }
+
+        return $properties;
+	}
+
     public function setFieldValue($model, $field, $value)
     {
         return $field->setValue($model, $value);

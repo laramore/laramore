@@ -187,6 +187,38 @@ abstract class Field extends BaseField
         return $this->addRuleFromHasRule($rule);
     }
 
+    protected function getMigrationNameProperties(): array
+    {
+        return [
+            'nullable', 'unique', 'default'
+        ];
+    }
+
+    protected function getMigrationMainProperties(): array
+    {
+        $properties = $this->getProperties();
+
+        return [
+            $properties['type'] => $properties['attname'],
+        ];
+    }
+
+    public function getMigrationProperties(): array
+    {
+        $properties = $this->getProperties();
+        $allowedProperties = $this->getMigrationNameProperties();
+        $mainProperties = $this->getMigrationMainProperties();
+
+
+        foreach (array_keys($properties) as $name) {
+            if (!in_array($name, $allowedProperties)) {
+                unset($properties[$name]);
+            }
+        }
+
+        return array_merge($mainProperties, $properties);
+    }
+
     public function castValue($model, $value)
     {
         return $value;

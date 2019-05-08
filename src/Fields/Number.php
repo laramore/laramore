@@ -41,6 +41,19 @@ class Number extends Field
         ];
     }
 
+    protected function getMigrationMainProperties(): array
+    {
+        if ($this->getProperty('unsigned')) {
+            $properties = $this->getProperties();
+
+            return [
+                'unsigned'.ucfirst($properties['type']) => $properties['attname'],
+            ];
+        } else {
+            return parent::getMigrationMainProperties();
+        }
+    }
+
     protected function addRule(int $rule)
     {
         $this->checkLock();

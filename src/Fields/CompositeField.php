@@ -316,6 +316,8 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         return $this->unique;
     }
 
+    abstract public function getMigrationContraints(): array;
+
     abstract public function castValue($model, $value);
 
     public function getValue($mode, $value)

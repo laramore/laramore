@@ -23,4 +23,13 @@ class Increment extends Number
             'type' => 'increment',
         ];
     }
+
+    protected function getMigrationMainProperties(): array
+    {
+        $properties = $this->getProperties();
+
+        return [
+            $properties['type'] => $properties['attname'],
+        ];
+    }
 }
