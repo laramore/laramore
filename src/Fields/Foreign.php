@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class Foreign extends CompositeField
 {
     protected static $defaultFields = [
-        'id' => [Number::class, Increment::DEFAULT_INCREMENT | Number::FILLABLE],
+        'id' => [Number::class, (Increment::DEFAULT_INCREMENT | Number::FILLABLE)],
     ];
     protected static $defaultLinks = [
         'reversed' => HasMany::class,
@@ -73,11 +73,11 @@ class Foreign extends CompositeField
     public function getMigrationContraints(): array
     {
         return [
-            $this->name => [
+            $this->from => [
                 'foreign' => $this->from,
                 'references' => $this->to,
                 'on' => $this->on::getMeta()->getTableName(),
-            ]
+            ],
         ];
     }
 

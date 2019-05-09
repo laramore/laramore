@@ -15,7 +15,7 @@ use ReflectionNamespace;
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Meta;
 
-class ModelLoader extends ServiceProvider
+class LaramoreLoader extends ServiceProvider
 {
     /**
      * Prepare all metas and lock them.
@@ -29,7 +29,7 @@ class ModelLoader extends ServiceProvider
 
         foreach ($modelNamespace->getClasses() as $modelClass) {
             if (in_array(HasLaramore::class, $modelClass->getTraitNames())) {
-                $modelClass->getName()::prepareMeta();
+                $modelClass->getName()::getMEta();
             }
         }
 

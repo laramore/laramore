@@ -209,7 +209,6 @@ abstract class Field extends BaseField
         $allowedProperties = $this->getMigrationNameProperties();
         $mainProperties = $this->getMigrationMainProperties();
 
-
         foreach (array_keys($properties) as $name) {
             if (!in_array($name, $allowedProperties)) {
                 unset($properties[$name]);

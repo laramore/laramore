@@ -71,18 +71,12 @@ trait HasLaramore
      *
      * @return Meta
      */
-    public static function prepareMeta()
+    protected static function prepareMeta()
     {
-        if (static::$meta) {
-            throw new \Exception('The Meta cannot be prepared twice');
-        }
-
         static::$meta = new Meta(static::class);
 
         // Generate all meta data defined by the user in the current model.
         static::__meta(static::$meta, static::$meta->fields);
-
-        return static::$meta;
     }
 
     /**
@@ -93,7 +87,7 @@ trait HasLaramore
     public static function getMeta()
     {
         if (!static::$meta) {
-            throw new \Exception('The Meta needs to be prepared first');
+            static::prepareMeta();
         }
 
         return static::$meta;

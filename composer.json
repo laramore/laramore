@@ -34,7 +34,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Laramore\\Providers\\ModelLoader"
+                "Laramore\\Providers\\LaramoreLoader"
             ]
         }
     }
