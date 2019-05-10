@@ -74,9 +74,21 @@ class Foreign extends CompositeField
     {
         return [
             $this->from => [
-                'foreign' => $this->from,
-                'references' => $this->to,
-                'on' => $this->on::getMeta()->getTableName(),
+                'needs' => [
+                    [
+                        'table' => $this->on::getMeta()->getTableName(),
+                        'field' => $this->to,
+                    ],
+                    [
+                        'table' => $this->getOwner()->getTableName(),
+                        'field' => $this->from,
+                    ],
+                ],
+                'properties' => [
+                    'foreign' => $this->from,
+                    'references' => $this->to,
+                    'on' => $this->on::getMeta()->getTableName(),
+                ]
             ],
         ];
     }
