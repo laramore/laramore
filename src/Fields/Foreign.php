@@ -88,7 +88,7 @@ class Foreign extends CompositeField
                     'foreign' => $this->from,
                     'references' => $this->to,
                     'on' => $this->on::getMeta()->getTableName(),
-                ]
+                ],
             ],
         ];
     }

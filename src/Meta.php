@@ -116,6 +116,11 @@ class Meta implements IsAFieldOwner
         return $field;
     }
 
+    public function parseAttname(string $name)
+    {
+        return Str::snake($name);
+    }
+
     public function hasField(string $name)
     {
         return isset($this->getFields()[$name]);
@@ -138,7 +143,7 @@ class Meta implements IsAFieldOwner
             throw new \Exception('It is not allowed to reset the field '.$name);
         }
 
-        $field = $this->manipulateField($field)->own($this, $name);
+        $field = $this->manipulateField($field)->own($this, $this->parseAttname($name));
         $this->fields[$field->name] = $field;
 
         return $this;
@@ -212,7 +217,7 @@ class Meta implements IsAFieldOwner
             throw new \Exception('It is not allowed to reset the field '.$name);
         }
 
-        $composite = $this->manipulateField($composite)->own($this, $name);
+        $composite = $this->manipulateField($composite)->own($this, $this->parseAttname($name));
         $this->composites[$composite->name] = $composite;
 
         foreach ($composite->getFields() as $field) {
