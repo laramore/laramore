@@ -29,7 +29,7 @@ class Increment extends Number
         $properties = $this->getProperties();
 
         return [
-            $properties['type'] => $properties['attname'],
+            $properties['type'].'s' => $properties['attname'],
         ];
     }
 }
