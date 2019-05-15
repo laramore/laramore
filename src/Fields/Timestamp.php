@@ -10,13 +10,18 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Type;
+
 class Timestamp extends Field
 {
-    public function getDefaultProperties(): array
+    protected $type = Type::TIMESTAMP;
+    protected $useCurrent;
+
+    public function getPropertyKeys(): array
     {
-        return [
-            'type' => 'timestamp',
-        ];
+        return array_merge(parent::getPropertyKeys(), [
+            'useCurrent'
+        ]);
     }
 
     protected function locking()
@@ -26,15 +31,5 @@ class Timestamp extends Field
         if (!($this->hasRule(self::NULLABLE) ^ $this->useCurrent)) {
             throw new \Exception("This field must be either nullable or set by default as the current date");
         }
-    }
-
-    protected function getMigrationNameProperties(): array
-    {
-        return array_merge(
-            parent::getMigrationNameProperties(),
-            [
-                'useCurrent'
-            ]
-        );
     }
 }

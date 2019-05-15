@@ -12,6 +12,8 @@ namespace Laramore\Fields;
 
 abstract class Pattern extends Text
 {
+    protected $pattern;
+
     /**
      * Set of rules.
      * Common to all pattern fields.

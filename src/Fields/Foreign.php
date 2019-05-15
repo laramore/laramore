@@ -14,6 +14,13 @@ use Illuminate\Support\Str;
 
 class Foreign extends CompositeField
 {
+    protected $reversedName;
+    protected $on;
+    protected $to;
+    protected $off;
+    protected $from;
+    protected $reversed;
+
     protected static $defaultFields = [
         'id' => [Number::class, (Increment::DEFAULT_INCREMENT | Number::FILLABLE)],
     ];
@@ -25,7 +32,7 @@ class Foreign extends CompositeField
     {
         $this->checkLock();
 
-        $this->properties['on'] = $this->getField('id')->on = $this->getLink('reversed')->off = $model;
+        $this->defineProperty('on', $this->getLink('reversed')->off = $model);
         $this->to($this->getLink('reversed')->off::getMeta()->getPrimary()->attname);
 
         $this->reversedName($reversedName);
@@ -37,7 +44,7 @@ class Foreign extends CompositeField
     {
         $this->checkLock();
 
-        $this->properties['to'] = $this->getField('id')->to = $this->getLink('reversed')->from = $name;
+        $this->defineProperty('to', $this->getLink('reversed')->from = $name);
 
         return $this;
     }
@@ -64,33 +71,10 @@ class Foreign extends CompositeField
             throw new \Exception('Related model settings needed. Set it by calling `on` method');
         }
 
-        $this->properties['reversed'] = $this->getLink('reversed')->name;
-        $this->properties['from'] = $this->getField('id')->from = $this->getLink('reversed')->to = $this->getField('id')->attname;
+        $this->defineProperty('reversed', $this->getLink('reversed')->name);
+        $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
 
         parent::locking();
-    }
-
-    public function getMigrationContraints(): array
-    {
-        return [
-            $this->from => [
-                'needs' => [
-                    [
-                        'table' => $this->on::getMeta()->getTableName(),
-                        'field' => $this->to,
-                    ],
-                    [
-                        'table' => $this->getOwner()->getTableName(),
-                        'field' => $this->from,
-                    ],
-                ],
-                'properties' => [
-                    'foreign' => $this->from,
-                    'references' => $this->to,
-                    'on' => $this->on::getMeta()->getTableName(),
-                ],
-            ],
-        ];
     }
 
     public function castValue($model, $value)

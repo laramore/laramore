@@ -16,6 +16,8 @@ class Text extends Field
 {
     protected $type = Type::TEXT;
 
+    protected $length;
+
     /**
      * Set of rules.
      * Common to all string fields.
@@ -46,6 +48,13 @@ class Text extends Field
 
     protected static $defaultRules = self::DEFAULT_TEXT;
 
+    public function getPropertyKeys(): array
+    {
+        return array_merge(parent::getPropertyKeys(), [
+            'length'
+        ]);
+    }
+
     protected function locking()
     {
         parent::locking();
@@ -63,8 +72,7 @@ class Text extends Field
             throw new \Exception('The length must be a positive number');
         }
 
-        $this->length = $length;
-        $this->properties['length'] = $length;
+        $this->defineProperty('length', $length);
 
         return $this;
     }

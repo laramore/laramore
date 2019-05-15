@@ -16,6 +16,8 @@ class Number extends Field
 {
     protected $type = Type::NUMBER;
 
+    protected $unsigned;
+
     /**
      * Set of rules.
      * Common to all integer fields.
@@ -41,10 +43,10 @@ class Number extends Field
     public function getType(): string
     {
         if ($this->getProperty('unsigned')) {
-            return Type::UNSIGNED.ucfirst(parent::getType());
+            return Type::UNSIGNED.ucfirst($this->type);
         }
 
-        return parent::getType();
+        return $this->type;
     }
 
     protected function addRule(int $rule)
@@ -52,7 +54,7 @@ class Number extends Field
         $this->checkLock();
 
         if ($this->rulesContain($rule, self::UNSIGNED)) {
-            $this->properties['unsigned'] = true;
+            $this->defineProperty('unsigned', true);
         }
 
         return parent::addRule($rule);
@@ -63,7 +65,7 @@ class Number extends Field
         $this->checkLock();
 
         if ($this->rulesContain($rule, self::UNSIGNED)) {
-            $this->properties['unsigned'] = false;
+            $this->defineProperty('unsigned', false);
         }
 
         return parent::removeRule($rule);

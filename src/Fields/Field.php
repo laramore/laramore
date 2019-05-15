@@ -22,6 +22,8 @@ abstract class Field extends BaseField
 
     protected $type;
     protected $attname;
+    protected $default;
+    protected $unique;
     protected $rules;
 
     /**
@@ -71,6 +73,26 @@ abstract class Field extends BaseField
     public static function field($rules=null)
     {
         return new static($rules);
+    }
+
+    public function getPropertyKeys(): array
+    {
+        return [
+            'nullable', 'default', 'unique'
+        ];
+    }
+
+    public function getProperties(): array
+    {
+        $properties = [];
+
+        foreach ($this->getPropertyKeys() as $key) {
+            if (!is_null($value = $this->getProperty($key))) {
+                $properties[$key] = $value;
+            }
+        }
+
+        return $properties;
     }
 
     public function name(string $name)
@@ -136,7 +158,7 @@ abstract class Field extends BaseField
             $this->removeRule(self::NULLABLE);
         }
 
-        $this->properties['nullable'] = $nullable;
+        $this->defineProperty('nullable', $nullable);
 
         return $this;
     }
@@ -149,7 +171,7 @@ abstract class Field extends BaseField
             $this->nullable();
         }
 
-        $this->properties['default'] = $this->castValue($model, $value);
+        $this->defineProperty('default', $this->castValue($model, $value));
 
         return $this;
     }

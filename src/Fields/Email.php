@@ -46,7 +46,7 @@ class Email extends Pattern
             }
         }
 
-        $this->cdn = $cdns;
+        $this->defineProperty('cdn', $cdns);
 
         return $this;
     }

@@ -205,6 +205,24 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         );
     }
 
+    public function getPropagatedPropertyKeys(): array
+    {
+        return [
+            'nullable', 'default'
+        ];
+    }
+
+    protected function defineProperty(string $key, $value)
+    {
+        if (in_array($key, $this->getPropagatedPropertyKeys())) {
+            foreach ($this->getFields() as $field) {
+                $field->setProperty($key, $value);
+            }
+        }
+
+        return parent::defineProperty($key, $value);
+    }
+
     public function replaceInTemplate(string $template, array $keyValues)
     {
         foreach ($keyValues as $varName => $value) {
@@ -291,8 +309,6 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     {
         return $this->unique;
     }
-
-    abstract public function getMigrationContraints(): array;
 
     abstract public function castValue($model, $value);
 

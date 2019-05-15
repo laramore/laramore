@@ -53,13 +53,6 @@ interface IsAField
     public function isLocked(): bool;
 
     /**
-     * Return all field properties
-     *
-     * @return array
-     */
-    public function getProperties(): array;
-
-    /**
      * Indicate if a propery exists.
      *
      * @param  string $key

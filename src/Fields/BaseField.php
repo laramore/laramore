@@ -19,8 +19,8 @@ abstract class BaseField implements IsAField
 {
     use IsOwnedAndLocked;
 
-    protected $properties = [];
     protected $name;
+    protected $nullable;
 
     public function __call(string $method, array $args)
     {
@@ -52,14 +52,9 @@ abstract class BaseField implements IsAField
         return $this->hasProperty($key);
     }
 
-    public function getProperties(): array
-    {
-        return $this->properties;
-    }
-
     public function hasProperty(string $key): bool
     {
-        return isset($this->properties[$key]);
+        return isset($this->$key);
     }
 
     public function getProperty(string $key)
@@ -70,13 +65,18 @@ abstract class BaseField implements IsAField
             }
 
             return $this->$key;
-        } else if ($this->hasProperty($key)) {
-            return $this->properties[$key];
         } else if (defined($const = 'static::'.strtoupper(Str::snake($key)))) {
             return $this->hasRule(constant($const));
         }
 
         return null;
+    }
+
+    protected function defineProperty(string $key, $value)
+    {
+        $this->$key = $value;
+
+        return $this;
     }
 
     public function setProperty(string $key, $value)
@@ -86,7 +86,7 @@ abstract class BaseField implements IsAField
         if (method_exists($this, $key)) {
             call_user_func([$this, $key], $value);
         } else if (property_exists($this, $key)) {
-            throw new \Exception("The propery $key does not allow changes");
+            $this->defineProperty($key, $value);
         } else if (defined($const = 'static::'.strtoupper(Str::snake($key)))) {
             if ($value) {
                 $this->addRule(constant($const));
@@ -94,7 +94,7 @@ abstract class BaseField implements IsAField
                 $this->removeRule(constant($const));
             }
         } else {
-            $this->properties[$key] = $value;
+            throw new \Exception("The propery $key cannot be set");
         }
 
         return $this;

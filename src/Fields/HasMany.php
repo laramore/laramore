@@ -12,6 +12,11 @@ namespace Laramore\Fields;
 
 class HasMany extends LinkField
 {
+    protected $off;
+    protected $from;
+    protected $on;
+    protected $to;
+
     public function getValue($model, $value)
     {
         return $this->relationValue($model)->first();

@@ -450,34 +450,6 @@ class Meta implements IsAFieldOwner
         }
     }
 
-    public function getMigrationProperties(): array
-    {
-        $properties = [];
-
-        foreach ($this->getFields() as $field) {
-            $properties[$field->name] = $field->getMigrationProperties();
-        }
-
-        return $properties;
-    }
-
-    public function getMigrationContraints(): array
-    {
-        $contraints = [];
-
-        foreach ($this->getComposites() as $field) {
-            foreach ($field->getMigrationContraints() as $name => $value) {
-                if ($this->getField($name)->getOwner() != $field) {
-                    throw new \Exception('A composite field cannot add a contraint to a field it does not own');
-                }
-
-                $contraints[$name] = $value;
-            }
-        }
-
-        return $contraints;
-    }
-
     public function setFieldValue($model, $field, $value)
     {
         return $field->setValue($model, $value);
