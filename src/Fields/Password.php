@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Hash;
 
 class Password extends Pattern
 {
+    protected $minLength = 8;
+    protected $lowercase = true;
+    protected $uppercase = true;
+    protected $number = true;
+    protected $special = false;
+
     public const REGEX_MIN_MAX_CARACTER = '(?=\S{$min,$max})';
     public const REGEX_AT_LEAST_ONE_LOWERCASE = '(?=\S*[a-z])';
     public const REGEX_AT_LEAST_ONE_UPPERCASE = '(?=\S*[A-Z])';
@@ -24,22 +30,6 @@ class Password extends Pattern
     public const DEFAULT_PASSWORD = (self::DEFAULT_TEXT | self::MATCH_PATTERN ^ self::VISIBLE);
 
     protected static $defaultRules = self::DEFAULT_PASSWORD;
-
-    /**
-     * Set of rules.
-     * Common to all email fields.
-     *
-     * @var integer
-     */
-    public function getDefaultProperties(): array
-    {
-        return array_merge(parent::getDefaultProperties(), [
-            'minLength' => 8,
-            'lowercase' => true,
-            'uppercase' => true,
-            'number' => true,
-        ]);
-    }
 
     protected function locking()
     {

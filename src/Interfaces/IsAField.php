@@ -53,13 +53,6 @@ interface IsAField
     public function isLocked(): bool;
 
     /**
-     * Give the default properties of this field.
-     *
-     * @return array
-     */
-    public function getDefaultProperties(): array;
-
-    /**
      * Return all field properties
      *
      * @return array

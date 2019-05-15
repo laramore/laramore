@@ -14,13 +14,6 @@ use Laramore\Meta;
 
 abstract class LinkField extends BaseField
 {
-    public function getDefaultProperties(): array
-    {
-        return [
-            'type' => 'link',
-        ];
-    }
-
     public static function link(...$args)
     {
         return new static(...$args);

@@ -10,8 +10,12 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Type;
+
 class Number extends Field
 {
+    protected $type = Type::NUMBER;
+
     /**
      * Set of rules.
      * Common to all integer fields.
@@ -34,24 +38,13 @@ class Number extends Field
     // Except if the value is 0
     public const NOT_ZERO = 4096;
 
-    public function getDefaultProperties(): array
-    {
-        return [
-            'type' => 'integer',
-        ];
-    }
-
-    protected function getMigrationMainProperties(): array
+    public function getType(): string
     {
         if ($this->getProperty('unsigned')) {
-            $properties = $this->getProperties();
-
-            return [
-                'unsigned'.ucfirst($properties['type']) => $properties['attname'],
-            ];
-        } else {
-            return parent::getMigrationMainProperties();
+            return Type::UNSIGNED.ucfirst(parent::getType());
         }
+
+        return parent::getType();
     }
 
     protected function addRule(int $rule)

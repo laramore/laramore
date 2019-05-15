@@ -20,6 +20,8 @@ abstract class Field extends BaseField
         HasRules::addRule as private addRuleFromHasRule;
     }
 
+    protected $type;
+    protected $attname;
     protected $rules;
 
     /**
@@ -57,8 +59,6 @@ abstract class Field extends BaseField
 
     protected function __construct($rules=null)
     {
-        $this->properties = $this->getDefaultProperties();
-
         $this->addRules($rules ?: static::$defaultRules);
     }
 
@@ -78,8 +78,8 @@ abstract class Field extends BaseField
         parent::name($name);
 
         // The attribute name is by default the same as the field name.
-        if (!$this->hasProperty('attname')) {
-            $this->properties['attname'] = $name;
+        if (is_null($this->attname)) {
+            $this->attname = $name;
         }
 
         return $this;
@@ -185,37 +185,6 @@ abstract class Field extends BaseField
         }
 
         return $this->addRuleFromHasRule($rule);
-    }
-
-    protected function getMigrationNameProperties(): array
-    {
-        return [
-            'nullable', 'unique', 'default'
-        ];
-    }
-
-    protected function getMigrationMainProperties(): array
-    {
-        $properties = $this->getProperties();
-
-        return [
-            $properties['type'] => $properties['attname'],
-        ];
-    }
-
-    public function getMigrationProperties(): array
-    {
-        $properties = $this->getProperties();
-        $allowedProperties = $this->getMigrationNameProperties();
-        $mainProperties = $this->getMigrationMainProperties();
-
-        foreach (array_keys($properties) as $name) {
-            if (!in_array($name, $allowedProperties)) {
-                unset($properties[$name]);
-            }
-        }
-
-        return array_merge($mainProperties, $properties);
     }
 
     public function castValue($model, $value)

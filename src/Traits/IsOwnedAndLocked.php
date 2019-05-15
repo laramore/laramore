@@ -22,7 +22,7 @@ trait IsOwnedAndLocked
         }
 
         $this->owner = $owner;
-        $this->name = $name;
+        $this->name($name);
 
         $this->owning();
 

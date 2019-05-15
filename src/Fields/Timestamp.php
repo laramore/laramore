@@ -18,4 +18,23 @@ class Timestamp extends Field
             'type' => 'timestamp',
         ];
     }
+
+    protected function locking()
+    {
+        parent::locking();
+
+        if (!($this->hasRule(self::NULLABLE) ^ $this->useCurrent)) {
+            throw new \Exception("This field must be either nullable or set by default as the current date");
+        }
+    }
+
+    protected function getMigrationNameProperties(): array
+    {
+        return array_merge(
+            parent::getMigrationNameProperties(),
+            [
+                'useCurrent'
+            ]
+        );
+    }
 }

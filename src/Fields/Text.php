@@ -10,8 +10,12 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Type;
+
 class Text extends Field
 {
+    protected $type = Type::TEXT;
+
     /**
      * Set of rules.
      * Common to all string fields.
@@ -41,13 +45,6 @@ class Text extends Field
     public const DEFAULT_TEXT = (self::NOT_BLANK | self::DEFAULT_FIELD);
 
     protected static $defaultRules = self::DEFAULT_TEXT;
-
-    public function getDefaultProperties(): array
-    {
-        return [
-            'type' => 'string',
-        ];
-    }
 
     protected function locking()
     {

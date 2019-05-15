@@ -19,10 +19,8 @@ abstract class BaseField implements IsAField
 {
     use IsOwnedAndLocked;
 
-    protected static $readOnlyProperties = [
-        'type'
-    ];
     protected $properties = [];
+    protected $name;
 
     public function __call(string $method, array $args)
     {
@@ -67,6 +65,10 @@ abstract class BaseField implements IsAField
     public function getProperty(string $key)
     {
         if (property_exists($this, $key)) {
+            if (method_exists($this, $method = 'get'.ucfirst($key))) {
+                return $this->$method();
+            }
+
             return $this->$key;
         } else if ($this->hasProperty($key)) {
             return $this->properties[$key];
@@ -81,10 +83,10 @@ abstract class BaseField implements IsAField
     {
         $this->checkLock();
 
-        if (in_array($key, static::$readOnlyProperties)) {
-            throw new \Exception("The propery $key cannot be set");
-        } else if (method_exists($this, $key)) {
-            $this->$key($value);
+        if (method_exists($this, $key)) {
+            call_user_func([$this, $key], $value);
+        } else if (property_exists($this, $key)) {
+            throw new \Exception("The propery $key does not allow changes");
         } else if (defined($const = 'static::'.strtoupper(Str::snake($key)))) {
             if ($value) {
                 $this->addRule(constant($const));
@@ -108,11 +110,11 @@ abstract class BaseField implements IsAField
     {
         $this->checkLock();
 
-        if ($this->hasProperty('name')) {
+        if (!is_null($this->name)) {
             throw new \Exception('The field name cannot be defined multiple times');
         }
 
-        $this->properties['name'] = $name;
+        $this->name = $name;
     }
 
     public function getMeta()

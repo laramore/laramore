@@ -415,7 +415,7 @@ class Meta implements IsAFieldOwner
 
             $this->set(
 	            ($this->modelClass::UPDATED_AT ?? 'updated_at'),
-            	Timestamp::field(Field::NULLABLE | Field::VISIBLE)->useCurrent()
+            	Timestamp::field(Field::NULLABLE | Field::VISIBLE)
             );
         } catch (\Exception $e) {
             throw new \Exception('Can not set timestamps. Maybe already set ?');

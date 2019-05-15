@@ -10,14 +10,11 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Type;
+
 class Boolean extends Field
 {
-    public function getDefaultProperties(): array
-    {
-        return [
-            'type' => 'boolean',
-        ];
-    }
+    protected $type = Type::BOOLEAN;
 
     public function castValue($model, $value)
     {
