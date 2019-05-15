@@ -18,5 +18,5 @@ class Type
     public const UNSIGNED = 'unsigned';
     public const TEXT = 'string';
     public const DATETIME = 'datetime';
-    public const TIMESTAMP = 'timestamps';
+    public const TIMESTAMP = 'timestamp';
 }

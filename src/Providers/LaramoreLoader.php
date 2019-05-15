@@ -26,7 +26,7 @@ class LaramoreLoader extends ServiceProvider
     {
         $modelNamespace = new ReflectionNamespace('App\Models');
         $this->app['metas'] = collect();
-        
+
         foreach ($modelNamespace->getClasses() as $modelClass) {
             if (in_array(HasLaramore::class, $modelClass->getTraitNames())) {
                 $modelClass->getName()::getMeta();
