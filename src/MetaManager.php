@@ -11,6 +11,7 @@
 namespace Laramore;
 
 use ReflectionNamespace;
+use Laramore\Traits\Model\HasLaramore;
 use Laramore\Traits\IsLocked;
 
 class MetaManager
@@ -82,7 +83,7 @@ class MetaManager
             }
         }
 
-        $metas[] = $meta;
+        $this->metas[] = $meta;
     }
 
     public function locking()

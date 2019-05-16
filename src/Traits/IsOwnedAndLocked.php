@@ -13,7 +13,7 @@ namespace Laramore\Traits;
 trait IsOwnedAndLocked
 {
     use IsLocked {
-        IsLocked::lock as private lockFromIsLocked
+        IsLocked::lock as private lockFromIsLocked;
     }
 
     protected $owner;

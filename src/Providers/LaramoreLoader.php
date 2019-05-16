@@ -11,7 +11,6 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laramore\Traits\Model\HasLaramore;
 use Laramore\{
     Meta, MetaManager
 };
