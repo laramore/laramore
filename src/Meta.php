@@ -64,18 +64,6 @@ class Meta implements IsAFieldOwner
 
         $this->fieldManager = new $this->fieldManagerClass($this);
         $this->modelObserver = new $this->modelObserverClass($this);
-
-        $this->registerMeta();
-    }
-
-    protected function registerMeta()
-    {
-        app()->metas->push($this);
-    }
-
-    public static function getMetas()
-    {
-        return app()->metas;
     }
 
     public function getModelClass()

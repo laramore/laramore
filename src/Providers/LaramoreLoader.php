@@ -11,12 +11,15 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use ReflectionNamespace;
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Meta;
+use Laramore\{
+    Meta, MetaManager
+};
 
 class LaramoreLoader extends ServiceProvider
 {
+    protected $metaManager;
+
     /**
      * Prepare all metas and lock them.
      *
@@ -24,16 +27,16 @@ class LaramoreLoader extends ServiceProvider
      */
     public function register()
     {
-        $modelNamespace = new ReflectionNamespace('App\Models');
-        $this->app['metas'] = collect();
-
-        foreach ($modelNamespace->getClasses() as $modelClass) {
-            if (in_array(HasLaramore::class, $modelClass->getTraitNames())) {
-                $modelClass->getName()::getMeta();
-            }
-        }
+        $this->metaManager = new MetaManager('App\Models');
 
         $this->app->booted($this->bootedCallback());
+    }
+
+    public function boot()
+    {
+        $this->app->singleton('MetaManager', function() {
+            return $this->metaManager;
+        });
     }
 
     /**
@@ -44,21 +47,7 @@ class LaramoreLoader extends ServiceProvider
     protected function bootedCallback()
     {
         return function () {
-            foreach (Meta::getMetas() as $meta) {
-                $meta->lock();
-            }
-
-            foreach (Meta::getMetas() as $meta) {
-                if (!$meta->isLocked()) {
-                    throw new \Exception('All metas are not locked properly');
-                }
-
-                foreach ($meta->allFields() as $field) {
-                    if (!$field->isLocked()) {
-                        throw new \Exception('All fields are not locked by their owner');
-                    }
-                }
-            }
+            $this->metaManager->lock();
         };
     }
 }

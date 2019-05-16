@@ -12,6 +12,10 @@ namespace Laramore\Traits;
 
 trait IsOwnedAndLocked
 {
+    use IsLocked {
+        IsLocked::lock as private lockFromIsLocked
+    }
+
     protected $owner;
     protected $locked = false;
 
@@ -43,32 +47,10 @@ trait IsOwnedAndLocked
 
     public function lock()
     {
-        $this->checkLock();
-
         if (!$this->isOwned()) {
             throw new \Exception('The field has no owner, cannot lock it');
         }
 
-        $this->locking();
-
-        $this->locked = true;
-
-        return $this;
-    }
-
-    abstract protected function locking();
-
-    public function isLocked(): bool
-    {
-        return $this->locked;
-    }
-
-    public function checkLock()
-    {
-        if ($this->isLocked()) {
-            throw new \Exception('The field is locked, nothing can change');
-        }
-
-        return $this;
+        return $this->lockFromIsLocked();
     }
 }
