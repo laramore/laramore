@@ -1,6 +1,6 @@
 <?php
 /**
- * Define a boolean field.
+ * Define a field types used by Laramore.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,6 +12,11 @@ namespace Laramore;
 
 class Type
 {
+    /**
+     * Each constant defines a type for Laramore and its value in a database.
+     *
+     * @var string
+     */
     public const BOOLEAN = 'boolean';
     public const INCREMENT = 'increments';
     public const NUMBER = 'integer';
