@@ -33,8 +33,8 @@ class Meta implements IsAFieldOwner
     protected $hasPrimary = false;
     protected $hasTimestamps = false;
     protected $primary;
-    protected $index;
-    protected $unique;
+    protected $indexes;
+    protected $uniques;
 
     protected $fieldManagerClass = FieldManager::class;
     protected $modelObserverClass = ModelObserver::class;
@@ -54,8 +54,8 @@ class Meta implements IsAFieldOwner
         $this->composites = config('database.table.composites', []);
         $this->links = config('database.table.links', []);
         $this->primary = config('database.table.primary');
-        $this->index = config('database.table.index', []);
-        $this->unique = config('database.table.unique', []);
+        $this->indexes = config('database.table.indexes', []);
+        $this->uniques = config('database.table.uniques', []);
         $this->defaultFieldConfigs = config('database.fields', []);
 
         if (config('database.table.timestamps', false)) {
@@ -289,6 +289,21 @@ class Meta implements IsAFieldOwner
         return $this->getTypedFields('required');
     }
 
+    public function getUniques()
+    {
+        return $this->uniques;
+    }
+
+    public function getIndexes()
+    {
+        return $this->indexes;
+    }
+
+    public function getPrimaries()
+    {
+        return $this->primary;
+    }
+
     public function lock()
     {
         $this->checkLock();
@@ -368,7 +383,7 @@ class Meta implements IsAFieldOwner
                     }
                 }
 
-                $this->unique[] = $unique;
+                $this->uniques[] = $unique;
             } else {
                 $field = $fields[0];
 

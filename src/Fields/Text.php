@@ -10,6 +10,7 @@
 
 namespace Laramore\Fields;
 
+use Illuminate\Support\Facades\Schema;
 use Laramore\Type;
 
 class Text extends Field
@@ -48,11 +49,18 @@ class Text extends Field
 
     protected static $defaultRules = self::DEFAULT_TEXT;
 
+    protected function __construct($rules=null)
+    {
+        parent::__construct($rules);
+
+        $this->length = Schema::getFacadeRoot()::$defaultStringLength;
+    }
+
     public function getPropertyKeys(): array
     {
-        return array_merge(parent::getPropertyKeys(), [
+        return array_merge([
             'length'
-        ]);
+        ], parent::getPropertyKeys());
     }
 
     protected function locking()
