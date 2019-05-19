@@ -11,11 +11,15 @@
 namespace Laramore;
 
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Traits\IsLocked;
 
 class ModelObserver
 {
+    use IsLocked;
+
     protected $meta;
     protected $observed = false;
+    protected $observers;
 
     protected static $events = [
         'retrieved', 'creating', 'created', 'updating', 'updated',
@@ -26,54 +30,78 @@ class ModelObserver
     public function __construct(Meta $meta)
     {
         $this->meta = $meta;
+        $this->observers = array_fill_keys(static::$events, []);
     }
 
-    public function observeAllEvents()
+    protected function locking()
     {
-        if ($this->observed) {
-            throw new \Exception('Cannot be observed twice');
-        }
-
         foreach (static::$events as $event) {
-            if (\method_exists($this, $event)) {
-                foreach ((array) $this->$event() as $callback) {
-                    $this->meta->getModelClass()::$event($callback);
-                }
+            foreach ((array) $this->observers[$event] as $observer) {
+                $this->meta->getModelClass()::$event($observer->lock()->getCallback());
+            }
+        }
+    }
+
+    public function addObserver(string $event, Observer $observer)
+    {
+        $this->checkLock();
+
+        $observers = $this->observers[$event];
+        $priority = $observer->getPriority();
+
+        for ($i = (count($observers) - 1); $i >= 0; $i--) {
+            if ($observers[$i]->getPriority() > $priority) {
+                $this->observers[$event] = array_values(array_merge(
+                    array_slice($observers, 0, $i),
+                    [$observer],
+                    array_slice($observers, $i),
+                ));
+
+                return $this;
             }
         }
 
-        $this->observed = true;
+        array_unshift($this->observers[$event], $observer);
 
         return $this;
     }
 
-    protected function saving()
+    public function createObserver(string $event, string $name, \Closure $callback, int $priority=Observer::AVERAGE_PRIORITY)
     {
-        return [
-            'default' => function (Model $model) {
-                $attributes = $model->getAttributes();
+        return $this->addObserver($event, new Observer($name, $callback, $priority));
+    }
 
-                foreach ($this->meta->getFields() as $field) {
-                    if (!isset($attributes[$attname = $field->attname])) {
-                        if ($field->hasProperty('default')) {
-                            $model->setAttribute($attname, $field->default);
-                        }
-                    }
-                }
-            },
-            'required' => function (Model $model) {
-                $missingFields = \array_diff($this->meta->getRequiredFields(), array_keys($model->getAttributes()));
+    public function removeObserver(string $event, string $name)
+    {
+        $this->checkLock();
 
-                foreach ($missingFields as $key => $field) {
-                    if ($this->meta->getField($field)->nullable) {
-                        unset($missingFields[$key]);
-                    }
-                }
+        foreach ($this->observers[$event] as $key => $observer) {
+            if ($observer->getName() === $name) {
+                unset($this->observers[$event]);
+            }
+        }
 
-                if (count($missingFields)) {
-                    throw new \Exception('Fields required: '.implode(', ', $missingFields));
-                }
-            },
-        ];
+        $this->observers[$event] = array_values($this->observers[$event]);
+
+        return $this;
+    }
+
+    public function __call(string $method, array $args)
+    {
+        if (in_array($method, static::$events)) {
+            if ($this->observed) {
+                throw new \Exception('Cannot add an observer. The model is already observed');
+            }
+
+            if (count($args) === 1 && $args[0] instanceof Observer) {
+                $this->addObserver($method, $args[0]);
+            } else {
+                $this->createObserver($method, ...$args);
+            }
+        } else {
+            throw new \Exception('The event does not exists');
+        }
+
+        return $this;
     }
 }

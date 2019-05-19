@@ -11,6 +11,7 @@
 namespace Laramore;
 
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, LinkField, Timestamp
 };
@@ -64,6 +65,37 @@ class Meta implements IsAFieldOwner
 
         $this->fieldManager = new $this->fieldManagerClass($this);
         $this->modelObserver = new $this->modelObserverClass($this);
+
+        $this->setDefaultObservers();
+    }
+
+    protected function setDefaultObservers()
+    {
+        $this->modelObserver->addObserver('saving', new Observer('autofill_default', function (Model $model) {
+            $attributes = $model->getAttributes();
+
+            foreach ($this->getFields() as $field) {
+                if (!isset($attributes[$attname = $field->attname])) {
+                    if ($field->hasProperty('default')) {
+                        $model->setAttribute($attname, $field->default);
+                    }
+                }
+            }
+        }, Observer::AVERAGE_PRIORITY));
+
+        $this->modelObserver->addObserver('saving', new Observer('check_required_fields', function (Model $model) {
+            $missingFields = array_diff($this->getRequiredFields(), array_keys($model->getAttributes()));
+
+            foreach ($missingFields as $key => $field) {
+                if ($this->getField($field)->nullable) {
+                      unset($missingFields[$key]);
+                }
+            }
+
+            if (count($missingFields)) {
+                throw new \Exception('Fields required: '.implode(', ', $missingFields));
+            }
+        }, Observer::MIN_PRIORITY));
     }
 
     public function getModelClass()
@@ -74,6 +106,16 @@ class Meta implements IsAFieldOwner
     public function getModelClassName()
     {
         return $this->modelClassName;
+    }
+
+    public function getFieldManager()
+    {
+        return $this->fieldManager;
+    }
+
+    public function getModelObserver()
+    {
+        return $this->modelObserver;
     }
 
     public function getDefaultTableName()
@@ -308,13 +350,13 @@ class Meta implements IsAFieldOwner
     {
         $this->checkLock();
 
-        $this->modelObserver->observeAllEvents();
-
         foreach ($this->allFields() as $field) {
             if ($field->getOwner() === $this) {
                 $field->lock();
             }
         }
+
+        $this->modelObserver->lock();
 
         $this->locked = true;
 
@@ -364,7 +406,7 @@ class Meta implements IsAFieldOwner
         if (count($fields) > 0) {
             if (count($fields) > 1) {
                 foreach ($fields as $field) {
-                    if ($field instanceof string) {
+                    if (is_string($field)) {
                         $unique[] = $this->getField($field);
                     } else if ($field instanceof CompositeField) {
                         if ($this->get($field->name) !== $field) {
@@ -387,7 +429,7 @@ class Meta implements IsAFieldOwner
             } else {
                 $field = $fields[0];
 
-                if ($field instanceof string) {
+                if (is_string($field)) {
                     $this->getField($field)->unique();
                 } else if ($field instanceof CompositeField) {
                     if ($this->get($field->name) !== $field) {
