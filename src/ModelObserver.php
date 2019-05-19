@@ -1,6 +1,6 @@
 <?php
 /**
- * Observe all model events.
+ * Handle all observers for a specific model.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,6 +12,7 @@ namespace Laramore;
 
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Traits\IsLocked;
+use Closure;
 
 class ModelObserver
 {
@@ -21,18 +22,33 @@ class ModelObserver
     protected $observed = false;
     protected $observers;
 
+    /**
+     * List of all possible events on models.
+     *
+     * @var array
+     */
     protected static $events = [
         'retrieved', 'creating', 'created', 'updating', 'updated',
         'saving', 'saved', 'restoring', 'restored', 'replicating',
         'deleting', 'deleted', 'forceDeleted',
     ];
 
+    /**
+     * A ModelObserver add all observers to handle model events.
+     *
+     * @param Meta $meta Meta of the model.
+     */
     public function __construct(Meta $meta)
     {
         $this->meta = $meta;
         $this->observers = array_fill_keys(static::$events, []);
     }
 
+    /**
+     * Observe all model events with our observers.
+     *
+     * @return void
+     */
     protected function locking()
     {
         foreach (static::$events as $event) {
@@ -42,6 +58,13 @@ class ModelObserver
         }
     }
 
+    /**
+     * Add an observer for a specific model event.
+     *
+     * @param string   $event
+     * @param Observer $observer
+     * @return static
+     */
     public function addObserver(string $event, Observer $observer)
     {
         $this->checkLock();
@@ -66,11 +89,27 @@ class ModelObserver
         return $this;
     }
 
-    public function createObserver(string $event, string $name, \Closure $callback, int $priority=Observer::AVERAGE_PRIORITY)
+    /**
+     * Create an observer and add it.
+     *
+     * @param  string  $event
+     * @param  string  $name
+     * @param  Closure $callback
+     * @param  int  $priority
+     * @return static
+     */
+    public function createObserver(string $event, string $name, Closure $callback, int $priority=Observer::AVERAGE_PRIORITY)
     {
         return $this->addObserver($event, new Observer($name, $callback, $priority));
     }
 
+    /**
+     * Remove an observer from a specific model event.
+     *
+     * @param  string $event
+     * @param  string $name
+     * @return static
+     */
     public function removeObserver(string $event, string $name)
     {
         $this->checkLock();
@@ -86,6 +125,13 @@ class ModelObserver
         return $this;
     }
 
+    /**
+     * Add or create an observer for a specific model event.
+     *
+     * @param  string $method
+     * @param  array  $args
+     * @return static        
+     */
     public function __call(string $method, array $args)
     {
         if (in_array($method, static::$events)) {
