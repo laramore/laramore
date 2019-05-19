@@ -95,7 +95,7 @@ class ModelObserver
      * @param  string  $event
      * @param  string  $name
      * @param  Closure $callback
-     * @param  int  $priority
+     * @param  integer $priority
      * @return static
      */
     public function createObserver(string $event, string $name, Closure $callback, int $priority=Observer::AVERAGE_PRIORITY)
@@ -130,7 +130,7 @@ class ModelObserver
      *
      * @param  string $method
      * @param  array  $args
-     * @return static        
+     * @return static
      */
     public function __call(string $method, array $args)
     {

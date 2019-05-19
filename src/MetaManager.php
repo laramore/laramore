@@ -1,6 +1,6 @@
 <?php
 /**
- * Regroup Metas in a simple class.
+ * Regroup all Metas and prepare them.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -20,6 +20,11 @@ class MetaManager
 
     protected $metas = [];
 
+    /**
+     * Load all Metas from a specific Namespace.
+     *
+     * @param string $namespace
+     */
     public function __construct(string $namespace=null)
     {
         if ($namespace) {
@@ -33,7 +38,13 @@ class MetaManager
         }
     }
 
-    public function hasMetaFromTableName(string $tableName): bool
+    /**
+     * Indicate if a Meta exists for a specific table name.
+     *
+     * @param  string $tableName
+     * @return boolean
+     */
+    public function hasMetaForTableName(string $tableName): bool
     {
         foreach ($this->getMetas() as $meta) {
             if ($meta->getTableName() === $tableName) {
@@ -44,7 +55,13 @@ class MetaManager
         return false;
     }
 
-    public function getMetaFromTableName(string $tableName): Meta
+    /**
+     * Get the Meta for a specific table name.
+     *
+     * @param  string $tableName
+     * @return Meta
+     */
+    public function getMetaForTableName(string $tableName): Meta
     {
         foreach ($this->getMetas() as $meta) {
             if ($meta->getTableName() === $tableName) {
@@ -55,12 +72,22 @@ class MetaManager
         throw new \Exception('No Meta exists for the table '.$tableName);
     }
 
-    public function getMetas()
+    /**
+     * Return all Metas.
+     *
+     * @return array
+     */
+    public function getMetas(): array
     {
         return $this->metas;
     }
 
-    public function getMetasWithTableNames()
+    /**
+     * Return all Metas, indexed by their table name.
+     *
+     * @return array
+     */
+    public function getMetasWithTableNames(): array
     {
         $metas = [];
 
@@ -71,6 +98,12 @@ class MetaManager
         return $metas;
     }
 
+    /**
+     * Add a meta.
+     *
+     * @param Meta $meta
+     * @return static
+     */
     public function addMeta(Meta $meta)
     {
         $tableName = $meta->getTableName();
@@ -84,8 +117,15 @@ class MetaManager
         }
 
         $this->metas[] = $meta;
+
+        return $this;
     }
 
+    /**
+     * Lock all metas and checks that everything is locked as expected.
+     *
+     * @return void
+     */
     public function locking()
     {
         foreach ($this->getMetas() as $meta) {
