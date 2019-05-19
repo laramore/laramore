@@ -1,9 +1,5 @@
 language: php
 
-services:
-  - mysql
-  - redis-server
-
 php:
   - 7.1.3
   - 7.2
