@@ -16,7 +16,9 @@ class Type
     public const INCREMENT = 'increments';
     public const NUMBER = 'integer';
     public const UNSIGNED = 'unsigned';
-    public const TEXT = 'string';
+    public const TEXT = 'text';
+    public const CHAR = 'string';
     public const DATETIME = 'datetime';
     public const TIMESTAMP = 'timestamp';
+    public const UUID = 'uuid';
 }

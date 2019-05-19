@@ -10,7 +10,7 @@
 
 namespace Laramore\Fields;
 
-abstract class Pattern extends Text
+abstract class Pattern extends Char
 {
     protected $pattern;
 
