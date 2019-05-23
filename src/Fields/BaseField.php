@@ -26,7 +26,6 @@ abstract class BaseField implements IsAField
 
     public function __call(string $method, array $args)
     {
-        $this->checkLock();
 
         if (count($args) === 0) {
             if (Str::startsWith($method, 'get')) {

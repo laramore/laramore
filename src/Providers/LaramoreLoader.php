@@ -25,6 +25,7 @@ class LaramoreLoader extends ServiceProvider
         'increment',
         'integer',
         'unsignedInteger',
+        'char',
         'text',
         'string',
         'datetime',
