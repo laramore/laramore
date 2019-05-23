@@ -10,12 +10,11 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Facades\TypeManager;
 use Laramore\Type;
 
 class Number extends Field
 {
-    protected $type = Type::NUMBER;
-
     protected $unsigned;
 
     /**
@@ -40,13 +39,13 @@ class Number extends Field
     // Except if the value is 0
     public const NOT_ZERO = 4096;
 
-    public function getType(): string
+    public function getType(): Type
     {
         if ($this->getProperty('unsigned')) {
-            return Type::UNSIGNED.ucfirst($this->type);
+            return TypeManager::unsignedInteger();
         }
 
-        return $this->type;
+        return TypeManager::integer();
     }
 
     protected function addRule(int $rule)

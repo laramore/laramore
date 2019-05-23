@@ -10,12 +10,17 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Facades\TypeManager;
 use Laramore\Type;
 
 class Timestamp extends Field
 {
-    protected $type = Type::TIMESTAMP;
     protected $useCurrent;
+
+    public function getType(): Type
+    {
+        return TypeManager::timestamp();
+    }
 
     public function getPropertyKeys(): array
     {

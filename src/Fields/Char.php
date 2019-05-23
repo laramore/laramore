@@ -11,12 +11,11 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Schema;
+use Laramore\Facades\TypeManager;
 use Laramore\Type;
 
 class Char extends Text
 {
-    protected $type = Type::CHAR;
-
     protected $length;
 
     /**
@@ -51,6 +50,11 @@ class Char extends Text
         parent::__construct($rules);
 
         $this->length = Schema::getFacadeRoot()::$defaultStringLength;
+    }
+
+    public function getType(): Type
+    {
+        return TypeManager::char();
     }
 
     public function getPropertyKeys(): array

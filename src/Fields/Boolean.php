@@ -10,11 +10,15 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Facades\TypeManager;
 use Laramore\Type;
 
 class Boolean extends Field
 {
-    protected $type = Type::BOOLEAN;
+    public function getType(): Type
+    {
+        return TypeManager::boolean();
+    }
 
     public function castValue($model, $value)
     {

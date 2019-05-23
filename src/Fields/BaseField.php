@@ -29,7 +29,11 @@ abstract class BaseField implements IsAField
         $this->checkLock();
 
         if (count($args) === 0) {
-            $this->setProperty($method, true);
+            if (Str::startsWith($method, 'get')) {
+                return $this->getProperty(Str::camel(substr(Str::snake($method), 4)));
+            } else {
+                return $this->setProperty($method, true);
+            }
         } else if (count($args) === 1) {
             $this->setProperty($method, $args[0]);
         } else {

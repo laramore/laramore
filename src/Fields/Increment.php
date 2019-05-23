@@ -10,20 +10,19 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Facades\TypeManager;
 use Laramore\Type;
 
 class Increment extends Number
 {
-    protected $type = Type::INCREMENT;
-
     // Default rules
     public const DEFAULT_INCREMENT = (self::VISIBLE | self::NOT_ZERO | self::UNSIGNED | self::POSITIVE | self::CORRECT_SIGN);
 
     protected static $defaultRules = self::DEFAULT_INCREMENT;
 
-    public function getType(): string
+    public function getType(): Type
     {
-        return $this->type;
+        return TypeManager::increment();
     }
 
     public function getPropertyKeys(): array

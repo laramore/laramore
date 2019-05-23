@@ -11,7 +11,9 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
-use Laramore\Meta;
+use Laramore\{
+    Meta, Type
+};
 use Laramore\Traits\Field\HasRules;
 
 abstract class Field extends BaseField
@@ -20,7 +22,6 @@ abstract class Field extends BaseField
         HasRules::addRule as private addRuleFromHasRule;
     }
 
-    protected $type;
     protected $attname;
     protected $default;
     protected $unique;
@@ -74,6 +75,8 @@ abstract class Field extends BaseField
     {
         return new static($rules);
     }
+
+    abstract public function getType(): Type;
 
     public function getPropertyKeys(): array
     {

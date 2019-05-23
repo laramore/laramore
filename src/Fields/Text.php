@@ -11,12 +11,11 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Schema;
+use Laramore\Facades\TypeManager;
 use Laramore\Type;
 
 class Text extends Field
 {
-    protected $type = Type::TEXT;
-
     protected $length;
 
     /**
@@ -33,6 +32,11 @@ class Text extends Field
     public const DEFAULT_TEXT = (self::NOT_BLANK | self::DEFAULT_FIELD);
 
     protected static $defaultRules = self::DEFAULT_TEXT;
+
+    public function getType(): Type
+    {
+        return TypeManager::text();
+    }
 
     public function castValue($model, $value)
     {
