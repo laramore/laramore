@@ -64,11 +64,21 @@ class TypeManager
         return $type;
     }
 
-    public function addTypeValue(string $name)
+    public function getTypes()
+    {
+        return $this->types;
+    }
+
+    public function hasValueName(string $name)
+    {
+        return in_array($name, $this->valueNames);
+    }
+
+    public function addValueName(string $name)
     {
         $this->checkLock();
 
-        if (!in_array($name, $this->valueNames)) {
+        if (!$this->hasValueName($name)) {
             $this->valueNames[] = $name;
 
             foreach ($this->getTypes() as $type) {
@@ -79,9 +89,9 @@ class TypeManager
         }
     }
 
-    public function getTypes()
+    public function getValueNames()
     {
-        return $this->types;
+        return $this->valueNames;
     }
 
     protected function locking()
