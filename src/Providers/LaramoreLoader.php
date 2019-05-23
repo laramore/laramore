@@ -12,12 +12,24 @@ namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Laramore\{
-    Meta, MetaManager
+    TypeManager, Meta, MetaManager
 };
 
 class LaramoreLoader extends ServiceProvider
 {
+    protected $typeManager;
     protected $metaManager;
+
+    protected $defaultTypes = [
+        'boolean',
+        'increment',
+        'integer',
+        'unsignedInteger',
+        'text',
+        'string',
+        'datetime',
+        'timestamp',
+    ];
 
     /**
      * Prepare all metas and lock them.
@@ -26,16 +38,18 @@ class LaramoreLoader extends ServiceProvider
      */
     public function register()
     {
-        $this->metaManager = new MetaManager('App\Models');
+        $this->app->singleton('TypeManager', function() {
+            return $this->typeManager;
+        });
 
-        $this->app->booted($this->bootedCallback());
-    }
-
-    public function boot()
-    {
         $this->app->singleton('MetaManager', function() {
             return $this->metaManager;
         });
+
+        $this->metaManager = new MetaManager('App\Models');
+        $this->typeManager = new TypeManager($this->defaultTypes);
+
+        $this->app->booted($this->bootedCallback());
     }
 
     /**
@@ -47,6 +61,7 @@ class LaramoreLoader extends ServiceProvider
     {
         return function () {
             $this->metaManager->lock();
+            $this->typeManager->lock();
         };
     }
 }

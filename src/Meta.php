@@ -18,57 +18,99 @@ use Laramore\Fields\{
 use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField, IsAFieldOwner
 };
+use Laramore\Traits\IsLocked;
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Template;
 
 class Meta implements IsAFieldOwner
 {
+    use IsLocked;
+
+    /**
+     * All data relative to the model and the table.
+     *
+     * @var string
+     */
     protected $modelClass;
     protected $modelClassName;
     protected $tableName;
 
+    /**
+     * All fields: classics, composites and links.
+     *
+     * @var array
+     */
     protected $fields;
     protected $composites;
     protected $links;
 
+    /**
+     * All boolean information.
+     *
+     * @var bool
+     */
     protected $hasPrimary = false;
     protected $hasTimestamps = false;
+
+    /**
+     * All indexes.
+     *
+     * @var array
+     */
     protected $primary;
     protected $indexes;
     protected $uniques;
 
-    protected $fieldManagerClass = FieldManager::class;
-    protected $modelObserverClass = ModelObserver::class;
+    /**
+     * Class string for FieldManager and ModelObserver.
+     *
+     * @var string
+     */
+    protected static $fieldManagerClass = FieldManager::class;
+    protected static $modelObserverClass = ModelObserver::class;
 
+    /**
+     * FieldManager and ModelObserver.
+     *
+     * @var object
+     */
     protected $fieldManager;
     protected $modelObserver;
 
-    protected $locked = false;
-
-    public function __construct($modelClass)
+    /**
+     * Create a Meta for a specific model.
+     *
+     * @param string $modelClass
+     */
+    public function __construct(string $modelClass)
     {
         $this->modelClass = $modelClass;
         $this->modelClassName = (new \ReflectionClass($modelClass))->getShortName();
         $this->tableName = $this->getDefaultTableName();
 
+        // Load default fields and configurations.
         $this->fields = config('database.table.fields', []);
         $this->composites = config('database.table.composites', []);
         $this->links = config('database.table.links', []);
         $this->primary = config('database.table.primary');
         $this->indexes = config('database.table.indexes', []);
         $this->uniques = config('database.table.uniques', []);
-        $this->defaultFieldConfigs = config('database.fields', []);
 
         if (config('database.table.timestamps', false)) {
             $this->useTimestamps();
         }
 
-        $this->fieldManager = new $this->fieldManagerClass($this);
-        $this->modelObserver = new $this->modelObserverClass($this);
+        $this->fieldManager = new static::$fieldManagerClass($this);
+        $this->modelObserver = new static::$modelObserverClass($this);
 
         $this->setDefaultObservers();
     }
 
+    /**
+     * Define all default observers:
+     * - Auto fill all fields with their default value.
+     * - Check that all required fields have a value.
+     */
     protected function setDefaultObservers()
     {
         $this->modelObserver->addObserver('saving', new Observer('autofill_default', function (Model $model) {
@@ -81,7 +123,7 @@ class Meta implements IsAFieldOwner
                     }
                 }
             }
-        }, Observer::AVERAGE_PRIORITY));
+        }, Observer::HIGH_PRIORITY));
 
         $this->modelObserver->addObserver('saving', new Observer('check_required_fields', function (Model $model) {
             $missingFields = array_diff($this->getRequiredFields(), array_keys($model->getAttributes()));
@@ -95,7 +137,7 @@ class Meta implements IsAFieldOwner
             if (count($missingFields)) {
                 throw new \Exception('Fields required: '.implode(', ', $missingFields));
             }
-        }, Observer::MIN_PRIORITY));
+        }, (Observer::LOW_PRIORITY)));
     }
 
     public function getModelClass()
@@ -346,7 +388,7 @@ class Meta implements IsAFieldOwner
         return $this->primary;
     }
 
-    public function lock()
+    protected function locking()
     {
         $this->checkLock();
 
@@ -359,20 +401,6 @@ class Meta implements IsAFieldOwner
         $this->modelObserver->lock();
 
         $this->locked = true;
-
-        return $this;
-    }
-
-    public function isLocked()
-    {
-        return $this->locked;
-    }
-
-    public function checkLock()
-    {
-        if ($this->isLocked()) {
-            throw new \Exception('The meta is locked, nothing can change');
-        }
 
         return $this;
     }

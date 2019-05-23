@@ -1,6 +1,6 @@
 <?php
 /**
- * Define a field types used by Laramore.
+ * Define a specific field.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -10,20 +10,69 @@
 
 namespace Laramore;
 
+use Illuminate\Support\Str;
+use Laramore\Traits\IsLocked;
+
 class Type
 {
-    /**
-     * Each constant defines a type for Laramore and its value in a database.
-     *
-     * @var string
-     */
-    public const BOOLEAN = 'boolean';
-    public const INCREMENT = 'increments';
-    public const NUMBER = 'integer';
-    public const UNSIGNED = 'unsigned';
-    public const TEXT = 'text';
-    public const CHAR = 'string';
-    public const DATETIME = 'datetime';
-    public const TIMESTAMP = 'timestamp';
-    public const UUID = 'uuid';
+    use IsLocked;
+
+    protected $name;
+    protected $values = [];
+
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
+
+    public function __call(string $method, array $args)
+    {
+        if (count($args) === 0) {
+            if (Str::startsWith($method, 'get')) {
+                return $this->getValue(Str::camel(substr(Str::snake($method), 4)));
+            } else {
+                throw new \Exception('Method does not exist');
+            }
+        } else {
+            return $this->setValue($method, $args[0]);
+        }
+    }
+
+    public function __get(string $key)
+    {
+        return $this->getValue($key);
+    }
+
+    public function __set(string $key, $value)
+    {
+        return $this->setValue($key, $value);
+    }
+
+    public function hasValue(string $key='value')
+    {
+        return (property_exists($this, $key) || isset($this->values[$key]));
+    }
+
+    public function getValue(string $key='value')
+    {
+        return ($this->$key ?? $this->values[$key]);
+    }
+
+    public function setValue(string $key, $value)
+    {
+        $this->checkLock();
+
+        $this->values[$key] = $value;
+
+        return $this;
+    }
+
+    protected function locking()
+    {
+    }
+
+    public function __toString()
+    {
+        return $this->name;
+    }
 }

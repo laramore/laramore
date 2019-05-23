@@ -18,6 +18,11 @@ class MetaManager
 {
     use IsLocked;
 
+    /**
+     * List all managed Metas.
+     *
+     * @var array
+     */
     protected $metas = [];
 
     /**
