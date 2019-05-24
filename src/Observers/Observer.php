@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Observers;
 
 use Laramore\Traits\IsLocked;
 use Closure;
@@ -39,6 +39,14 @@ class Observer
     protected $priority;
 
     /**
+     * All types to observe.
+     *
+     * @var array
+     */
+
+    protected $toObserve = [];
+
+    /**
      * The top priority is the max one.
      * Define the limits.
      *
@@ -57,12 +65,13 @@ class Observer
      * @param Closure $callback
      * @param integer $priority
      */
-    public function __construct(string $name, Closure $callback, int $priority=self::AVERAGE_PRIORITY)
+    public function __construct(string $name, Closure $callback, int $priority=self::AVERAGE_PRIORITY, $data=[])
     {
         $this->name = $name;
 
         $this->setCallback($callback);
         $this->setPriority($priority);
+        $this->on($data);
     }
 
     /**
@@ -127,6 +136,40 @@ class Observer
         $this->priority = $priority;
 
         return $this;
+    }
+
+    public function on($data)
+    {
+        foreach ((array) $data as $element) {
+            if (!in_array($element, $this->toObserve)) {
+                $this->toObserve[] = $element;
+            }
+        }
+
+        return $this;
+    }
+
+    public function onOnly($data)
+    {
+        $this->toObserve = [];
+
+        return $this->for($data);
+    }
+
+    public function except($data)
+    {
+        foreach ($this->toObserve as $key => $element) {
+            if (!in_array($element, (array) $data)) {
+                unset($this->toObserve[$key]);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAllToObserve(): array
+    {
+        return $this->toObserve;
     }
 
     /**

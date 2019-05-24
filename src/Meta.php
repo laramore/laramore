@@ -20,6 +20,7 @@ use Laramore\Interfaces\{
 };
 use Laramore\Traits\IsLocked;
 use Laramore\Traits\Model\HasLaramore;
+use Laramore\Observers\Observer;
 use Laramore\Template;
 
 class Meta implements IsAFieldOwner
@@ -113,7 +114,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setDefaultObservers()
     {
-        $this->modelObserver->addObserver('saving', new Observer('autofill_default', function (Model $model) {
+        $this->modelObserver->addObserver(new Observer('autofill_default', function (Model $model) {
             $attributes = $model->getAttributes();
 
             foreach ($this->getFields() as $field) {
@@ -123,9 +124,9 @@ class Meta implements IsAFieldOwner
                     }
                 }
             }
-        }, Observer::HIGH_PRIORITY));
+        }, Observer::HIGH_PRIORITY, 'saving'));
 
-        $this->modelObserver->addObserver('saving', new Observer('check_required_fields', function (Model $model) {
+        $this->modelObserver->addObserver(new Observer('check_required_fields', function (Model $model) {
             $missingFields = array_diff($this->getRequiredFields(), array_keys($model->getAttributes()));
 
             foreach ($missingFields as $key => $field) {
@@ -137,7 +138,7 @@ class Meta implements IsAFieldOwner
             if (count($missingFields)) {
                 throw new \Exception('Fields required: '.implode(', ', $missingFields));
             }
-        }, (Observer::LOW_PRIORITY)));
+        }, Observer::LOW_PRIORITY, 'saving'));
     }
 
     public function getModelClass()
