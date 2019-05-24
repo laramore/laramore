@@ -20,7 +20,9 @@ use Laramore\Interfaces\{
 };
 use Laramore\Traits\IsLocked;
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Observers\Observer;
+use Laramore\Observers\{
+	Observer, ModelObserverHandler
+};
 use Laramore\Template;
 
 class Meta implements IsAFieldOwner
@@ -68,7 +70,7 @@ class Meta implements IsAFieldOwner
      * @var string
      */
     protected static $fieldManagerClass = FieldManager::class;
-    protected static $modelObserverClass = ModelObserver::class;
+    protected static $modelObserverHandlerClass = ModelObserverHandler::class;
 
     /**
      * FieldManager and ModelObserver.
@@ -76,7 +78,7 @@ class Meta implements IsAFieldOwner
      * @var object
      */
     protected $fieldManager;
-    protected $modelObserver;
+    protected $modelObserverHandler;
 
     /**
      * Create a Meta for a specific model.
@@ -102,7 +104,7 @@ class Meta implements IsAFieldOwner
         }
 
         $this->fieldManager = new static::$fieldManagerClass($this);
-        $this->modelObserver = new static::$modelObserverClass($this);
+        $this->modelObserverHandler = new static::$modelObserverHandlerClass($this);
 
         $this->setDefaultObservers();
     }
@@ -114,7 +116,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setDefaultObservers()
     {
-        $this->modelObserver->addObserver(new Observer('autofill_default', function (Model $model) {
+        $this->modelObserverHandler->addObserver(new Observer('autofill_default', function (Model $model) {
             $attributes = $model->getAttributes();
 
             foreach ($this->getFields() as $field) {
@@ -126,7 +128,7 @@ class Meta implements IsAFieldOwner
             }
         }, Observer::HIGH_PRIORITY, 'saving'));
 
-        $this->modelObserver->addObserver(new Observer('check_required_fields', function (Model $model) {
+        $this->modelObserverHandler->addObserver(new Observer('check_required_fields', function (Model $model) {
             $missingFields = array_diff($this->getRequiredFields(), array_keys($model->getAttributes()));
 
             foreach ($missingFields as $key => $field) {
@@ -158,7 +160,7 @@ class Meta implements IsAFieldOwner
 
     public function getModelObserver()
     {
-        return $this->modelObserver;
+        return $this->modelObserverHandler;
     }
 
     public function getDefaultTableName()
@@ -399,7 +401,7 @@ class Meta implements IsAFieldOwner
             }
         }
 
-        $this->modelObserver->lock();
+        $this->modelObserverHandler->lock();
 
         $this->locked = true;
 

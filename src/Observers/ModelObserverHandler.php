@@ -8,13 +8,13 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Observers;
 
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Observers\BaseObserverHandler;
 use Closure;
 
-class ModelObserver extends BaseObserverHandler
+class ModelObserverHandler extends BaseObserverHandler
 {
     protected $meta;
 
