@@ -11,16 +11,22 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laramore\Observers\ModelObservableManager;
+use Laramore\Observers\{
+    GrammarObservableManager, ModelObservableManager
+};
 use Laramore\{
     TypeManager, Meta, MetaManager
 };
+use ReflectionNamespace;
 
 class LaramoreLoader extends ServiceProvider
 {
+    protected $grammarObservableManager;
     protected $modelObserverManager;
     protected $typeManager;
     protected $metaManager;
+    protected $grammarNamespace = 'Illuminate\\Database\\Schema\\Grammars';
+    protected $modelNamespace = 'App\\Models';
 
     protected $defaultTypes = [
         'boolean',
@@ -41,6 +47,10 @@ class LaramoreLoader extends ServiceProvider
      */
     public function register()
     {
+        $this->app->singleton('GrammarObservableManager', function() {
+            return $this->grammarObservableManager;
+        });
+
         $this->app->singleton('ModelObservableManager', function() {
             return $this->modelObserverManager;
         });
@@ -53,9 +63,15 @@ class LaramoreLoader extends ServiceProvider
             return $this->metaManager;
         });
 
+        $this->grammarObservableManager = new GrammarObservableManager;
+
+        foreach ((new ReflectionNamespace($this->grammarNamespace))->getClassNames() as $class) {
+            $this->grammarObservableManager->createObservableHandler($class);
+        }
+
         $this->modelObserverManager = new ModelObservableManager();
         $this->typeManager = new TypeManager($this->defaultTypes);
-        $this->metaManager = new MetaManager('App\Models');
+        $this->metaManager = new MetaManager($this->modelNamespace);
 
         $this->app->booted($this->bootedCallback());
     }
@@ -71,6 +87,7 @@ class LaramoreLoader extends ServiceProvider
             $this->metaManager->lock();
             $this->typeManager->lock();
             $this->modelObserverManager->lock();
+            $this->grammarObservableManager->lock();
         };
     }
 }

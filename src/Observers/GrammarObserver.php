@@ -1,6 +1,6 @@
 <?php
 /**
- * Create an Observer to add a callback on a specific model event.
+ * Create an Observer to add a callback on a specific Grammar.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -13,14 +13,8 @@ namespace Laramore\Observers;
 use Laramore\Traits\IsLocked;
 use Closure;
 
-class ModelObserver extends BaseObserver
+class GrammarObserver extends BaseObserver
 {
-    protected static $events = [
-        'retrieved', 'creating', 'created', 'updating', 'updated',
-        'saving', 'saved', 'restoring', 'restored', 'replicating',
-        'deleting', 'deleted', 'forceDeleted',
-    ];
-
     /**
      * Actions during locking.
      *
