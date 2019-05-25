@@ -78,11 +78,16 @@ abstract class BaseObserverHandler
     {
         foreach ($this->observers as $key => $observer) {
             if ($observer->getName() === $name) {
-                return $this->observers;
+                return $observer;
             }
         }
 
         throw new \Exception('The observer does not exist');
+    }
+
+    public function getObservers()
+    {
+        return $this->observers;
     }
 
     /**

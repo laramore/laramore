@@ -12,6 +12,7 @@ namespace Laramore;
 
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Facades\ModelObserverManager;
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, LinkField, Timestamp
 };
@@ -20,9 +21,7 @@ use Laramore\Interfaces\{
 };
 use Laramore\Traits\IsLocked;
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Observers\{
-	Observer, ModelObserverHandler
-};
+use Laramore\Observers\Observer;
 use Laramore\Template;
 
 class Meta implements IsAFieldOwner
@@ -65,14 +64,6 @@ class Meta implements IsAFieldOwner
     protected $uniques;
 
     /**
-     * Class string for FieldManager and ModelObserver.
-     *
-     * @var string
-     */
-    protected static $fieldManagerClass = FieldManager::class;
-    protected static $modelObserverHandlerClass = ModelObserverHandler::class;
-
-    /**
      * FieldManager and ModelObserver.
      *
      * @var object
@@ -103,8 +94,8 @@ class Meta implements IsAFieldOwner
             $this->useTimestamps();
         }
 
-        $this->fieldManager = new static::$fieldManagerClass($this);
-        $this->modelObserverHandler = new static::$modelObserverHandlerClass($this);
+        $this->fieldManager = new FieldManager($this);
+        $this->modelObserverHandler = ModelObserverManager::createModelObserverHandler($this);
 
         $this->setDefaultObservers();
     }
@@ -400,8 +391,6 @@ class Meta implements IsAFieldOwner
                 $field->lock();
             }
         }
-
-        $this->modelObserverHandler->lock();
 
         $this->locked = true;
 

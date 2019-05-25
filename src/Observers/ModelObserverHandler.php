@@ -12,10 +12,16 @@ namespace Laramore\Observers;
 
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Observers\BaseObserverHandler;
+use Laramore\Meta;
 use Closure;
 
 class ModelObserverHandler extends BaseObserverHandler
 {
+    /**
+     * Meta for this observer.
+     *
+     * @var Meta
+     */
     protected $meta;
 
     /**
@@ -23,20 +29,18 @@ class ModelObserverHandler extends BaseObserverHandler
      *
      * @var array
      */
-    protected static $events = [
-        'retrieved', 'creating', 'created', 'updating', 'updated',
-        'saving', 'saved', 'restoring', 'restored', 'replicating',
-        'deleting', 'deleted', 'forceDeleted',
-    ];
+    protected $events = [];
 
     /**
      * A ModelObserver add all observers to handle model events.
      *
-     * @param Meta $meta Meta of the model.
+     * @param Meta  $meta   Meta of the model.
+     * @param array $events
      */
-    public function __construct(Meta $meta)
+    public function __construct(Meta $meta, array $events)
     {
         $this->meta = $meta;
+        $this->events = $events;
     }
 
     /**
@@ -47,7 +51,7 @@ class ModelObserverHandler extends BaseObserverHandler
     protected function locking()
     {
         foreach ((array) $this->observers as $observer) {
-            foreach (array_intersect(static::$events, $observer->getAllToObserve()) as $event) {
+            foreach (array_intersect($this->events, $observer->getAllToObserve()) as $event) {
                 $this->meta->getModelClass()::$event($observer->getCallback());
             }
 
@@ -64,7 +68,7 @@ class ModelObserverHandler extends BaseObserverHandler
      */
     public function __call(string $method, array $args)
     {
-        if (in_array($method, static::$events)) {
+        if (in_array($method, $this->events)) {
             $this->checkLock();
 
             if (count($args) === 1 && $args[0] instanceof Observer) {
