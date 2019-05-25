@@ -117,4 +117,24 @@ abstract class BaseObservableHandler
 
         return $this;
     }
+
+    /**
+     * Add or create an observer for a specific method.
+     *
+     * @param  string $method
+     * @param  array  $args
+     * @return static
+     */
+    public function __call(string $method, array $args)
+    {
+        $this->checkLock();
+
+        if (count($args) === 1 && $args[0] instanceof $this->observerClass) {
+            $this->addObserver($args[0]->observe($method));
+        } else {
+            $this->createObserver($method, ...$args);
+        }
+
+        return $this;
+    }
 }

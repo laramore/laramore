@@ -35,6 +35,7 @@ abstract class BaseObservableManager
 
     public function isObservable(string $observableClass)
     {
+        dump($observableClass);
         return (new ReflectionClass($observableClass))->isSubclassOf($this->observableSubClass);
     }
 
