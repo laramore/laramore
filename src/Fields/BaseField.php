@@ -11,7 +11,7 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
-use Laramore\Observers\Observer;
+use Laramore\Observers\ModelObserver;
 use Laramore\Interfaces\IsAField;
 use Laramore\Traits\IsOwnedAndLocked;
 use Laramore\Meta;
@@ -135,7 +135,7 @@ abstract class BaseField implements IsAField
         return $this->getMeta()->getModelClass;
     }
 
-    protected function addObserver(Observer $observer)
+    protected function addObserver(ModelObserver $observer)
     {
         $this->getMeta()->getModelObserver()->addObserver($observer);
 

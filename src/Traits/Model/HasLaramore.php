@@ -402,4 +402,16 @@ trait HasLaramore
     {
         return new Builder($query);
     }
+
+    /**
+     * Register a model event with the dispatcher.
+     *
+     * @param  string          $event
+     * @param  \Closure|string $callback
+     * @return void
+     */
+    public static function addModelEvent(string $event, $callback)
+    {
+        static::registerModelEvent($event, $callback);
+    }
 }

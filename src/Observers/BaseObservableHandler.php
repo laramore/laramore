@@ -14,19 +14,26 @@ use Illuminate\Database\Eloquent\Model;
 use Laramore\Traits\IsLocked;
 use Closure;
 
-abstract class BaseObserverHandler
+abstract class BaseObservableHandler
 {
     use IsLocked;
 
+    protected $observableClass;
     protected $observers = [];
+    protected $observerClass;
+
+    public function __construct(string $observableClass)
+    {
+        $this->observableClass = $observableClass;
+    }
 
     /**
      * Add an observer for a specific model event.
      *
-     * @param Observer $observer
+     * @param BaseObserver $observer
      * @return self
      */
-    public function addObserver(Observer $observer): self
+    public function addObserver(BaseObserver $observer): self
     {
         $this->checkLock();
 
@@ -58,9 +65,9 @@ abstract class BaseObserverHandler
      * @param  integer      $priority
      * @return static
      */
-    public function createObserver($data, string $name, Closure $callback, int $priority=Observer::AVERAGE_PRIORITY)
+    public function createObserver($data, string $name, Closure $callback, int $priority=BaseObserver::AVERAGE_PRIORITY)
     {
-        return $this->addObserver(new Observer($name, $callback, $priority, $data));
+        return $this->addObserver(new $this->observerClass($name, $callback, $priority, $data));
     }
 
     public function hasObserver(string $name)

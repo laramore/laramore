@@ -15,33 +15,20 @@ use Laramore\Observers\BaseObserverHandler;
 use Laramore\Meta;
 use Closure;
 
-class ModelObserverHandler extends BaseObserverHandler
+class ModelObservableHandler extends BaseObservableHandler
 {
-    /**
-     * Meta for this observer.
-     *
-     * @var Meta
-     */
-    protected $meta;
+    protected $observerClass = ModelObserver::class;
 
     /**
      * List of all possible events on models.
      *
      * @var array
      */
-    protected $events = [];
-
-    /**
-     * A ModelObserver add all observers to handle model events.
-     *
-     * @param Meta  $meta   Meta of the model.
-     * @param array $events
-     */
-    public function __construct(Meta $meta, array $events)
-    {
-        $this->meta = $meta;
-        $this->events = $events;
-    }
+    protected $events = [
+        'retrieved', 'creating', 'created', 'updating', 'updated',
+        'saving', 'saved', 'restoring', 'restored', 'replicating',
+        'deleting', 'deleted', 'forceDeleted',
+    ];
 
     /**
      * Observe all model events with our observers.
@@ -50,9 +37,9 @@ class ModelObserverHandler extends BaseObserverHandler
      */
     protected function locking()
     {
-        foreach ((array) $this->observers as $observer) {
-            foreach (array_intersect($this->events, $observer->getAllToObserve()) as $event) {
-                $this->meta->getModelClass()::$event($observer->getCallback());
+        foreach ($this->observers as $observer) {
+            foreach ($observer->getObserved() as $event) {
+                $this->observableClass::addModelEvent($event, $observer->getCallback());
             }
 
             $observer->lock();
@@ -71,8 +58,8 @@ class ModelObserverHandler extends BaseObserverHandler
         if (in_array($method, $this->events)) {
             $this->checkLock();
 
-            if (count($args) === 1 && $args[0] instanceof Observer) {
-                $this->addObserver($args[0]->on($method));
+            if (count($args) === 1 && $args[0] instanceof $this->observerClass) {
+                $this->addObserver($args[0]->observe($method));
             } else {
                 $this->createObserver($method, ...$args);
             }

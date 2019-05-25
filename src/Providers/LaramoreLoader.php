@@ -11,7 +11,7 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laramore\Observers\ModelObserverManager;
+use Laramore\Observers\ModelObservableManager;
 use Laramore\{
     TypeManager, Meta, MetaManager
 };
@@ -35,24 +35,13 @@ class LaramoreLoader extends ServiceProvider
     ];
 
     /**
-     * List of all possible events on models.
-     *
-     * @var array
-     */
-    protected $events = [
-        'retrieved', 'creating', 'created', 'updating', 'updated',
-        'saving', 'saved', 'restoring', 'restored', 'replicating',
-        'deleting', 'deleted', 'forceDeleted',
-    ];
-
-    /**
      * Prepare all metas and lock them.
      *
      * @return void
      */
     public function register()
     {
-        $this->app->singleton('ModelObserverManager', function() {
+        $this->app->singleton('ModelObservableManager', function() {
             return $this->modelObserverManager;
         });
 
@@ -64,7 +53,7 @@ class LaramoreLoader extends ServiceProvider
             return $this->metaManager;
         });
 
-        $this->modelObserverManager = new ModelObserverManager($this->events);
+        $this->modelObserverManager = new ModelObservableManager();
         $this->typeManager = new TypeManager($this->defaultTypes);
         $this->metaManager = new MetaManager('App\Models');
 

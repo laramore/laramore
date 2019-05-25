@@ -13,7 +13,7 @@ namespace Laramore\Observers;
 use Laramore\Traits\IsLocked;
 use Closure;
 
-class Observer
+abstract class BaseObserver
 {
     use IsLocked;
 
@@ -44,7 +44,7 @@ class Observer
      * @var array
      */
 
-    protected $toObserve = [];
+    protected $observed = [];
 
     /**
      * The top priority is the max one.
@@ -53,10 +53,10 @@ class Observer
      * @var int
      */
     public const MAX_PRIORITY = 0;
-    public const AVERAGE_PRIORITY = 50;
+    public const MEDIUM_PRIORITY = 50;
     public const MIN_PRIORITY = 100;
-    public const HIGH_PRIORITY = ((self::MAX_PRIORITY + self::AVERAGE_PRIORITY) / 2);
-    public const LOW_PRIORITY = ((self::MIN_PRIORITY + self::AVERAGE_PRIORITY) / 2);
+    public const HIGH_PRIORITY = ((self::MAX_PRIORITY + self::MEDIUM_PRIORITY) / 2);
+    public const LOW_PRIORITY = ((self::MIN_PRIORITY + self::MEDIUM_PRIORITY) / 2);
 
     /**
      * An observer needs at least a name and a callback.
@@ -65,13 +65,13 @@ class Observer
      * @param Closure $callback
      * @param integer $priority
      */
-    public function __construct(string $name, Closure $callback, int $priority=self::AVERAGE_PRIORITY, $data=[])
+    public function __construct(string $name, Closure $callback, int $priority=self::MEDIUM_PRIORITY, $data=[])
     {
         $this->name = $name;
 
         $this->setCallback($callback);
         $this->setPriority($priority);
-        $this->on($data);
+        $this->observe($data);
     }
 
     /**
@@ -138,47 +138,37 @@ class Observer
         return $this;
     }
 
-    public function on($data)
+    public function observe($data)
     {
         foreach ((array) $data as $element) {
-            if (!in_array($element, $this->toObserve)) {
-                $this->toObserve[] = $element;
+            if (!in_array($element, $this->observed)) {
+                $this->observed[] = $element;
             }
         }
 
         return $this;
     }
 
-    public function onOnly($data)
+    public function observeOnly($data)
     {
-        $this->toObserve = [];
+        $this->observed = [];
 
         return $this->for($data);
     }
 
     public function except($data)
     {
-        foreach ($this->toObserve as $key => $element) {
+        foreach ($this->observed as $key => $element) {
             if (!in_array($element, (array) $data)) {
-                unset($this->toObserve[$key]);
+                unset($this->observed[$key]);
             }
         }
 
         return $this;
     }
 
-    public function getAllToObserve(): array
+    public function getObserved(): array
     {
-        return $this->toObserve;
-    }
-
-    /**
-     * Actions during locking.
-     *
-     * @return void
-     */
-    protected function locking()
-    {
-        // Nothing to do here.
+        return $this->observed;
     }
 }
