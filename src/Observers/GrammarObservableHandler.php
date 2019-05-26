@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class GrammarObservableHandler extends BaseObservableHandler
 {
+    /**
+     * The observer class to use to generate.
+     *
+     * @var string
+     */
     protected $observerClass = GrammarObserver::class;
 
     /**
@@ -25,7 +30,7 @@ class GrammarObservableHandler extends BaseObservableHandler
     {
         foreach ($this->observers as $observer) {
             foreach ($observer->getObserved() as $type) {
-                $this->observableClass::macro(type.ucfirst($type), $observer->getCallback());
+                $this->observableClass::macro('type'.ucfirst($type), $observer->getCallback());
             }
 
             $observer->lock();

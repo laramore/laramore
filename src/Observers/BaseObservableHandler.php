@@ -18,13 +18,55 @@ abstract class BaseObservableHandler
 {
     use IsLocked;
 
+    /**
+     * The observable class.
+     *
+     * @var string
+     */
     protected $observableClass;
-    protected $observers = [];
+
+    /**
+     * The observer class to use to generate.
+     *
+     * @var string
+     */
     protected $observerClass;
 
+    /**
+     * List of all observers to apply on the observable class.
+     *
+     * @var array
+     */
+    protected $observers = [];
+
+    /**
+     * Create an ObservableHandler for a specific class.
+     *
+     * @param string $observableClass
+     */
     public function __construct(string $observableClass)
     {
         $this->observableClass = $observableClass;
+    }
+
+    /**
+     * Get the current observable class.
+     *
+     * @return string
+     */
+    public function getObservableClass(): string
+    {
+        return $this->obserableClass;
+    }
+
+    /**
+     * Get the current observable class.
+     *
+     * @return string
+     */
+    public function getObserverClass(): string
+    {
+        return $this->observerClass;
     }
 
     /**
@@ -37,9 +79,15 @@ abstract class BaseObservableHandler
     {
         $this->checkLock();
 
+        $observerClass = $this->getObserverClass();
+
+        if (!($observer instanceof $observerClass)) {
+            throw new \Exception('The observer is not of the right type');
+        }
+
         $priority = $observer->getPriority();
 
-        for ($i = (count($this->observers) - 1); $i >= 0; $i--) {
+        for ($i = 0; $i < count($this->observers); $i++) {
             if ($this->observers[$i]->getPriority() > $priority) {
                 $this->observers = array_values(array_merge(
                     array_slice($this->observers, 0, $i),
@@ -51,7 +99,7 @@ abstract class BaseObservableHandler
             }
         }
 
-        array_unshift($this->observers, $observer);
+        array_push($this->observers, $observer);
 
         return $this;
     }
@@ -65,12 +113,18 @@ abstract class BaseObservableHandler
      * @param  integer      $priority
      * @return static
      */
-    public function createObserver($data, string $name, Closure $callback, int $priority=BaseObserver::AVERAGE_PRIORITY)
+    public function createObserver($data, string $name, Closure $callback, int $priority=BaseObserver::MEDIUM_PRIORITY)
     {
         return $this->addObserver(new $this->observerClass($name, $callback, $priority, $data));
     }
 
-    public function hasObserver(string $name)
+    /**
+     * Return if an observe exists with the given name.
+     *
+     * @param  string  $name
+     * @return boolean
+     */
+    public function hasObserver(string $name): bool
     {
         foreach ($this->observers as $key => $observer) {
             if ($observer->getName() === $name) {
@@ -81,7 +135,13 @@ abstract class BaseObservableHandler
         return false;
     }
 
-    public function getObserver(string $name)
+    /**
+     * Return the first observer with the given name.
+     *
+     * @param  string $name
+     * @return BaseObserver
+     */
+    public function getObserver(string $name): BaseObserver
     {
         foreach ($this->observers as $key => $observer) {
             if ($observer->getName() === $name) {
@@ -92,7 +152,12 @@ abstract class BaseObservableHandler
         throw new \Exception('The observer does not exist');
     }
 
-    public function getObservers()
+    /**
+     * Return the list of the handled observers.
+     *
+     * @return array
+     */
+    public function getObservers(): array
     {
         return $this->observers;
     }

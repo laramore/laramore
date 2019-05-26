@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class ModelObservableHandler extends BaseObservableHandler
 {
+    /**
+     * The observable class.
+     *
+     * @var string
+     */
     protected $observerClass = ModelObserver::class;
 
     /**

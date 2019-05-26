@@ -108,9 +108,9 @@ abstract class BaseObserver
      * Define the callback method until the observer is locked.
      *
      * @param Closure $callback
-     * @return static
+     * @return self
      */
-    public function setCallback(Closure $callback)
+    public function setCallback(Closure $callback): self
     {
         $this->checkLock();
 
@@ -123,9 +123,9 @@ abstract class BaseObserver
      * Define the priority of this observer until it is locked.
      *
      * @param integer $priority
-     * @return static
+     * @return self
      */
-    public function setPriority(int $priority)
+    public function setPriority(int $priority): self
     {
         $this->checkLock();
 
@@ -138,9 +138,17 @@ abstract class BaseObserver
         return $this;
     }
 
-    public function observe($data)
+    /**
+     * Add one or more entities to observe.
+     *
+     * @param  string|array $entities
+     * @return self
+     */
+    public function observe($entities): self
     {
-        foreach ((array) $data as $element) {
+        $this->checkLock();
+
+        foreach ((array) $entities as $element) {
             if (!in_array($element, $this->observed)) {
                 $this->observed[] = $element;
             }
@@ -149,17 +157,33 @@ abstract class BaseObserver
         return $this;
     }
 
-    public function observeOnly($data)
+    /**
+     * Observe only the given entities.
+     *
+     * @param  string|array $entities
+     * @return self
+     */
+    public function observeOnly($entities): self
     {
+        $this->checkLock();
+
         $this->observed = [];
 
-        return $this->for($data);
+        return $this->for($entities);
     }
 
-    public function except($data)
+    /**
+     * Do not observe one more entities.
+     *
+     * @param  string|array $entities
+     * @return self
+     */
+    public function except($entities): self
     {
+        $this->checkLock();
+
         foreach ($this->observed as $key => $element) {
-            if (!in_array($element, (array) $data)) {
+            if (!in_array($element, (array) $entities)) {
                 unset($this->observed[$key]);
             }
         }
@@ -167,6 +191,11 @@ abstract class BaseObserver
         return $this;
     }
 
+    /**
+     * Get all observed entities.
+     *
+     * @return array
+     */
     public function getObserved(): array
     {
         return $this->observed;

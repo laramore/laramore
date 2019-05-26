@@ -10,12 +10,23 @@
 
 namespace Laramore\Observers;
 
-use Illuminate\Database\Schema\Grammars\Grammar;
+use Illuminate\Database\Grammar;
 use Illuminate\Database\Schema\Blueprint;
 
 class GrammarObservableManager extends BaseObservableManager
 {
+    /**
+     * Allowed observable sub class.
+     *
+     * @var string
+     */
     protected $observableSubClass = Grammar::class;
+
+    /**
+     * The observable handler class to generate.
+     *
+     * @var string
+     */
     protected $observableHandlerClass = GrammarObservableHandler::class;
 
     /**
@@ -25,15 +36,17 @@ class GrammarObservableManager extends BaseObservableManager
      */
     protected function locking()
     {
-    	$observed = array_unique(array_merge(...array_map(function ($observableHandler) {
-    		return $observableHandler->getObserved();
-    	}, $this->observableHandlers) ?? []));
+        $observed = array_unique(array_merge([], ...array_values(array_map(function ($observableHandler) {
+            return array_merge([], ...array_map(function ($observer) {
+                return $observer->getObserved();
+            }, $observableHandler->getObservers()));
+        }, $this->observableHandlers))));
 
-    	foreach ($observed as $type) {
-	        Blueprint::macro($type, function ($column) use ($type) {
-	            return $this->addColumn($type, $column);
-	        });
-    	}
+        foreach ($observed as $type) {
+            Blueprint::macro($type, function ($column) use ($type) {
+                return $this->addColumn($type, $column);
+            });
+        }
 
         parent::locking();
     }

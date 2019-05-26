@@ -17,9 +17,26 @@ abstract class BaseObservableManager
 {
     use IsLocked;
 
-    protected $observableHandlers = [];
+    /**
+     * Allowed observable sub class.
+     *
+     * @var string
+     */
     protected $observableSubClass;
+
+    /**
+     * The observable handler class to generate.
+     *
+     * @var string
+     */
     protected $observableHandlerClass;
+
+    /**
+     * List of all handlers.
+     *
+     * @var array
+     */
+    protected $observableHandlers = [];
 
     /**
      * Observe all model events with our observers.
@@ -33,12 +50,24 @@ abstract class BaseObservableManager
         }
     }
 
-    public function isObservable(string $observableClass)
+    /**
+     * Indicate if the given class is observable by this manager.
+     *
+     * @param  string  $observableClass
+     * @return boolean
+     */
+    public function isObservable(string $observableClass): bool
     {
         return (new ReflectionClass($observableClass))->isSubclassOf($this->observableSubClass);
     }
 
-    public function createObservableHandler(string $observableClass)
+    /**
+     * Create an ObservableHandler for a specific observable class.
+     *
+     * @param  string $observableClass
+     * @return BaseObservableHandler
+     */
+    public function createObservableHandler(string $observableClass): BaseObservableHandler
     {
         $this->checkLock();
 
@@ -55,17 +84,34 @@ abstract class BaseObservableManager
         return $handler;
     }
 
-    public function hasObservableHandler(string $observableClass)
+    /**
+     * Indicate if an observable handler is managed.
+     *
+     * @param  string  $observableClass
+     * @return boolean
+     */
+    public function hasObservableHandler(string $observableClass): bool
     {
         return isset($this->observableHandlers[$observableClass]);
     }
 
-    public function getObservableHandler(string $observableClass)
+    /**
+     * Return the observable handler for the given observable class.
+     *
+     * @param  string                $observableClass
+     * @return BaseObservableHandler
+     */
+    public function getObservableHandler(string $observableClass): BaseObservableHandler
     {
         return $this->observableHandlers[$observableClass];
     }
 
-    public function getObservableHandlers()
+    /**
+     * Return the list of the observable handlers.
+     *
+     * @return array
+     */
+    public function getObservableHandlers(): array
     {
         return $this->observableHandlers;
     }

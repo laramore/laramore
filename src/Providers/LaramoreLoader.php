@@ -64,16 +64,28 @@ class LaramoreLoader extends ServiceProvider
         });
 
         $this->grammarObservableManager = new GrammarObservableManager;
-
-        foreach ((new ReflectionNamespace($this->grammarNamespace))->getClassNames() as $class) {
-            $this->grammarObservableManager->createObservableHandler($class);
-        }
-
-        $this->modelObserverManager = new ModelObservableManager();
+        $this->modelObserverManager = new ModelObservableManager;
         $this->typeManager = new TypeManager($this->defaultTypes);
         $this->metaManager = new MetaManager($this->modelNamespace);
 
+        $this->app->booting($this->bootingCallback());
         $this->app->booted($this->bootedCallback());
+    }
+
+    /**
+     * Add all Grammar classes in the GrammarObservableManager.
+     *
+     * @return void
+     */
+    protected function bootingCallback()
+    {
+        return function () {
+            foreach ((new ReflectionNamespace($this->grammarNamespace))->getClassNames() as $class) {
+                if ($this->grammarObservableManager->isObservable($class)) {
+                    $this->grammarObservableManager->createObservableHandler($class);
+                }
+            }
+        };
     }
 
     /**

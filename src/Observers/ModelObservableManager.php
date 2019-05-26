@@ -14,6 +14,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class ModelObservableManager extends BaseObservableManager
 {
+    /**
+     * Allowed observable sub class.
+     *
+     * @var string
+     */
     protected $observableSubClass = Model::class;
+
+    /**
+     * The observable handler class to generate.
+     *
+     * @var string
+     */
     protected $observableHandlerClass = ModelObservableHandler::class;
 }

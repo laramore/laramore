@@ -15,11 +15,26 @@ use Closure;
 
 class ModelObserver extends BaseObserver
 {
+    /**
+     * All possible events.
+     *
+     * @var array
+     */
     protected static $events = [
         'retrieved', 'creating', 'created', 'updating', 'updated',
         'saving', 'saved', 'restoring', 'restored', 'replicating',
         'deleting', 'deleted', 'forceDeleted',
     ];
+
+    /**
+     * Return all possible events
+     *
+     * @return array
+     */
+    public function getEvents(): array
+    {
+        return $this->events;
+    }
 
     /**
      * Actions during locking.
