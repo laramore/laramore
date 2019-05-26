@@ -64,12 +64,11 @@ class Meta implements IsAFieldOwner
     protected $uniques;
 
     /**
-     * FieldManager and ModelObserver.
+     * FieldManager.
      *
      * @var object
      */
     protected $fieldManager;
-    protected $modelObservableManager;
 
     /**
      * Create a Meta for a specific model.
@@ -95,7 +94,6 @@ class Meta implements IsAFieldOwner
         }
 
         $this->fieldManager = new FieldManager($this);
-        $this->modelObservableManager = ModelObservableManager::createObservableHandler($this->modelClass);
 
         $this->setDefaultObservers();
     }
@@ -107,7 +105,9 @@ class Meta implements IsAFieldOwner
      */
     protected function setDefaultObservers()
     {
-        $this->modelObservableManager->addObserver(new ModelObserver('autofill_default', function (Model $model) {
+		ModelObservableManager::createObservableHandler($this->modelClass);
+
+        $this->getModelObservableHandler()->addObserver(new ModelObserver('autofill_default', function (Model $model) {
             $attributes = $model->getAttributes();
 
             foreach ($this->getFields() as $field) {
@@ -119,7 +119,7 @@ class Meta implements IsAFieldOwner
             }
         }, ModelObserver::HIGH_PRIORITY, 'saving'));
 
-        $this->modelObservableManager->addObserver(new ModelObserver('check_required_fields', function (Model $model) {
+        $this->getModelObservableHandler()->addObserver(new ModelObserver('check_required_fields', function (Model $model) {
             $missingFields = array_diff($this->getRequiredFields(), array_keys($model->getAttributes()));
 
             foreach ($missingFields as $key => $field) {
@@ -149,9 +149,9 @@ class Meta implements IsAFieldOwner
         return $this->fieldManager;
     }
 
-    public function getModelObserver()
+    public function getModelObservableHandler()
     {
-        return $this->modelObservableManager;
+        return ModelObservableManager::getObservableHandler($this->getModelClass());
     }
 
     public function getDefaultTableName()
