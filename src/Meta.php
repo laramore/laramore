@@ -78,8 +78,14 @@ class Meta implements IsAFieldOwner
     public function __construct(string $modelClass)
     {
         $this->modelClass = $modelClass;
-        $this->modelClassName = (new \ReflectionClass($modelClass))->getShortName();
-        $this->tableName = $this->getDefaultTableName();
+
+		try {
+			$this->modelClassName = (new \ReflectionClass($modelClass))->getShortName();
+			$this->tableName = $this->getDefaultTableName();
+			$this->setDefaultObservers();
+		} catch (\ReflectionException $e) {
+			$this->tableName = $this->getDefaultTableName();
+		}
 
         // Load default fields and configurations.
         $this->fields = config('database.table.fields', []);
@@ -94,8 +100,6 @@ class Meta implements IsAFieldOwner
         }
 
         $this->fieldManager = new FieldManager($this);
-
-        $this->setDefaultObservers();
     }
 
     /**

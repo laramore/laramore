@@ -11,6 +11,7 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Laramore\Traits\Model\HasLaramore;
 use Laramore\Observers\{
     GrammarObservableManager, ModelObservableManager
 };
@@ -66,7 +67,7 @@ class LaramoreLoader extends ServiceProvider
         $this->grammarObservableManager = new GrammarObservableManager;
         $this->modelObserverManager = new ModelObservableManager;
         $this->typeManager = new TypeManager($this->defaultTypes);
-        $this->metaManager = new MetaManager($this->modelNamespace);
+        $this->metaManager = new MetaManager;
 
         $this->app->booting($this->bootingCallback());
         $this->app->booted($this->bootedCallback());
@@ -80,6 +81,12 @@ class LaramoreLoader extends ServiceProvider
     protected function bootingCallback()
     {
         return function () {
+            foreach ((new ReflectionNamespace($this->modelNamespace))->getClasses() as $modelClass) {
+                if (in_array(HasLaramore::class, $modelClass->getTraitNames())) {
+                    $this->metaManager->addMeta($modelClass->getName()::getMeta());
+                }
+            }
+
             foreach ((new ReflectionNamespace($this->grammarNamespace))->getClassNames() as $class) {
                 if ($this->grammarObservableManager->isObservable($class)) {
                     $this->grammarObservableManager->createObservableHandler($class);

@@ -27,11 +27,7 @@ class HasMany extends LinkField
         parent::owning();
 
         if (is_null($this->off)) {
-            try {
-                throw new \Exception('You need to specify `off`');
-            } catch (\Exception $e) {
-                dd($this);
-            }
+            throw new \Exception('You need to specify `off`');
         }
 
         $this->off::getMeta()->set($this->name, $this);

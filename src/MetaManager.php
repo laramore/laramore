@@ -10,8 +10,6 @@
 
 namespace Laramore;
 
-use ReflectionNamespace;
-use Laramore\Traits\Model\HasLaramore;
 use Laramore\Traits\IsLocked;
 
 class MetaManager
@@ -24,24 +22,6 @@ class MetaManager
      * @var array
      */
     protected $metas = [];
-
-    /**
-     * Load all Metas from a specific Namespace.
-     *
-     * @param string $namespace
-     */
-    public function __construct(string $namespace=null)
-    {
-        if ($namespace) {
-            $modelNamespace = new ReflectionNamespace($namespace);
-
-            foreach ($modelNamespace->getClasses() as $modelClass) {
-                if (in_array(HasLaramore::class, $modelClass->getTraitNames())) {
-                    $this->addMeta($modelClass->getName()::getMeta());
-                }
-            }
-        }
-    }
 
     /**
      * Indicate if a Meta exists for a specific table name.
@@ -111,6 +91,8 @@ class MetaManager
      */
     public function addMeta(Meta $meta)
     {
+        $this->checkLock();
+
         $tableName = $meta->getTableName();
 
         foreach ($this->getMetas() as $inMeta) {
