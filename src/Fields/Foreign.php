@@ -14,12 +14,11 @@ use Illuminate\Support\Str;
 
 class Foreign extends CompositeField
 {
-    protected $reversedName;
     protected $on;
     protected $to;
     protected $off;
     protected $from;
-    protected $reversed;
+    protected $reversedName;
 
     protected static $defaultFields = [
         'id' => [Number::class, (Increment::DEFAULT_INCREMENT | Number::FILLABLE)],
@@ -51,6 +50,8 @@ class Foreign extends CompositeField
 
     public function reversedName(string $reversedName=null)
     {
+        $this->checkLock();
+
         $this->linksName['reversed'] = $reversedName ?: '*{modelname}';
 
         return $this;
@@ -58,11 +59,9 @@ class Foreign extends CompositeField
 
     public function owning()
     {
-        $this->getLink('reversed')->on = $this->getOwner()->getModelClass();
+        $this->defineProperty('off', $this->getLink('reversed')->on = $this->getModelClass());
 
         parent::owning();
-
-        return $this;
     }
 
     protected function locking()
@@ -71,7 +70,7 @@ class Foreign extends CompositeField
             throw new \Exception('Related model settings needed. Set it by calling `on` method');
         }
 
-        $this->defineProperty('reversed', $this->getLink('reversed')->name);
+        $this->defineProperty('reversedName', $this->getLink('reversed')->name);
         $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
 
         parent::locking();
