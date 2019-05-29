@@ -11,8 +11,9 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
-use Laramore\Meta;
+use Laramore\Fields\Link\LinkField;
 use Laramore\Interfaces\IsAFieldOwner;
+use Laramore\Meta;
 
 abstract class CompositeField extends BaseField implements IsAFieldOwner
 {

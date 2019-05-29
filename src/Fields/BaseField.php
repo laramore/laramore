@@ -132,7 +132,7 @@ abstract class BaseField implements IsAField
 
     public function getModelClass()
     {
-        return $this->getMeta()->getModelClass;
+        return $this->getMeta()->getModelClass();
     }
 
     protected function addObserver(ModelObserver $observer)

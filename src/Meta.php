@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Facades\ModelObservableManager;
 use Laramore\Fields\{
-	BaseField, Field, CompositeField, LinkField, Timestamp
+	BaseField, Field, CompositeField, Link\LinkField, Timestamp
 };
 use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField, IsAFieldOwner

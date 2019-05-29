@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Fields;
+namespace Laramore\Fields\Link;
 
 class HasMany extends LinkField
 {
@@ -27,7 +27,11 @@ class HasMany extends LinkField
         parent::owning();
 
         if (is_null($this->off)) {
-            throw new \Exception('You need to specify `off`');
+            try {
+                throw new \Exception('You need to specify `off`');
+            } catch (\Exception $e) {
+                dd($this);
+            }
         }
 
         $this->off::getMeta()->set($this->name, $this);

@@ -8,9 +8,12 @@
  * @license MIT
  */
 
-namespace Laramore\Fields;
+namespace Laramore\Fields\Link;
 
 use Laramore\Meta;
+use Laramore\Fields\{
+    BaseField, CompositeField
+};
 
 abstract class LinkField extends BaseField
 {

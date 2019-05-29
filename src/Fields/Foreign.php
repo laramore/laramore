@@ -25,7 +25,7 @@ class Foreign extends CompositeField
         'id' => [Number::class, (Increment::DEFAULT_INCREMENT | Number::FILLABLE)],
     ];
     protected static $defaultLinks = [
-        'reversed' => HasMany::class,
+        'reversed' => Link\HasMany::class,
     ];
 
     public function on(string $model, string $reversedName=null)
