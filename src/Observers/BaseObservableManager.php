@@ -53,7 +53,7 @@ abstract class BaseObservableManager
     /**
      * Indicate if the given class is observable by this manager.
      *
-     * @param  string  $observableClass
+     * @param  string $observableClass
      * @return boolean
      */
     public function isObservable(string $observableClass): bool
@@ -87,7 +87,7 @@ abstract class BaseObservableManager
     /**
      * Indicate if an observable handler is managed.
      *
-     * @param  string  $observableClass
+     * @param  string $observableClass
      * @return boolean
      */
     public function hasObservableHandler(string $observableClass): bool
@@ -98,7 +98,7 @@ abstract class BaseObservableManager
     /**
      * Return the observable handler for the given observable class.
      *
-     * @param  string                $observableClass
+     * @param  string $observableClass
      * @return BaseObservableHandler
      */
     public function getObservableHandler(string $observableClass): BaseObservableHandler

@@ -79,13 +79,13 @@ class Meta implements IsAFieldOwner
     {
         $this->modelClass = $modelClass;
 
-		try {
-			$this->modelClassName = strtolower((new \ReflectionClass($modelClass))->getShortName());
-			$this->tableName = $this->getDefaultTableName();
-			$this->setDefaultObservers();
-		} catch (\ReflectionException $e) {
-			$this->tableName = $this->getDefaultTableName();
-		}
+        try {
+            $this->modelClassName = strtolower((new \ReflectionClass($modelClass))->getShortName());
+            $this->tableName = $this->getDefaultTableName();
+            $this->setDefaultObservers();
+        } catch (\ReflectionException $e) {
+            $this->tableName = $this->getDefaultTableName();
+        }
 
         // Load default fields and configurations.
         $this->fields = config('database.table.fields', []);
@@ -109,7 +109,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setDefaultObservers()
     {
-		ModelObservableManager::createObservableHandler($this->modelClass);
+        ModelObservableManager::createObservableHandler($this->modelClass);
 
         $this->getModelObservableHandler()->addObserver(new ModelObserver('autofill_default', function (Model $model) {
             $attributes = $model->getAttributes();
@@ -446,6 +446,8 @@ class Meta implements IsAFieldOwner
                         } else {
                             $unique[] = $field;
                         }
+                    } else {
+                        throw new \Exception('The field '.((string) $field).' was not recognized');
                     }
                 }
 

@@ -121,7 +121,7 @@ abstract class BaseObservableHandler
     /**
      * Return if an observe exists with the given name.
      *
-     * @param  string  $name
+     * @param  string $name
      * @return boolean
      */
     public function hasObserver(string $name): bool

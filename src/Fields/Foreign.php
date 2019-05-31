@@ -62,6 +62,8 @@ class Foreign extends CompositeField
         $this->defineProperty('off', $this->getLink('reversed')->on = $this->getModelClass());
 
         parent::owning();
+
+        $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
     }
 
     protected function locking()
@@ -71,7 +73,6 @@ class Foreign extends CompositeField
         }
 
         $this->defineProperty('reversedName', $this->getLink('reversed')->name);
-        $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
 
         parent::locking();
     }

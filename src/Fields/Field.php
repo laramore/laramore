@@ -78,6 +78,15 @@ abstract class Field extends BaseField
 
     abstract public function getType(): Type;
 
+    public function getProperty(string $key)
+    {
+        if (in_array($key, ['type'])) {
+            return $this->{'get'.ucfirst($key)}();
+        }
+
+        return parent::getProperty($key);
+    }
+
     public function getPropertyKeys(): array
     {
         return [
