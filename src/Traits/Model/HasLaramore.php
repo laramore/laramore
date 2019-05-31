@@ -10,12 +10,13 @@
 
 namespace Laramore\Traits\Model;
 
-use Laramore\Meta;
+use Laramore\Facades\TypeManager;
 use Laramore\Fields\{
     Field, CompositeField, LinkField
 };
-use Laramore\FieldManager;
-use Laramore\Builder;
+use Laramore\{
+    Meta, FieldManager, Builder
+};
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 
@@ -48,7 +49,7 @@ trait HasLaramore
 
         // Define all model metas.
         $this->setKeyName($meta->getPrimary()->attname);
-        $this->setIncrementing($meta->getPrimary()->type === 'increment');
+        $this->setIncrementing($meta->getPrimary()->type === TypeManager::getType('increment'));
         $this->setTable($meta->getTableName());
 
         parent::__construct(...$args);

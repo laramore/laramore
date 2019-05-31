@@ -80,7 +80,7 @@ class Meta implements IsAFieldOwner
         $this->modelClass = $modelClass;
 
 		try {
-			$this->modelClassName = (new \ReflectionClass($modelClass))->getShortName();
+			$this->modelClassName = strtolower((new \ReflectionClass($modelClass))->getShortName());
 			$this->tableName = $this->getDefaultTableName();
 			$this->setDefaultObservers();
 		} catch (\ReflectionException $e) {
