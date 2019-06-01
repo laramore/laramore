@@ -1,6 +1,6 @@
 <?php
 /**
- * Define a specific field.
+ * Define a specific field type.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -17,48 +17,64 @@ class Type
 {
     use IsLocked;
 
+    /**
+     * The field name.
+     *
+     * @var string
+     */
     protected $name;
+
+    /**
+     * All defined values for this type.
+     *
+     * @var array
+     */
     protected $values = [];
 
+    /**
+     * Create the type with a specific name.
+     *
+     * @param string $name
+     */
     public function __construct(string $name)
     {
         $this->name = $name;
     }
 
-    public function __call(string $method, array $args)
+    /**
+     * Indicate if the type has a value for a given name.
+     *
+     * @param  string $key
+     * @return boolean
+     */
+    public function hasValue(string $key='name'): bool
     {
-        if (count($args) === 0) {
-            if (Str::startsWith($method, 'get')) {
-                return $this->getValue(Str::camel(substr(Str::snake($method), 4)));
-            } else {
-                throw new \Exception('Method does not exist');
-            }
+        return isset($this->values[$key]);
+    }
+
+    /**
+     * Return the type value for a given name.
+     *
+     * @param  string $key
+     * @return string
+     */
+    public function getValue(string $key='name'): string
+    {
+        if ($key === 'name') {
+            $this->name;
         } else {
-            return $this->setValue($method, $args[0]);
+            return $this->values[$key];
         }
     }
 
-    public function __get(string $key)
-    {
-        return $this->getValue($key);
-    }
-
-    public function __set(string $key, $value)
-    {
-        return $this->setValue($key, $value);
-    }
-
-    public function hasValue(string $key='value')
-    {
-        return (property_exists($this, $key) || isset($this->values[$key]));
-    }
-
-    public function getValue(string $key='value')
-    {
-        return ($this->$key ?? $this->values[$key]);
-    }
-
-    public function setValue(string $key, $value)
+    /**
+     * Set the value for a given name.
+     *
+     * @param string $key
+     * @param string $value
+     * @return self
+     */
+    public function setValue(string $key, string $value): self
     {
         $this->checkLock();
 
@@ -67,10 +83,63 @@ class Type
         return $this;
     }
 
+    /**
+     * Actions when locking.
+     *
+     * @return void
+     */
     protected function locking()
     {
+        // A type needs only to be locked to avoid changes.
     }
 
+    /**
+     * Return the value for a given name.
+     *
+     * @param  string $key
+     * @return string
+     */
+    public function __get(string $key): string
+    {
+        return $this->getValue($key);
+    }
+
+    /**
+     * Set the value for a given name.
+     *
+     * @param string $key
+     * @param string $value
+     */
+    public function __set(string $key, string $value): self
+    {
+        return $this->setValue($key, $value);
+    }
+
+    /**
+     * Return the value for a given get{name} or define a value.
+     *
+     * @param  string $method If start with "get" and 0 args are defined, return the value.
+     * @param  array  $args   If one argument is set, define the value for the method name.
+     * @return mixed
+     */
+    public function __call(string $method, array $args)
+    {
+        if (count($args) === 0) {
+            if (Str::startsWith($method, 'get')) {
+                return $this->getValue(Str::camel(substr(Str::snake($method), 4)));
+            } else {
+                throw new \Exception("The method $method does not exist");
+            }
+        } else {
+            return $this->setValue($method, $args[0]);
+        }
+    }
+
+    /**
+     * Return the main value of this type: its name.
+     *
+     * @return string
+     */
     public function __toString()
     {
         return $this->name;

@@ -1,6 +1,6 @@
 <?php
 /**
- * Define a field types used by Laramore.
+ * Define a field type manager used by Laramore.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -16,39 +16,57 @@ class TypeManager
 {
     use IsLocked;
 
+    /**
+     * All existing types.
+     *
+     * @var array
+     */
     protected $types = [];
+
+    /**
+     * All type value names.
+     * Examples: migration, factory, admin
+     *
+     * @var array
+     */
     protected $valueNames = [];
 
-    public function __construct(array $defaultTypes)
+    /**
+     * Build default types managed by this manager.
+     *
+     * @param array $defaultTypes
+     */
+    public function __construct(array $defaultTypes=[])
     {
         foreach ($defaultTypes as $name) {
             $this->types[$name] = new Type($name);
         }
     }
 
-    public function __call(string $method, array $args)
+    /**
+     * Indicate if type exists with the given name.
+     *
+     * @param  string $name
+     * @return boolean
+     */
+    public function hasType(string $name): bool
     {
-        if (!$this->hasType($method)) {
-            $this->setType($method);
-        }
+        return array_key_exists($name, $this->types);
+    }
 
-        $type = $this->getType($method);
-
-        if (count($args) === 0) {
-            return $type;
+    /**
+     * Returns the type with the given name.
+     *
+     * @param  string $name
+     * @return Type
+     */
+    public function getType(string $name): Type
+    {
+        if ($this->hasType($name)) {
+            return $this->types[$name];
         } else {
-            return $type->{$args[0]};
+            throw new \Exception('Th');
         }
-    }
-
-    public function hasType(string $name)
-    {
-        return isset($this->types[$name]);
-    }
-
-    public function getType(string $name)
-    {
-        return $this->types[$name];
     }
 
     public function setType(string $name)
@@ -98,6 +116,29 @@ class TypeManager
     {
         foreach ($this->getTypes() as $type) {
             $type->lock();
+        }
+    }
+
+    /**
+     * Handle all method calls.
+     * Returns the type with given method name.
+     *
+     * @param  string $method Type name.
+     * @param  array  $args   The first argument could be the value name of the type.
+     * @return Type
+     */
+    public function __call(string $method, array $args): Type
+    {
+        if (!$this->hasType($method)) {
+            $this->setType($method);
+        }
+
+        $type = $this->getType($method);
+
+        if (count($args) === 0) {
+            return $type;
+        } else {
+            return $type->{$args[0]};
         }
     }
 }
