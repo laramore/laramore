@@ -10,9 +10,12 @@
 
 namespace Laramore\Interfaces;
 
+use Illuminate\Database\Eloquent\Model;
+use Laramore\Fields\BaseField;
+
 interface IsAFieldOwner
 {
-    public function setFieldValue($model, $field, $value);
+    public function setFieldValue(Model $model, BaseField $field, $value);
 
-    public function getFieldValue($model, $field, $value);
+    public function getFieldValue(Model $model, BaseField $field, $value);
 }

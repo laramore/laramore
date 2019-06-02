@@ -21,7 +21,9 @@ use Laramore\Interfaces\{
 };
 use Laramore\Traits\IsLocked;
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Observers\ModelObserver;
+use Laramore\Observers\{
+	ModelObserver, ModelObservableHandler
+};
 use Laramore\Template;
 
 class Meta implements IsAFieldOwner
@@ -47,11 +49,10 @@ class Meta implements IsAFieldOwner
     protected $links;
 
     /**
-     * All boolean information.
+     * Indicate if we use default timestamps.
      *
      * @var bool
      */
-    protected $hasPrimary = false;
     protected $hasTimestamps = false;
 
     /**
@@ -129,46 +130,90 @@ class Meta implements IsAFieldOwner
         }, ModelObserver::LOW_PRIORITY, 'saving'));
     }
 
-    public function getModelClass()
+    /**
+     * Return the model class.
+     *
+     * @return string
+     */
+    public function getModelClass(): string
     {
         return $this->modelClass;
     }
 
-    public function getModelClassName()
+    /**
+     * Get the model short name.
+     *
+     * @return string|null
+     */
+    public function getModelClassName(): ?string
     {
         return $this->modelClassName;
     }
 
-    public function getFieldManager()
+    /**
+     * Return the field manager for this meta.
+     *
+     * @return FieldManager
+     */
+    public function getFieldManager(): FieldManager
     {
         return $this->fieldManager;
     }
 
-    public function getModelObservableHandler()
+    /**
+     * Return the model observable handler for this meta.
+     *
+     * @return ModelObservableHandler
+     */
+    public function getModelObservableHandler(): ModelObservableHandler
     {
         return ModelObservableManager::getObservableHandler($this->getModelClass());
     }
 
-    public function getDefaultTableName()
+    /**
+     * Return the default table name for this meta.
+     *
+     * @return string
+     */
+    public function getDefaultTableName(): string
     {
         return implode('_', array_map(function ($element) {
             return Str::plural($element);
         }, explode(' ', Str::snake($this->modelClassName, ' '))));
     }
 
-    public function getTableName()
+    /**
+     * Return the table name.
+     *
+     * @return string
+     */
+    public function getTableName(): string
     {
         return $this->tableName;
     }
 
-    public function setTableName(string $tableName)
+    /**
+     * Define the table name.
+     *
+     * @param string $tableName
+     * @return self
+     */
+    public function setTableName(string $tableName): self
     {
         $this->checkLock();
 
         $this->tableName = $tableName;
+
+        return $this;
     }
 
-    protected function manipulateField(BaseField $field)
+    /**
+     * Manipulate a field as primary ones.
+     *
+     * @param  BaseField $field
+     * @return BaseField
+     */
+    protected function manipulateField(BaseField $field): BaseField
     {
         if ($field instanceof IsAPrimaryField) {
             $this->primary($field);
@@ -177,31 +222,56 @@ class Meta implements IsAFieldOwner
         return $field;
     }
 
-    public function parseAttname(string $name)
+    /**
+     * Parse the attribute name.
+     *
+     * @param  string $name
+     * @return string
+     */
+    public function parseAttname(string $name): string
     {
         return Str::snake($name);
     }
 
-    public function hasField(string $name)
+    /**
+     * Indicate if the meta as a field with a given name.
+     *
+     * @param  string $name
+     * @return boolean
+     */
+    public function hasField(string $name): bool
     {
         return isset($this->getFields()[$name]);
     }
 
-    public function getField(string $name)
+    /**
+     * Return the field with a given name.
+     *
+     * @param  string $name
+     * @return Field
+     */
+    public function getField(string $name): Field
     {
         if ($this->hasField($name)) {
             return $this->getFields()[$name];
         } else {
-            throw new \Exception($name.' field does not exist');
+            throw new \Exception("The field $name does not exist");
         }
     }
 
-    public function setField(string $name, Field $field)
+    /**
+     * Define a specific field with a given name.
+     *
+     * @param string $name
+     * @param Field  $field
+     * @return self
+     */
+    public function setField(string $name, Field $field): self
     {
         $this->checkLock();
 
         if ($this->has($name)) {
-            throw new \Exception('It is not allowed to reset the field '.$name);
+            throw new \Exception('It is not allowed to re-set the field '.$name);
         }
 
         $field = $this->manipulateField($field)->own($this, $this->parseAttname($name));
@@ -210,26 +280,51 @@ class Meta implements IsAFieldOwner
         return $this;
     }
 
-    public function getFields()
+    /**
+     * Return all fields.
+     *
+     * @return array
+     */
+    public function getFields(): array
     {
+
         return $this->fields;
     }
 
-    public function hasLink(string $name)
+	/**
+	 * Indicate if the meta has a link field with a given name.
+	 *
+	 * @param  string  $name
+	 * @return boolean
+	 */
+    public function hasLink(string $name): bool
     {
         return isset($this->getLinks()[$name]);
     }
 
-    public function getLink(string $name)
+	/**
+	 * Return the link field with a given name.
+	 *
+	 * @param  string $name
+	 * @return LinkField
+	 */
+    public function getLink(string $name): LinkField
     {
         if ($this->hasLink($name)) {
             return $this->getLinks()[$name];
         } else {
-            throw new \Exception($name.' link field does not exist');
+            throw new \Exception("The link field $name does not exist");
         }
     }
 
-    public function setLink(string $name, LinkField $link)
+	/**
+	 * Define a link field with a given name.
+	 *
+	 * @param  string    $name
+	 * @param  LinkField $link
+	 * @return self
+	 */
+    public function setLink(string $name, LinkField $link): self
     {
         $this->checkLock();
 
@@ -251,17 +346,34 @@ class Meta implements IsAFieldOwner
         return $this;
     }
 
-    public function getLinks()
+	/**
+	 * Return all link fields.
+	 *
+	 * @return array
+	 */
+    public function getLinks(): array
     {
         return $this->links;
     }
 
+	/**
+	 * Indicate if this meta has a composite field with a given name.
+	 *
+	 * @param  string  $name
+	 * @return boolean
+	 */
     public function hasComposite(string $name)
     {
         return isset($this->getComposites()[$name]);
     }
 
-    public function getComposite(string $name)
+	/**
+	 * Return a composite field with a given name.
+	 *
+	 * @param  string $name
+	 * @return CompositeField
+	 */
+    public function getComposite(string $name): CompositeField
     {
         if ($this->hasComposite($name)) {
             return $this->getComposites()[$name];
@@ -270,7 +382,14 @@ class Meta implements IsAFieldOwner
         }
     }
 
-    public function setComposite(string $name, CompositeField $composite)
+	/**
+	 * Define a composite field with a given name.
+	 *
+	 * @param string         $name
+	 * @param CompositeField $composite
+	 * @return self
+	 */
+    public function setComposite(string $name, CompositeField $composite): self
     {
         $this->checkLock();
 
@@ -283,7 +402,7 @@ class Meta implements IsAFieldOwner
 
         foreach ($composite->getFields() as $field) {
             if (!$field->isOwned() || $field->getOwner() !== $composite) {
-                throw new \Exception('The field '.$name.' must be owned by the composed field '.$value->name);
+                throw new \Exception("The field $name must be owned by the composed field ".$value->name);
             }
 
             $this->fields[$field->name] = $this->manipulateField($field);
@@ -292,27 +411,50 @@ class Meta implements IsAFieldOwner
         return $this;
     }
 
-    public function getComposites()
+	/**
+	 * Return all composite fields.
+	 *
+	 * @return array
+	 */
+    public function getComposites(): array
     {
         return $this->composites;
     }
 
-    public function has(string $name)
+	/**
+	 * Indicate if this meta has a classic, link or composite field with a given name.
+	 *
+	 * @param  string  $name
+	 * @return boolean
+	 */
+    public function has(string $name): bool
     {
         return isset($this->allFields()[$name]);
     }
 
-    public function get(string $name)
+	/**
+	 * Indicate if this meta has a classic, link or composite field with a given name.
+	 *
+	 * @param  string $name
+	 * @return BaseField
+	 */
+    public function get(string $name): BaseField
     {
         if ($this->has($name)) {
             return $this->allFields()[$name];
         } else {
-            throw new \Exception($name.' real or link field does not exist');
+			throw new \Exception($name.' field does not exist');
         }
     }
 
-    // TODO: Ajouter les conf par défaut pour chaque field s'il n'existe pas => StringField: [length: 256]
-    public function set(string $name, BaseField $field)
+	/**
+	 * Define a classic, link or composite field with a given name.
+	 *
+	 * @param string    $name
+	 * @param BaseField $field
+	 * @return self
+	 */
+    public function set(string $name, BaseField $field): self
     {
         if ($field instanceof CompositeField) {
             return $this->setComposite($name, $field);
@@ -320,12 +462,17 @@ class Meta implements IsAFieldOwner
             return $this->setLink($name, $field);
         } else if ($field instanceof Field) {
             return $this->setField($name, $field);
-        } else {
-            throw new \Exception('To set a specific field, you have to give a Field object/string');
-        }
+
+		}
+        throw new \Exception('To set a specific field, you have to give a Field, LinkField or CompositeField');
     }
 
-    public function allFields()
+	/**
+	 * Return all classic, link or composite fields.
+	 *
+	 * @return array
+	 */
+    public function allFields(): array
     {
         return array_merge(
 	        $this->fields,
@@ -334,87 +481,125 @@ class Meta implements IsAFieldOwner
         );
     }
 
-    public function getTypedFields(string $type)
+	/**
+	 * Return all fields with a specific option.
+	 *
+	 * @param  string $type
+	 * @return array
+	 */
+    public function getFieldsWithOption(string $option): array
     {
         $fields = [];
 
-        foreach ($this->getFields() as $name => $field) {
-            if ($field->$type) {
-                $fields[] = $name;
+        foreach ($this->getFields() as $field) {
+            if ($field->$option) {
+                $fields[] = $field;
             }
         }
 
         return $fields;
     }
 
-    public function getFillableFields()
+	/**
+	 * Return all fillable fields.
+	 *
+	 * @return array
+	 */
+    public function getFillableFields(): array
     {
-        return $this->getTypedFields('fillable');
+        return $this->getFieldsWithOption('fillable');
     }
 
-    public function getVisibleFields()
+	/**
+	 * Return all visibile fields.
+	 *
+	 * @return array
+	 */
+    public function getVisibleFields(): array
     {
-        return $this->getTypedFields('visible');
+        return $this->getFieldsWithOption('visible');
     }
 
-    public function getRequiredFields()
+	/**
+	 * Return all required fields.
+	 *
+	 * @return array
+	 */
+    public function getRequiredFields(): array
     {
-        return $this->getTypedFields('required');
+        return $this->getFieldsWithOption('required');
     }
 
-    public function getUniques()
+	/**
+	 * Return all unique constraints.
+	 *
+	 * @return array
+	 */
+    public function getUniques(): array
     {
         return $this->uniques;
     }
 
-    public function getIndexes()
+	/**
+	 * Return all indexes.
+	 *
+	 * @return array
+	 */
+    public function getIndexes(): array
     {
         return $this->indexes;
     }
 
-    public function getPrimaries()
+	/**
+	 * Return the primary field.
+	 *
+	 * @return Field
+	 */
+    public function getPrimary(): Field
     {
         return $this->primary;
     }
 
+	/**
+	 * Lock all owned fields.
+	 *
+	 * @return void
+	 */
     protected function locking()
     {
-        $this->checkLock();
-
         foreach ($this->allFields() as $field) {
             if ($field->getOwner() === $this) {
                 $field->lock();
             }
         }
 
-        $this->locked = true;
+        return $this;
+    }
+
+	/**
+	 * Define the primary field.
+	 *
+	 * @param  Field $field
+	 * @return self
+	 */
+    public function primary($field): self
+    {
+        if ($this->primary) {
+            throw new \Exception('A primary field is already set');
+        }
+
+        $this->primary = $field;
 
         return $this;
     }
 
-    public function getPrimary()
-    {
-        return $this->primary;
-    }
-
-    public function primary(...$fields)
-    {
-        if ($this->hasPrimary) {
-            throw new \Exception('It is not possible de set primary fields after another');
-        }
-
-        $this->hasPrimary = true;
-
-        if (count($fields) === 1) {
-            $this->primary = $fields[0];
-        } else if (count($fields) > 1) {
-            $this->primary = $fields;
-        }
-
-        return $this;
-    }
-
-    public function unique(...$fields)
+	/**
+	 * Define a unique relation between multiple fields.
+	 *
+	 * @param  mixed $fields
+	 * @return self
+	 */
+    public function unique(...$fields): self
     {
         $unique = [];
 
@@ -467,7 +652,12 @@ class Meta implements IsAFieldOwner
         return $this;
     }
 
-    public function useTimestamps()
+	/**
+	 * Add default timestamp fields.
+	 *
+	 * @return self
+	 */
+    public function useTimestamps(): self
     {
         try {
             $this->set(
@@ -488,32 +678,61 @@ class Meta implements IsAFieldOwner
         return $this;
     }
 
-    public function timestamps()
-    {
-        return $this->useTimestamps();
-    }
-
-    public function hasTimestamps()
+	/**
+	 * Indicate if the meta use default timestamps.
+	 *
+	 * @return boolean
+	 */
+    public function hasTimestamps(): bool
     {
         return $this->hasTimestamps;
     }
 
-    public function setFieldValue($model, $field, $value)
+	/**
+	 * Return the set value for a specific field.
+	 *
+	 * @param Model $model
+	 * @param BaseField $field
+	 * @param mixed $value
+	 * @return mixed
+	 */
+    public function setFieldValue(Model $model, BaseField $field, $value)
     {
         return $field->setValue($model, $value);
     }
 
-    public function getFieldValue($model, $field, $value)
+	/**
+	 * Return the get value for a specific field.
+	 *
+	 * @param Model $model
+	 * @param BaseField $field
+	 * @param mixed $value
+	 * @return mixed
+	 */
+    public function getFieldValue(Model $model, BaseField $field, $value)
     {
         return $field->getValue($model, $value);
     }
 
+	/**
+	 * Return the field with a given name.
+	 *
+	 * @param  string $name
+	 * @return BaseField
+	 */
     public function __get(string $name): BaseField
     {
         return $this->get($name);
     }
 
-    public function __set(string $name, $value): self
+	/**
+	 * Set a field with a given name.
+	 *
+	 * @param string $name
+	 * @param BaseField $value
+	 * @return self
+	 */
+    public function __set(string $name, BaseField $value): self
     {
         return $this->set($name, $value);
     }

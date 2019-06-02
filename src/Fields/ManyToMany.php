@@ -80,7 +80,7 @@ class ManyToMany extends CompositeField
             $onName,
             $onField = Foreign::field()->on($this->on)->reversedName('pivot'.ucfirst($offTable))
         );
-        $this->pivotMeta->tableName = $offTable.'_'.$onTable;
+        $this->pivotMeta->setTableName($offTable.'_'.$onTable);
 
         $this->setProperty('pivotTo', $onField->from);
         $this->setProperty('pivotFrom', $offField->from);
