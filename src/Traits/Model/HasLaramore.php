@@ -58,14 +58,10 @@ trait HasLaramore
     /**
      * Allow the user to define all metas for the current model.
      *
-     * @param  Meta         $meta   All model meta data.
-     * @param  FieldManager $fields All field management for the current model.
+     * @param  Meta $meta All model meta data.
      * @return void
      */
-    protected static function __meta(Meta $meta, FieldManager $fields)
-    {
-        throw new \Exception('The __meta method is not defined');
-    }
+    abstract protected static function __meta(Meta $meta);
 
     /**
      * Generate one time the model meta.
@@ -77,7 +73,7 @@ trait HasLaramore
         static::$meta = new Meta(static::class);
 
         // Generate all meta data defined by the user in the current model.
-        static::__meta(static::$meta, static::$meta->fields);
+        static::__meta(static::$meta);
     }
 
     /**

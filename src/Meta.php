@@ -64,13 +64,6 @@ class Meta implements IsAFieldOwner
     protected $uniques;
 
     /**
-     * FieldManager.
-     *
-     * @var object
-     */
-    protected $fieldManager;
-
-    /**
      * Create a Meta for a specific model.
      *
      * @param string $modelClass
@@ -98,8 +91,6 @@ class Meta implements IsAFieldOwner
         if (config('database.table.timestamps', false)) {
             $this->useTimestamps();
         }
-
-        $this->fieldManager = new FieldManager($this);
     }
 
     /**
@@ -507,20 +498,6 @@ class Meta implements IsAFieldOwner
         return $this->hasTimestamps;
     }
 
-    public function __get($name)
-    {
-        if ($name === 'fields') {
-            return $this->fieldManager;
-        }
-    }
-
-    public function __set($name, $value)
-    {
-        if ($name === 'tableName') {
-            return $this->setTableName($value);
-        }
-    }
-
     public function setFieldValue($model, $field, $value)
     {
         return $field->setValue($model, $value);
@@ -529,5 +506,15 @@ class Meta implements IsAFieldOwner
     public function getFieldValue($model, $field, $value)
     {
         return $field->getValue($model, $value);
+    }
+
+    public function __get(string $name): BaseField
+    {
+        return $this->get($name);
+    }
+
+    public function __set(string $name, $value): self
+    {
+        return $this->set($name, $value);
     }
 }

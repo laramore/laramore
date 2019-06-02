@@ -61,7 +61,7 @@ class Type
     public function getValue(string $key='name'): string
     {
         if ($key === 'name') {
-            $this->name;
+            return $this->name;
         } else {
             return $this->values[$key];
         }
