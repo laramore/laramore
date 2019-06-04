@@ -16,10 +16,10 @@ use Illuminate\Support\Str;
 class Builder extends BuilderBase
 {
     /**
-     * Dynamically handle calls into the query instance.
+     * Dynamically handle calls into the query or meta instance.
      *
-     * @param  string $method
-     * @param  array  $parameters
+     * @param  mixed $method
+     * @param  mixed $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -55,32 +55,37 @@ class Builder extends BuilderBase
         return $this->handleCustomCall($method, $parameters);
     }
 
-    protected function handleCustomCall($method, $parameters)
+    /**
+     * Handle where conditions on a specific field.
+     *
+     * @param  string $method
+     * @param  array  $parameters
+     * @return mixed
+     */
+    protected function handleCustomCall(string $method, array $parameters)
     {
         $finder = Str::snake($method);
         $parts = explode('_', $finder);
-        $find = true;
+        $find = false;
 
         switch ($parts[0]) {
-            case 'where':
-                $boolean = 'and';
-                $find = false;
             case 'or':
-                $boolean = ($boolean ?? $parts[0]);
+                $boolean = $parts[0];
             case 'and':
                 if ($parts[1] === 'where') {
-                    $find = false;
                     unset($parts[1]);
+                } else {
                 }
 
+            case 'where':
                 unset($parts[0]);
 
-            default:
-                $name = implode($parts, '_');
                 $boolean = ($boolean ?? 'and');
+
                 break;
         }
 
+        $name = implode($parts, '_');
         $meta = $this->model::getMeta();
 
         if ($meta->has($name)) {
