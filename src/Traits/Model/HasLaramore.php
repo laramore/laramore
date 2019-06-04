@@ -42,9 +42,13 @@ trait HasLaramore
         }
 
         // Define here fillable and visible fields.
-        $this->fillable = $meta->getFillableFields();
-        $this->visible = $meta->getVisibleFields();
-        $this->required = $meta->getRequiredFields();
+        $getNames = function ($field) {
+            return $field->name;
+        };
+
+        $this->fillable = array_map($getNames, $meta->getFillableFields());
+        $this->visible = array_map($getNames, $meta->getVisibleFields());
+        $this->required = array_map($getNames, $meta->getRequiredFields());
         $this->timestamps = $meta->hasTimestamps();
 
         // Define all model metas.
@@ -66,7 +70,7 @@ trait HasLaramore
     /**
      * Generate one time the model meta.
      *
-     * @return Meta
+     * @return void
      */
     protected static function prepareMeta()
     {
@@ -137,54 +141,6 @@ trait HasLaramore
     {
         if ($this->hasField($key)) {
             return $this->getField($key)->castValue($this, $value);
-        }
-    }
-
-    /**
-     * Handle dynamically unknown calls.
-     * - field(): Returns the relation with the field
-     * - field(...$args): Returns a where condition
-     * - whereField(...$args): Returns a where condition
-     * - andField(...$args): Returns a where condition
-     * - orField(...$args): Returns a where condition
-     * - andWhereField(...$args): Returns a where condition
-     * - orWhereField(...$args): Returns a where condition
-     * - castField($value): Returns the casted value (can throw an exception)
-     *
-     * @param  mixed $method
-     * @param  mixed $args
-     * @return mixed
-     */
-    public function __call($method, $args)
-    {
-        $key = Str::snake($method);
-
-        if (static::hasField($key)) {
-            $field = static::getField($key);
-
-            if (count($args) === 0) {
-                return $field->relationValue($this);
-            } else {
-                return $field->whereValue($this, ...$args);
-            }
-        } else {
-            if (Str::startsWith($key, 'cast_')) {
-                return $this->cast(Str::after($key, 'cast_'), $args[0]);
-            } else {
-                $parts = explode('_', $key);
-
-                if (static::getMeta()->has($fieldName = array_pop($parts))) {
-                    $field = static::getMeta()->get($fieldName);
-                    $name = Str::camel(implode('_', $parts)).'Value';
-                    if (\method_exists($field, $name)) {
-                        return $field->$name($this, $this->{$fieldName}, ...$args);
-                    } else {
-                        throw new \Exception('This method does not exists for the field');
-                    }
-                } else {
-                    return parent::__call($method, $args);
-                }
-            }
         }
     }
 
@@ -367,7 +323,7 @@ trait HasLaramore
      * Insert the given attributes and set the ID on the model.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  array                                 $attributes
+     * @param  mixed                                 $attributes
      * @return void
      */
     protected function insertAndSetId(\Illuminate\Database\Eloquent\Builder $query, $attributes)
@@ -410,5 +366,48 @@ trait HasLaramore
     public static function addModelEvent(string $event, $callback)
     {
         static::registerModelEvent($event, $callback);
+    }
+
+    /**
+     * Handle dynamically unknown calls.
+     * - {fieldName}(): Returns the relation with the field.
+     * - {fieldName}(...$args): Set the field value for this instance.
+     * - {anyMethod}{FieldName}(...$args): Returns the value of the field method {anyMethod}Value.
+     *
+     * @param  mixed $method
+     * @param  mixed $args
+     * @return mixed
+     */
+    public function __call($method, $args)
+    {
+        if (static::hasField($method)) {
+            $field = static::getField($method);
+
+            if (count($args) === 0) {
+                return $field->relationValue($this);
+            } else {
+                return $field->setValue($this, ...$args);
+            }
+        } else {
+            $parts = explode('_', Str::snake($method));
+            $fieldName = '';
+
+            while (count($parts) > 1) {
+                $fieldName = array_pop($parts).Str::studly($fieldName);
+
+                if (static::getMeta()->has($fieldName)) {
+                    $field = static::getMeta()->get($fieldName);
+                    $name = Str::camel(implode('_', $parts)).'Value';
+
+                    if (\method_exists($field, $name)) {
+                        return $field->$name($this, $this->{$fieldName}, ...$args);
+                    } else {
+                        throw new \Exception("The method $method does not exists for the field $name");
+                    }
+                }
+            }
+        }
+
+        return parent::__call($method, $args);
     }
 }
