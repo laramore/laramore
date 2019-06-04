@@ -39,7 +39,7 @@ trait ManyToManyRelation
 
     public function setValue($model, $value)
     {
-        return $this->castValue($model, $value);
+        return $this->sync($model, $value);
     }
 
     public function relationValue($model)

@@ -325,11 +325,6 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         $model->setAttribute($this->name, $value);
     }
 
-    public function relationValue($model)
-    {
-        return $this;
-    }
-
     public function whereValue($model, ...$args)
     {
         return $model->where($this->name, ...$args);

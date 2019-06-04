@@ -303,7 +303,7 @@ trait HasLaramore
      * Set the array of model attributes. No checking is done.
      *
      * @param  array   $attributes
-     * @param  boolean $sync
+     * @param  mixed $sync
      * @return $this
      */
     public function setRawAttributes(array $attributes, $sync=false)

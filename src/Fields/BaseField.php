@@ -142,11 +142,8 @@ abstract class BaseField implements IsAField
         return $this;
     }
 
-    /**
-     * Method called during the locking.
-     * Has to be protected or private.
-     *
-     * @return void
-     */
-    abstract protected function locking();
+    public function relationValue($model)
+    {
+        return $this->whereValue($model, $model->{$this->name});
+    }
 }

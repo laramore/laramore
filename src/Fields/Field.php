@@ -242,11 +242,6 @@ abstract class Field extends BaseField
         return $value;
     }
 
-    public function relationValue($model)
-    {
-        return $this->whereValue($model, $model->{$this->name});
-    }
-
     public function whereValue($query, ...$args)
     {
         return $query->where($this->name, ...$args);
