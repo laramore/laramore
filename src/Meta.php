@@ -202,7 +202,7 @@ class Meta implements IsAFieldOwner
      */
     public function setTableName(string $tableName): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->tableName = $tableName;
 
@@ -270,7 +270,7 @@ class Meta implements IsAFieldOwner
      */
     public function setField(string $name, Field $field): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to re-set the field '.$name);
@@ -327,7 +327,7 @@ class Meta implements IsAFieldOwner
      */
     public function setLink(string $name, LinkField $link): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);
@@ -392,7 +392,7 @@ class Meta implements IsAFieldOwner
      */
     public function setComposite(string $name, CompositeField $composite): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);

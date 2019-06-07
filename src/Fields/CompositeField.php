@@ -239,7 +239,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
 
     public function unique()
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->unique[] = $this->getFields();
 

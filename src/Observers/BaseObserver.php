@@ -64,6 +64,7 @@ abstract class BaseObserver
      * @param string  $name
      * @param Closure $callback
      * @param integer $priority
+     * @param mixed   $data
      */
     public function __construct(string $name, Closure $callback, int $priority=self::MEDIUM_PRIORITY, $data=[])
     {
@@ -112,7 +113,7 @@ abstract class BaseObserver
      */
     public function setCallback(Closure $callback): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->callback = $callback;
 
@@ -127,7 +128,7 @@ abstract class BaseObserver
      */
     public function setPriority(int $priority): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($priority < static::MAX_PRIORITY || $priority > static::MIN_PRIORITY) {
             throw new \Exception('The priority must be beetween '.static::MAX_PRIORITY.' and '.static::MIN_PRIORITY);
@@ -146,7 +147,7 @@ abstract class BaseObserver
      */
     public function observe($entities): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         foreach ((array) $entities as $element) {
             if (!in_array($element, $this->observed)) {
@@ -165,7 +166,7 @@ abstract class BaseObserver
      */
     public function observeOnly($entities): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->observed = [];
 
@@ -180,7 +181,7 @@ abstract class BaseObserver
      */
     public function except($entities): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         foreach ($this->observed as $key => $element) {
             if (!in_array($element, (array) $entities)) {

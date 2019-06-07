@@ -91,7 +91,7 @@ class MetaManager
      */
     public function addMeta(Meta $meta)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $tableName = $meta->getTableName();
 

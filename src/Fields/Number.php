@@ -50,7 +50,7 @@ class Number extends Field
 
     protected function addRule(int $rule)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($this->rulesContain($rule, self::UNSIGNED)) {
             $this->defineProperty('unsigned', true);
@@ -61,7 +61,7 @@ class Number extends Field
 
     protected function removeRule(int $rule)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($this->rulesContain($rule, self::UNSIGNED)) {
             $this->defineProperty('unsigned', false);
@@ -72,7 +72,7 @@ class Number extends Field
 
     public function unsigned(bool $unsigned=true, bool $positive=true)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($unsigned) {
             if ($positive) {
@@ -88,7 +88,7 @@ class Number extends Field
 
     public function positive()
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->addRule(self::POSITIVE);
         $this->removeRule(self::NEGATIVITY);
@@ -98,7 +98,7 @@ class Number extends Field
 
     public function negative()
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->addRule(self::NEGATIVE);
 

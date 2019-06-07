@@ -69,7 +69,7 @@ abstract class BaseObservableManager
      */
     public function createObservableHandler(string $observableClass): BaseObservableHandler
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if (!$this->isObservable($observableClass)) {
             throw new \Exception('This class is not observable by this type of handler');

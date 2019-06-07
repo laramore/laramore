@@ -12,6 +12,11 @@ namespace Laramore\Exceptions;
 
 class LaramoreException extends \RuntimeException
 {
+    /**
+     * The instance creating this exception.
+     *
+     * @var object
+     */
     protected $instance;
 
     /**

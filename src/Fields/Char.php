@@ -75,7 +75,7 @@ class Char extends Text
 
     public function length(int $length)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($length <= 0) {
             throw new \Exception('The length must be a positive number');

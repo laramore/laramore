@@ -38,7 +38,7 @@ class Email extends Pattern
 
     public function cdn($cdns)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         foreach ((array) $cdns as $cdn) {
             if (!preg_match($this->cdnPattern, $cdn)) {

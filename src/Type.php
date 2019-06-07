@@ -76,7 +76,7 @@ class Type
      */
     public function setValue(string $key, string $value): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->values[$key] = $value;
 
@@ -109,6 +109,7 @@ class Type
      *
      * @param string $key
      * @param string $value
+     * @return self
      */
     public function __set(string $key, string $value): self
     {

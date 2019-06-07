@@ -77,7 +77,7 @@ abstract class BaseObservableHandler
      */
     public function addObserver(BaseObserver $observer): self
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $observerClass = $this->getObserverClass();
 
@@ -170,7 +170,7 @@ abstract class BaseObservableHandler
      */
     public function removeObserver(string $name)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         foreach ($this->observers as $key => $observer) {
             if ($observer->getName() === $name) {
@@ -192,7 +192,7 @@ abstract class BaseObservableHandler
      */
     public function __call(string $method, array $args)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if (count($args) === 1 && $args[0] instanceof $this->observerClass) {
             $this->addObserver($args[0]->observe($method));

@@ -14,6 +14,11 @@ use Laramore\Exceptions\LockException;
 
 trait IsLocked
 {
+    /**
+     * Indicate if the instance is locked or not.
+     *
+     * @var boolean
+     */
     protected $locked = false;
 
     /**
@@ -24,7 +29,7 @@ trait IsLocked
     public function lock(): self
     {
         // Check if the instance is already locked.
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         // Custom locking for each instance.
         $this->locking();
@@ -58,7 +63,49 @@ trait IsLocked
      */
     protected function getLockedMessage(): string
     {
-        return 'An instance is locked and can not change';
+        return 'This instance is locked and can not change';
+    }
+
+    /**
+     * Return the not locked exception message.
+     *
+     * @return string
+     */
+    protected function getNotLockedMessage(): string
+    {
+        return 'This instance requires to be locked';
+    }
+
+    /**
+     * Throw an exception if the instance is the wrong lock status.
+     *
+     * @param  boolean $locked
+     * @param  string  $lockedElement
+     * @return self
+     */
+    protected function checkNeedsToBeLocked(bool $locked, string $lockedElement=null): self
+    {
+        if ($this->isLocked() !== $locked) {
+            // Load the method calling the needsToBeLocked.
+            if (\is_null($lockedElement)) {
+                $lockedElement = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2]['function'].'()';
+            }
+
+            throw new LockException($this, $locked ? $this->getNotLockedMessage() : $this->getLockedMessage(), $lockedElement);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Throw an exception if the instance is unlocked.
+     *
+     * @param string|null $lockedElement
+     * @return self
+     */
+    public function needsToBeLocked(string $lockedElement=null): self
+    {
+        return $this->checkNeedsToBeLocked(true, $lockedElement);
     }
 
     /**
@@ -67,17 +114,8 @@ trait IsLocked
      * @param string|null $lockedElement
      * @return self
      */
-    public function checkLock(string $lockedElement=null): self
+    public function needsToBeUnlocked(string $lockedElement=null): self
     {
-        if (!$this->isLocked()) {
-            // Load the method calling the checkLock.
-            if (\is_null($lockedElement)) {
-                $lockedElement = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'].'()';
-            }
-
-            throw new LockException($this, $this->getLockedMessage(), $lockedElement);
-        }
-
-        return $this;
+        return $this->checkNeedsToBeLocked(false, $lockedElement);
     }
 }

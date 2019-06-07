@@ -29,7 +29,7 @@ class ManyToMany extends CompositeField
 
     public function on(string $model, string $reversedName=null)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->defineProperty('on', $this->getLink('reversed')->off = $model);
         $this->to($model::getMeta()->getPrimary()->attname);
@@ -41,7 +41,7 @@ class ManyToMany extends CompositeField
 
     public function to(string $name)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->defineProperty('to', $this->getLink('reversed')->from = $name);
 

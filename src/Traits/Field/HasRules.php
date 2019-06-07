@@ -45,7 +45,7 @@ trait HasRules
      */
     protected function addRule(int $rule)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->rules |= $rule;
 
@@ -75,7 +75,7 @@ trait HasRules
      */
     protected function removeRule(int $rule)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->rules ^= ($this->rules & $rule);
 

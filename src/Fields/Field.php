@@ -121,7 +121,7 @@ abstract class Field extends BaseField
 
     public function required(bool $required=true)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($required) {
             return $this->addRule(self::REQUIRED);
@@ -132,7 +132,7 @@ abstract class Field extends BaseField
 
     public function fillable(bool $fillable=true)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($fillable) {
             return $this->addRule(self::FILLABLE);
@@ -143,7 +143,7 @@ abstract class Field extends BaseField
 
     public function visible(bool $visible=true)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($visible) {
             return $this->addRule(self::VISIBLE);
@@ -161,7 +161,7 @@ abstract class Field extends BaseField
 
     public function nullable(bool $nullable=true)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($nullable) {
             $this->addRuleFromHasRule(self::NULLABLE);
@@ -177,7 +177,7 @@ abstract class Field extends BaseField
 
     public function default($value=null)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if (is_null($value)) {
             $this->nullable();
@@ -212,7 +212,7 @@ abstract class Field extends BaseField
 
     protected function addRule(int $rule)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if ($this->rulesContain($rule, self::NULLABLE)) {
             $this->nullable();

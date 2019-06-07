@@ -20,7 +20,6 @@ abstract class BaseField implements IsAField
 {
     use IsOwnedAndLocked;
 
-    protected $name;
     protected $nullable;
 
     public function __call(string $method, array $args)
@@ -85,7 +84,7 @@ abstract class BaseField implements IsAField
 
     public function setProperty(string $key, $value)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if (method_exists($this, $key)) {
             call_user_func([$this, $key], $value);
@@ -112,7 +111,7 @@ abstract class BaseField implements IsAField
      */
     public function name(string $name)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if (!is_null($this->name)) {
             throw new \Exception('The field name cannot be defined multiple times');

@@ -71,7 +71,7 @@ class TypeManager
 
     public function setType(string $name)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->types[$name] = $type = new Type($name);
 
@@ -94,7 +94,7 @@ class TypeManager
 
     public function addValueName(string $name)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         if (!$this->hasValueName($name)) {
             $this->valueNames[] = $name;

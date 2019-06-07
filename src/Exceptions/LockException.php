@@ -12,6 +12,12 @@ namespace Laramore\Exceptions;
 
 class LockException extends LaramoreException
 {
+    /**
+     * Locked element creating this exception.
+     * Could be a method or a locked attribute.
+     *
+     * @var string
+     */
     protected $element;
 
     /**

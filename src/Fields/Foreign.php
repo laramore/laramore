@@ -29,7 +29,7 @@ class Foreign extends CompositeField
 
     public function on(string $model, string $reversedName=null)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->defineProperty('on', $this->getLink('reversed')->off = $model);
         $this->to($this->getLink('reversed')->off::getMeta()->getPrimary()->attname);
@@ -41,7 +41,7 @@ class Foreign extends CompositeField
 
     public function to(string $name)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->defineProperty('to', $this->getLink('reversed')->from = $name);
 
@@ -50,7 +50,7 @@ class Foreign extends CompositeField
 
     public function reversedName(string $reversedName=null)
     {
-        $this->checkLock();
+        $this->needsToBeUnlocked();
 
         $this->linksName['reversed'] = $reversedName ?: '*{modelname}';
 
