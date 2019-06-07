@@ -42,13 +42,9 @@ trait HasLaramore
         }
 
         // Define here fillable and visible fields.
-        $getNames = function ($field) {
-            return $field->name;
-        };
-
-        $this->fillable = array_map($getNames, $meta->getFillableFields());
-        $this->visible = array_map($getNames, $meta->getVisibleFields());
-        $this->required = array_map($getNames, $meta->getRequiredFields());
+        $this->fillable = $meta->getFillableFieldNames();
+        $this->visible = $meta->getVisibleFieldNames();
+        $this->required = $meta->getRequiredFieldNames();
         $this->timestamps = $meta->hasTimestamps();
 
         // Define all model metas.
@@ -302,7 +298,7 @@ trait HasLaramore
     /**
      * Set the array of model attributes. No checking is done.
      *
-     * @param  array   $attributes
+     * @param  array $attributes
      * @param  mixed $sync
      * @return $this
      */

@@ -118,7 +118,7 @@ class Meta implements IsAFieldOwner
         }, ModelObserver::HIGH_PRIORITY, 'saving'));
 
         $this->getModelObservableHandler()->addObserver(new ModelObserver('check_required_fields', function (Model $model) {
-            $missingFields = array_diff($this->getRequiredFields(), array_keys($model->getAttributes()));
+            $missingFields = array_diff($this->getRequiredFieldNames(), array_keys($model->getAttributes()));
 
             foreach ($missingFields as $key => $field) {
                 if ($this->getField($field)->nullable) {
@@ -502,6 +502,25 @@ class Meta implements IsAFieldOwner
     }
 
     /**
+     * Return all field names with a specific option.
+     *
+     * @param  string $option
+     * @return array
+     */
+    public function getFieldNamesWithOption(string $option): array
+    {
+        $fields = [];
+
+        foreach ($this->getFields() as $field) {
+            if ($field->$option) {
+                $fields[] = $field->name;
+            }
+        }
+
+        return $fields;
+    }
+
+    /**
      * Return all fillable fields.
      *
      * @return array
@@ -529,6 +548,36 @@ class Meta implements IsAFieldOwner
     public function getRequiredFields(): array
     {
         return $this->getFieldsWithOption('required');
+    }
+
+    /**
+     * Return all fillable fieldNames.
+     *
+     * @return array
+     */
+    public function getFillableFieldNames(): array
+    {
+        return $this->getFieldNamesWithOption('fillable');
+    }
+
+    /**
+     * Return all visibile fieldNames.
+     *
+     * @return array
+     */
+    public function getVisibleFieldNames(): array
+    {
+        return $this->getFieldNamesWithOption('visible');
+    }
+
+    /**
+     * Return all required fieldNames.
+     *
+     * @return array
+     */
+    public function getRequiredFieldNames(): array
+    {
+        return $this->getFieldNamesWithOption('required');
     }
 
     /**
