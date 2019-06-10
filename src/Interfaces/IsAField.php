@@ -18,11 +18,11 @@ interface IsAField
     /**
      * Define the owner of the field.
      *
-     * @param  mixed  $owner
+     * @param  object $owner
      * @param  string $name  Name of the field.
      * @return static
      */
-    public function own($owner, string $name);
+    public function own(object $owner, string $name);
 
     /**
      * Return the current owner.

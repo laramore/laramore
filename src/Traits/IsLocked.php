@@ -77,6 +77,16 @@ trait IsLocked
     }
 
     /**
+     * Return the method name calling the need method.
+     *
+     * @return string
+     */
+    protected function getDebugMethodName(): string
+    {
+        return \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 4)[3]['function'].'()';
+    }
+
+    /**
      * Throw an exception if the instance is the wrong lock status.
      *
      * @param  boolean $locked
@@ -88,7 +98,7 @@ trait IsLocked
         if ($this->isLocked() !== $locked) {
             // Load the method calling the needsToBeLocked.
             if (\is_null($lockedElement)) {
-                $lockedElement = \debug_backtrace(\DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2]['function'].'()';
+                $lockedElement = $this->getDebugMethodName();
             }
 
             throw new LockException($this, $locked ? $this->getNotLockedMessage() : $this->getLockedMessage(), $lockedElement);

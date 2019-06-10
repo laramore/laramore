@@ -1,6 +1,6 @@
 <?php
 /**
- * This exception indicate that we tried to edit a locked instance.
+ * This exception indicate that we tried to edit an owned instance.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Exceptions;
 
 use Laramore\Traits\Exception\HasElement;
 
-class LockException extends LaramoreException
+class OwnException extends LaramoreException
 {
     use HasElement;
 }
