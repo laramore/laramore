@@ -51,7 +51,7 @@ class TypeManager
      */
     public function hasType(string $name): bool
     {
-        return array_key_exists($name, $this->types);
+        return \array_key_exists($name, $this->types);
     }
 
     /**
@@ -59,27 +59,67 @@ class TypeManager
      *
      * @param  string $name
      * @return Type
+     * @throws \ErrorException
      */
     public function getType(string $name): Type
     {
         if ($this->hasType($name)) {
             return $this->types[$name];
-        } else {
-            throw new \Exception('Th');
         }
+
+        throw new \ErrorException("The type $name does not exist");
     }
 
-    public function setType(string $name)
+    /**
+     * Create a new type with a specific name.
+     * Override is allowed, be carefull.
+     *
+     * @param string $name
+     * @return Type
+     */
+    public function createType(string $name): Type
     {
         $this->needsToBeUnlocked();
 
-        $this->types[$name] = $type = new Type($name);
-
-        foreach ($this->valueNames as $valueName) {
-            $type->setValue($valueName, $name);
-        }
+        $type = new Type($name);
+        $this->setType($type);
 
         return $type;
+    }
+
+    /**
+     * Return the type or create one with the given name.
+     *
+     * @param  string $name
+     * @return Type
+     */
+    public function getOrCreateType(string $name): Type
+    {
+        if ($this->hasType($name)) {
+            return $this->getType($name);
+        } else {
+            return $this->createType($name);
+        }
+    }
+
+    /**
+     * Define a type with its name.
+     * Override is allowed, be carefull.
+     *
+     * @param  Type $type
+     * @return self
+     */
+    public function setType(Type $type): self
+    {
+        $this->types[$name = $type->getName()] = $type;
+
+        foreach ($this->valueNames as $valueName) {
+            if (!$type->hasValue($valueName)) {
+                $type->setValue($valueName, $name);
+            }
+        }
+
+        return $this;
     }
 
     public function getTypes()
@@ -89,7 +129,7 @@ class TypeManager
 
     public function hasValueName(string $name)
     {
-        return in_array($name, $this->valueNames);
+        return \in_array($name, $this->valueNames);
     }
 
     public function addValueName(string $name)
@@ -130,12 +170,12 @@ class TypeManager
     public function __call(string $method, array $args): Type
     {
         if (!$this->hasType($method)) {
-            $this->setType($method);
+            $this->createType($method);
         }
 
         $type = $this->getType($method);
 
-        if (count($args) === 0) {
+        if (\count($args) === 0) {
             return $type;
         } else {
             return $type->{$args[0]};

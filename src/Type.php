@@ -42,12 +42,22 @@ class Type
     }
 
     /**
+     * Return the name of this type.
+     *
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
      * Indicate if the type has a value for a given name.
      *
      * @param  string $key
      * @return boolean
      */
-    public function hasValue(string $key='name'): bool
+    public function hasValue(string $key): bool
     {
         return isset($this->values[$key]);
     }
@@ -57,14 +67,17 @@ class Type
      *
      * @param  string $key
      * @return string
+     * @throws \ErrorException
      */
     public function getValue(string $key='name'): string
     {
         if ($key === 'name') {
             return $this->name;
-        } else {
+        } else if ($this->hasValue($key)) {
             return $this->values[$key];
         }
+
+        throw new \ErrorException("The type {$this->getName()} has no value for the key $key");
     }
 
     /**
@@ -122,14 +135,15 @@ class Type
      * @param  string $method If start with "get" and 0 args are defined, return the value.
      * @param  array  $args   If one argument is set, define the value for the method name.
      * @return mixed
+     * @throws \BadMethodCallException
      */
     public function __call(string $method, array $args)
     {
-        if (count($args) === 0) {
+        if (\count($args) === 0) {
             if (Str::startsWith($method, 'get')) {
-                return $this->getValue(Str::camel(substr(Str::snake($method), 4)));
+                return $this->getValue(Str::camel(\substr(Str::snake($method), 4)));
             } else {
-                throw new \Exception("The method $method does not exist");
+                throw new \BadMethodCallException("The method $method does not exist");
             }
         } else {
             return $this->setValue($method, $args[0]);
