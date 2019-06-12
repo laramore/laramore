@@ -20,7 +20,7 @@ use Laramore\{
 };
 use ReflectionNamespace;
 
-class LaramoreLoader extends ServiceProvider
+class LaramoreProvider extends ServiceProvider
 {
     /**
      * Grammar and Model observer managers.
@@ -85,8 +85,8 @@ class LaramoreLoader extends ServiceProvider
         $this->createSigletons();
         $this->createObjects();
 
-        $this->app->booting($this->bootingCallback);
-        $this->app->booted($this->bootedCallback);
+        $this->app->booting([$this, 'bootingCallback']);
+        $this->app->booted([$this, 'bootedCallback']);
     }
 
     /**
@@ -159,7 +159,7 @@ class LaramoreLoader extends ServiceProvider
      *
      * @return void
      */
-    protected function bootingCallback()
+    public function bootingCallback()
     {
         $this->addMetas();
         $this->createGrammarObservers();
@@ -170,7 +170,7 @@ class LaramoreLoader extends ServiceProvider
      *
      * @return void
      */
-    protected function bootedCallback()
+    public function bootedCallback()
     {
         $this->metaManager->lock();
         $this->typeManager->lock();
