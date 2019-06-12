@@ -22,9 +22,9 @@ class HasMany extends LinkField
         return $this->relationValue($model)->get();
     }
 
-    protected function owning()
+    protected function owned()
     {
-        parent::owning();
+        parent::owned();
 
         if (is_null($this->off)) {
             throw new \Exception('You need to specify `off`');

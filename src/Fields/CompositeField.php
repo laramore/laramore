@@ -246,7 +246,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         return $this;
     }
 
-    public function owning()
+    public function owned()
     {
         $this->ownFields();
         $this->ownLinks();

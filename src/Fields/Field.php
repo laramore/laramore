@@ -188,7 +188,7 @@ abstract class Field extends BaseField
         return $this;
     }
 
-    protected function owning()
+    protected function owned()
     {
         if (!($this->getOwner() instanceof Meta) && !($this->getOwner() instanceof CompositeField)) {
             throw new \Exception('A field should be owned by a Meta or a CompositeField');

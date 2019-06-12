@@ -22,7 +22,7 @@ abstract class LinkField extends BaseField
         return new static(...$args);
     }
 
-    protected function owning()
+    protected function owned()
     {
         if (!($this->getOwner() instanceof Meta) && !($this->getOwner() instanceof CompositeField)) {
             throw new \Exception('The link field should be owned by a CompositeField');

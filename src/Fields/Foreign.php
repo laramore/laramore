@@ -57,11 +57,11 @@ class Foreign extends CompositeField
         return $this;
     }
 
-    public function owning()
+    public function owned()
     {
         $this->defineProperty('off', $this->getLink('reversed')->on = $this->getModelClass());
 
-        parent::owning();
+        parent::owned();
 
         $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
     }

@@ -16,9 +16,9 @@ class BelongsToMany extends LinkField
 {
     use ManyToManyRelation;
 
-    protected function owning()
+    protected function owned()
     {
-        parent::owning();
+        parent::owned();
 
         if (is_null($this->off)) {
             throw new \Exception('You need to specify `off`');

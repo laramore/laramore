@@ -92,13 +92,13 @@ class ManyToMany extends CompositeField
         MetaManager::addMeta($this->pivotMeta);
     }
 
-    public function owning()
+    public function owned()
     {
         $this->createPivotMeta();
 
         $this->defineProperty('off', $this->getLink('reversed')->on = $this->getModelClass());
 
-        parent::owning();
+        parent::owned();
     }
 
     protected function locking()
