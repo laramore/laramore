@@ -12,6 +12,9 @@ namespace Laramore;
 
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Exceptions\{
+	MultipleExceptionsException, RequiredFieldException
+};
 use Laramore\Facades\ModelObservableManager;
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, Link\LinkField, Timestamp
@@ -74,7 +77,7 @@ class Meta implements IsAFieldOwner
         $this->modelClass = $modelClass;
 
         try {
-            $this->modelClassName = strtolower((new \ReflectionClass($modelClass))->getShortName());
+            $this->modelClassName = \strtolower((new \ReflectionClass($modelClass))->getShortName());
             $this->tableName = $this->getDefaultTableName();
             $this->setDefaultObservers();
         } catch (\ReflectionException $e) {
@@ -118,16 +121,18 @@ class Meta implements IsAFieldOwner
         }, ModelObserver::HIGH_PRIORITY, 'saving'));
 
         $this->getModelObservableHandler()->addObserver(new ModelObserver('check_required_fields', function (Model $model) {
-            $missingFields = array_diff($this->getRequiredFieldNames(), array_keys($model->getAttributes()));
+            $missingFields = \array_diff($this->getRequiredFieldNames(), \array_keys($model->getAttributes()));
 
             foreach ($missingFields as $key => $field) {
                 if ($this->getField($field)->nullable) {
-                      unset($missingFields[$key]);
+                     unset($missingFields[$key]);
                 }
             }
 
-            if (count($missingFields)) {
-                throw new \Exception('Fields required: '.implode(', ', $missingFields));
+            if (\count($missingFields)) {
+                throw new MultipleExceptionsException($this, array_map(function ($name) {
+					return new RequiredFieldException($this->get($name), "The field $name is required");
+				}, array_values($missingFields)));
             }
         }, ModelObserver::LOW_PRIORITY, 'saving'));
     }
@@ -179,9 +184,9 @@ class Meta implements IsAFieldOwner
      */
     public function getDefaultTableName(): string
     {
-        return implode('_', array_map(function ($element) {
+        return \implode('_', \array_map(function ($element) {
             return Str::plural($element);
-        }, explode(' ', Str::snake($this->modelClassName, ' '))));
+        }, \explode(' ', Str::snake($this->modelClassName, ' '))));
     }
 
     /**
@@ -257,7 +262,7 @@ class Meta implements IsAFieldOwner
         if ($this->hasField($name)) {
             return $this->getFields()[$name];
         } else {
-            throw new \Exception("The field $name does not exist");
+            throw new \ErrorException("The field $name does not exist");
         }
     }
 
@@ -273,7 +278,7 @@ class Meta implements IsAFieldOwner
         $this->needsToBeUnlocked();
 
         if ($this->has($name)) {
-            throw new \Exception('It is not allowed to re-set the field '.$name);
+            throw new \LogicException("The field $name is already defined");
         }
 
         $field = $this->manipulateField($field)->own($this, $this->parseAttname($name));

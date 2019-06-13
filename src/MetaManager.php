@@ -45,6 +45,7 @@ class MetaManager
      *
      * @param  string $tableName
      * @return Meta
+     * @throws \ErrorException
      */
     public function getMetaForTableName(string $tableName): Meta
     {
@@ -54,7 +55,7 @@ class MetaManager
             }
         }
 
-        throw new \Exception('No Meta exists for the table '.$tableName);
+        throw new \ErrorException('No meta exists for the table '.$tableName);
     }
 
     /**
@@ -87,9 +88,10 @@ class MetaManager
      * Add a meta.
      *
      * @param Meta $meta
-     * @return static
+     * @return self
+     * @throws \LogicException
      */
-    public function addMeta(Meta $meta)
+    public function addMeta(Meta $meta): self
     {
         $this->needsToBeUnlocked();
 
@@ -97,9 +99,9 @@ class MetaManager
 
         foreach ($this->getMetas() as $inMeta) {
             if ($meta === $inMeta) {
-                throw new \Exception('This meta is already added');
+                throw new \LogicException('This meta is already added');
             } else if ($inMeta->getTableName() === $tableName) {
-                throw new \Exception('A meta already exists for this table');
+                throw new \LogicException('A meta already exists for this table');
             }
         }
 
@@ -112,6 +114,7 @@ class MetaManager
      * Lock all metas and checks that everything is locked as expected.
      *
      * @return void
+     * @throws \LogicException
      */
     public function locking()
     {
@@ -121,12 +124,12 @@ class MetaManager
 
         foreach ($this->getMetas() as $meta) {
             if (!$meta->isLocked()) {
-                throw new \Exception('All metas are not locked properly');
+                throw new \LogicException('All metas are not locked properly');
             }
 
             foreach ($meta->allFields() as $field) {
                 if (!$field->isLocked()) {
-                    throw new \Exception('All fields are not locked by their owner');
+                    throw new \LogicException('All fields are not locked by their owner');
                 }
             }
         }
