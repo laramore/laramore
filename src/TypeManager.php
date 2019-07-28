@@ -59,7 +59,7 @@ class TypeManager
      *
      * @param  string $name
      * @return Type
-     * @throws \ErrorException
+     * @throws \ErrorException If no type exists with this name.
      */
     public function getType(string $name): Type
     {
@@ -122,16 +122,33 @@ class TypeManager
         return $this;
     }
 
-    public function getTypes()
+    /**
+     * Return all possible types.
+     *
+     * @return array
+     */
+    public function getTypes(): array
     {
         return $this->types;
     }
 
-    public function hasValueName(string $name)
+    /**
+     * Indicate if value name is defined.
+     *
+     * @param  string $name
+     * @return boolean
+     */
+    public function hasValueName(string $name): boolean
     {
         return \in_array($name, $this->valueNames);
     }
 
+    /**
+     * Add a value name and set the value for this name on each type.
+     *
+     * @param string $name
+     * @return void
+     */
     public function addValueName(string $name)
     {
         $this->needsToBeUnlocked();
@@ -147,11 +164,21 @@ class TypeManager
         }
     }
 
-    public function getValueNames()
+    /**
+     * Return the list of value names.
+     *
+     * @return array
+     */
+    public function getValueNames(): array
     {
         return $this->valueNames;
     }
 
+    /**
+     * Lock every type.
+     *
+     * @return void
+     */
     protected function locking()
     {
         foreach ($this->getTypes() as $type) {

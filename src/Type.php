@@ -67,7 +67,7 @@ class Type
      *
      * @param  string $key
      * @return string
-     * @throws \ErrorException
+     * @throws \ErrorException If this type has no value for a specific key name.
      */
     public function getValue(string $key='name'): string
     {
@@ -135,7 +135,7 @@ class Type
      * @param  string $method If start with "get" and 0 args are defined, return the value.
      * @param  array  $args   If one argument is set, define the value for the method name.
      * @return mixed
-     * @throws \BadMethodCallException
+     * @throws \BadMethodCallException Else.
      */
     public function __call(string $method, array $args)
     {
