@@ -53,7 +53,7 @@ abstract class LinkField extends BaseField
         return $value;
     }
 
-    public function relationValue($model)
+    public function getRelationValue($model)
     {
         return $this->whereValue($model, $model->{$this->name});
     }

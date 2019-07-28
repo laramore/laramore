@@ -47,9 +47,9 @@ class Meta implements IsAFieldOwner
      *
      * @var array
      */
-    protected $fields;
-    protected $composites;
-    protected $links;
+    protected $fields = [];
+    protected $composites = [];
+    protected $links = [];
 
     /**
      * Indicate if we use default timestamps.
@@ -64,8 +64,8 @@ class Meta implements IsAFieldOwner
      * @var array
      */
     protected $primary;
-    protected $indexes;
-    protected $uniques;
+    protected $indexes = [];
+    protected $uniques = [];
 
     /**
      * Create a Meta for a specific model.
@@ -83,14 +83,6 @@ class Meta implements IsAFieldOwner
         } catch (\ReflectionException $e) {
             $this->tableName = $this->getDefaultTableName();
         }
-
-        // Load default fields and configurations.
-        $this->fields = config('database.table.fields', []);
-        $this->composites = config('database.table.composites', []);
-        $this->links = config('database.table.links', []);
-        $this->primary = config('database.table.primary');
-        $this->indexes = config('database.table.indexes', []);
-        $this->uniques = config('database.table.uniques', []);
 
         if (config('database.table.timestamps', false)) {
             $this->useTimestamps();
@@ -131,8 +123,8 @@ class Meta implements IsAFieldOwner
 
             if (\count($missingFields)) {
                 throw new MultipleExceptionsException($this, array_map(function ($name) {
-					return new RequiredFieldException($this->get($name), "The field $name is required");
-				}, array_values($missingFields)));
+                    return new RequiredFieldException($this->get($name), "The field $name is required");
+                }, array_values($missingFields)));
             }
         }, ModelObserver::LOW_PRIORITY, 'saving'));
     }

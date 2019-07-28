@@ -91,7 +91,7 @@ class Foreign extends CompositeField
 
     public function getValue($model, $value)
     {
-        return $this->relationValue($model)->first();
+        return $this->getRelationValue($model)->first();
     }
 
     public function setValue($model, $value)
@@ -108,7 +108,7 @@ class Foreign extends CompositeField
         $model->setRelation($this->name, $value);
     }
 
-    public function relationValue($model)
+    public function getRelationValue($model)
     {
         return $model->belongsTo($this->on, $this->from, $this->to);
     }

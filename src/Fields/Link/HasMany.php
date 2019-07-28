@@ -19,7 +19,7 @@ class HasMany extends LinkField
 
     public function getValue($model, $value)
     {
-        return $this->relationValue($model)->get();
+        return $this->getRelationValue($model)->get();
     }
 
     protected function owned()
@@ -35,10 +35,10 @@ class HasMany extends LinkField
 
     public function setValue($model, $value)
     {
-        return $this->relationValue($model)->sync($value);
+        return $this->getRelationValue($model)->sync($value);
     }
 
-    public function relationValue($model)
+    public function getRelationValue($model)
     {
         return $model->hasMany($this->on, $this->to);
     }

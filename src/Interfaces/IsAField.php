@@ -151,7 +151,7 @@ interface IsAField
      * @param  Model $model
      * @return mixed
      */
-    public function relationValue(Model $model);
+    public function getRelationValue(Model $model);
 
     /**
      * Add a where condition from this field.

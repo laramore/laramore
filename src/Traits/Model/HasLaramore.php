@@ -337,7 +337,7 @@ trait HasLaramore
      */
     public function relation(string $key)
     {
-        return static::getField($key)->relationValue($this);
+        return static::getField($key)->getRelationValue($this);
     }
 
     /**
@@ -380,7 +380,7 @@ trait HasLaramore
             $field = static::getField($method);
 
             if (count($args) === 0) {
-                return $field->relationValue($this);
+                return $field->getRelationValue($this);
             } else {
                 return $field->setValue($this, ...$args);
             }
