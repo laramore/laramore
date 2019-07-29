@@ -18,7 +18,7 @@ trait HasProperties
      * Indicate if a property exists.
      *
      * @param  string $key
-     * @return bool
+     * @return boolean
      */
     public function hasProperty(string $key): bool
     {
@@ -49,7 +49,7 @@ trait HasProperties
      * Define a property.
      *
      * @param  string $key
-     * @param  mixed $value
+     * @param  mixed  $value
      * @return self
      */
     protected function defineProperty(string $key, $value): self
@@ -63,7 +63,7 @@ trait HasProperties
      * Manage the definition of a property.
      *
      * @param string $key
-     * @param mixed $value
+     * @param mixed  $value
      * @return self
      * @throws \ErrorException If no property exists with this name
      */
@@ -102,7 +102,7 @@ trait HasProperties
      * Set the value of a property.
      *
      * @param  string $key
-     * @param mixed $value
+     * @param mixed  $value
      * @throws \ErrorException If no property exists with this name
      * @return mixed
      */
@@ -114,7 +114,7 @@ trait HasProperties
     /**
      * Indicate if a property exists.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return boolean
      */
     public function __isset(string $key): bool

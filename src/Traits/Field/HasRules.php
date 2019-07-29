@@ -41,9 +41,9 @@ trait HasRules
      * Add a rule to the resource.
      *
      * @param integer $rule
-     * @return static
+     * @return self
      */
-    protected function addRule(int $rule)
+    protected function addRule(int $rule): self
     {
         $this->needsToBeUnlocked();
 
@@ -56,9 +56,9 @@ trait HasRules
      * Add multiple rules to the resource.
      *
      * @param integer|string|array $rule
-     * @return static
+     * @return self
      */
-    public function addRules($rules)
+    public function addRules($rules): self
     {
         foreach ((array) $rules as $rule) {
             $this->addRule(is_int($rule) ? $rule : $this->getRule($rule));
@@ -71,9 +71,9 @@ trait HasRules
      * Remove a rule from the resource.
      *
      * @param  integer $rule
-     * @return static
+     * @return self
      */
-    protected function removeRule(int $rule)
+    protected function removeRule(int $rule): self
     {
         $this->needsToBeUnlocked();
 

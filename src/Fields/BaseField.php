@@ -26,6 +26,13 @@ abstract class BaseField implements IsAField
 
     protected $nullable;
 
+    /**
+     * Return a property by its name.
+     *
+     * @param  string $key
+     * @return mixed
+     * @throws \ErrorException If no property exists with this name.
+     */
     public function getProperty(string $key)
     {
         if ($this->hasProperty($key)) {
@@ -38,9 +45,17 @@ abstract class BaseField implements IsAField
             return $this->hasRule(\constant($const));
         }
 
-        throw new \Exception("The property $key does not exist");
+        throw new \ErrorException("The property $key does not exist");
     }
 
+    /**
+     * Manage the definition of a property.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @return self
+     * @throws \ErrorException If no property exists with this name.
+     */
     public function setProperty(string $key, $value)
     {
         $this->needsToBeUnlocked();
@@ -52,42 +67,33 @@ abstract class BaseField implements IsAField
      * Define the name of the field.
      *
      * @param  string $name
-     * @return static
+     * @return self
      */
-    public function name(string $name)
+    public function name(string $name): self
     {
         $this->needsToBeUnlocked();
 
         if (!is_null($this->name)) {
-            throw new \Exception('The field name cannot be defined multiple times');
+            throw new \LogicException('The field name cannot be defined multiple times');
         }
 
         $this->name = $name;
+
+        return $this;
     }
 
-    public function getMeta()
+    /**
+     * Return the meta of this field.
+     * The owner could be a composite field and so on but not the coresponded meta.
+     *
+     * @return Meta
+     */
+    public function getMeta(): Meta
     {
         do {
             $owner = $this->getOwner();
         } while (!($owner instanceof Meta));
 
         return $owner;
-    }
-
-    public function getModelClass()
-    {
-        return $this->getMeta()->getModelClass();
-    }
-
-    protected function addObserver(ModelObserver $observer)
-    {
-        $this->getMeta()->getModelObservableHandler()->addObserver($observer);
-
-        return $this;
-    }
-
-    public function getRelationValue($model)
-    {
-        return $this->whereValue($model, $model->{$this->name});
     }
 }
