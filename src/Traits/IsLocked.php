@@ -26,7 +26,7 @@ trait IsLocked
      *
      * @return self
      */
-    public function lock(): self
+    public function lock()
     {
         // Check if the instance is already locked.
         $this->needsToBeUnlocked();
@@ -93,7 +93,7 @@ trait IsLocked
      * @param  string  $lockedElement
      * @return self
      */
-    protected function checkNeedsToBeLocked(bool $locked, string $lockedElement=null): self
+    protected function checkNeedsToBeLocked(bool $locked, string $lockedElement=null)
     {
         if ($this->isLocked() !== $locked) {
             // Load the method calling the needsToBeLocked.
@@ -113,7 +113,7 @@ trait IsLocked
      * @param string|null $lockedElement
      * @return self
      */
-    public function needsToBeLocked(string $lockedElement=null): self
+    public function needsToBeLocked(string $lockedElement=null)
     {
         return $this->checkNeedsToBeLocked(true, $lockedElement);
     }
@@ -124,7 +124,7 @@ trait IsLocked
      * @param string|null $lockedElement
      * @return self
      */
-    public function needsToBeUnlocked(string $lockedElement=null): self
+    public function needsToBeUnlocked(string $lockedElement=null)
     {
         return $this->checkNeedsToBeLocked(false, $lockedElement);
     }

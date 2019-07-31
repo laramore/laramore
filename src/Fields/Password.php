@@ -106,7 +106,7 @@ class Password extends Pattern
         throw new \Exception('A password is not fixable');
     }
 
-    public function checkValue($model, $value, $password=null, $boolean=true)
+    public function isCorrectValue($model, $value, $password=null, $boolean=true)
     {
         return Hash::check($password, $value) === $boolean;
     }

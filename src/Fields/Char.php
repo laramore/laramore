@@ -16,7 +16,7 @@ use Laramore\Type;
 
 class Char extends Text
 {
-    protected $length;
+    protected $maxLength;
 
     /**
      * Set of rules.
@@ -26,7 +26,7 @@ class Char extends Text
      */
 
     // Except if the length is longer than allowed
-    public const RESPECT_LENGTH = 1024;
+    public const MAX_LENGTH = 1024;
 
     // If the string is too long, auto cut at the defined length
     public const CARACTERE_RESIZE = 2048;
@@ -49,7 +49,7 @@ class Char extends Text
     {
         parent::__construct($rules);
 
-        $this->length = Schema::getFacadeRoot()::$defaultStringLength;
+        $this->maxLength = Schema::getFacadeRoot()::$defaultStringLength;
     }
 
     public function getType(): Type
@@ -68,7 +68,7 @@ class Char extends Text
     {
         parent::locking();
 
-        if ($this->hasRule(self::RESPECT_LENGTH) && is_null($this->length)) {
+        if ($this->hasRule(self::MAX_LENGTH) && is_null($this->maxLength)) {
             throw new \Exception('No length set for '.$this->name);
         }
     }
@@ -90,19 +90,19 @@ class Char extends Text
     {
         $value = parent::setValue($model, $value);
 
-        if ($this->length < strlen($value) && !is_null($value)) {
+        if ($this->maxLength < strlen($value) && !is_null($value)) {
             $dots = $this->hasRule(self::DOTS_ON_RESIZING) ? '...' : '';
 
-            if ($this->hasRule(self::RESPECT_LENGTH, self::STRICT)) {
+            if ($this->hasRule(self::MAX_LENGTH)) {
                 throw new \Exception('The value must respect the defined length for the field '.$this->name);
             }
 
             if ($this->hasRule(self::CARACTERE_RESIZE)) {
-                $value = $this->resizeValue($value, $this->length, '', $dots);
+                $value = $this->resizeValue($value, $this->maxLength, '', $dots);
             } else if ($this->hasRule(self::WORD_RESIZE)) {
-                $value = $this->resizeValue($value, $this->length, ' ', $dots);
+                $value = $this->resizeValue($value, $this->maxLength, ' ', $dots);
             } else if ($this->hasRule(self::SENTENCE_RESIZE)) {
-                $value = $this->resizeValue($value, $this->length, '.', $dots);
+                $value = $this->resizeValue($value, $this->maxLength, '.', $dots);
             }
         }
 

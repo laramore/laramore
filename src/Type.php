@@ -87,7 +87,7 @@ class Type
      * @param string $value
      * @return self
      */
-    public function setValue(string $key, string $value): self
+    public function setValue(string $key, string $value)
     {
         $this->needsToBeUnlocked();
 
@@ -124,7 +124,7 @@ class Type
      * @param string $value
      * @return self
      */
-    public function __set(string $key, string $value): self
+    public function __set(string $key, string $value)
     {
         return $this->setValue($key, $value);
     }

@@ -59,7 +59,7 @@ trait IsOwnedAndLocked
      * @param  string $name
      * @return self
      */
-    public function own(object $owner, string $name): self
+    public function own(object $owner, string $name)
     {
         if ($this->isOwned()) {
             throw new \Exception('An owner has already been set');
@@ -85,7 +85,7 @@ trait IsOwnedAndLocked
      *
      * @return self
      */
-    abstract public function name(string $name): self;
+    abstract public function name(string $name);
 
     /**
      * Return the owner of this instance.
@@ -109,7 +109,7 @@ trait IsOwnedAndLocked
      * @param  string  $ownedElement
      * @return self
      */
-    protected function checkNeedsToBeOwned(bool $owned, string $ownedElement=null): self
+    protected function checkNeedsToBeOwned(bool $owned, string $ownedElement=null)
     {
         if ($this->isLocked() !== $owned) {
             // Load the method calling the needsToBeOwned.
@@ -129,7 +129,7 @@ trait IsOwnedAndLocked
      * @param string|null $ownedElement
      * @return self
      */
-    public function needsToBeOwned(string $ownedElement=null): self
+    public function needsToBeOwned(string $ownedElement=null)
     {
         return $this->checkNeedsToBeOwned(true, $ownedElement);
     }
@@ -140,7 +140,7 @@ trait IsOwnedAndLocked
      * @param string|null $ownedElement
      * @return self
      */
-    public function needsToBeUnowned(string $ownedElement=null): self
+    public function needsToBeUnowned(string $ownedElement=null)
     {
         return $this->checkNeedsToBeOwned(false, $ownedElement);
     }

@@ -43,7 +43,7 @@ trait HasRules
      * @param integer $rule
      * @return self
      */
-    protected function addRule(int $rule): self
+    protected function addRule(int $rule)
     {
         $this->needsToBeUnlocked();
 
@@ -58,7 +58,7 @@ trait HasRules
      * @param integer|string|array $rule
      * @return self
      */
-    public function addRules($rules): self
+    public function addRules($rules)
     {
         foreach ((array) $rules as $rule) {
             $this->addRule(is_int($rule) ? $rule : $this->getRule($rule));
@@ -73,7 +73,7 @@ trait HasRules
      * @param  integer $rule
      * @return self
      */
-    protected function removeRule(int $rule): self
+    protected function removeRule(int $rule)
     {
         $this->needsToBeUnlocked();
 

@@ -109,7 +109,7 @@ class TypeManager
      * @param  Type $type
      * @return self
      */
-    public function setType(Type $type): self
+    public function setType(Type $type)
     {
         $this->types[$name = $type->getName()] = $type;
 
@@ -138,7 +138,7 @@ class TypeManager
      * @param  string $name
      * @return boolean
      */
-    public function hasValueName(string $name): boolean
+    public function hasValueName(string $name): bool
     {
         return \in_array($name, $this->valueNames);
     }

@@ -56,7 +56,7 @@ abstract class BaseObservableHandler
      */
     public function getObservableClass(): string
     {
-        return $this->obserableClass;
+        return $this->observableClass;
     }
 
     /**
@@ -75,7 +75,7 @@ abstract class BaseObservableHandler
      * @param BaseObserver $observer
      * @return self
      */
-    public function addObserver(BaseObserver $observer): self
+    public function addObserver(BaseObserver $observer)
     {
         $this->needsToBeUnlocked();
 

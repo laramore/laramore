@@ -52,7 +52,7 @@ trait HasProperties
      * @param  mixed  $value
      * @return self
      */
-    protected function defineProperty(string $key, $value): self
+    protected function defineProperty(string $key, $value)
     {
         $this->$key = $value;
 
@@ -67,7 +67,7 @@ trait HasProperties
      * @return self
      * @throws \ErrorException If no property exists with this name
      */
-    public function setProperty(string $key, $value): self
+    public function setProperty(string $key, $value)
     {
         if (\method_exists($this, $key)) {
             \call_user_func([$this, $key], $value);
@@ -80,7 +80,7 @@ trait HasProperties
                 $this->removeRule(constant($const));
             }
         } else {
-            throw new \ErrorException("The propery $key cannot be set as it does not exist");
+            throw new \ErrorException("The property $key cannot be set as it does not exist");
         }
 
         return $this;

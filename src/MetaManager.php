@@ -91,7 +91,7 @@ class MetaManager
      * @return self
      * @throws \LogicException
      */
-    public function addMeta(Meta $meta): self
+    public function addMeta(Meta $meta)
     {
         $this->needsToBeUnlocked();
 

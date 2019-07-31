@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Laramore\Facades\TypeManager;
+use Illuminate\Database\Eloquent\Model;
 use Laramore\Type;
 
 class Number extends Field
@@ -105,12 +106,12 @@ class Number extends Field
         return $this;
     }
 
-    public function castValue($model, $value)
+    public function castValue(Model $model, $value)
     {
         return is_null($value) ? $value : (int) $value;
     }
 
-    public function setValue($model, $value)
+    public function setValue(Model $model, $value)
     {
         $value = parent::setValue($model, $value);
 

@@ -255,7 +255,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     protected function ownFields()
     {
         $keyValues = [
-            'modelname' => strtolower($this->getOwner()->getModelClassName()),
+            'modelname' => strtolower($this->getMeta()->getModelClassName()),
             'name' => $this->name,
         ];
 
@@ -269,7 +269,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     protected function ownLinks()
     {
         $keyValues = [
-            'modelname' => strtolower($this->getOwner()->getModelClassName()),
+            'modelname' => strtolower($this->getMeta()->getModelClassName()),
             'name' => $this->name,
         ];
 
@@ -328,5 +328,10 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     public function whereValue($model, ...$args)
     {
         return $model->where($this->name, ...$args);
+    }
+
+    public function getRelationValue($model)
+    {
+        return $this->whereValue($model, $model->{$this->name});
     }
 }

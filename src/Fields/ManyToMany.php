@@ -74,7 +74,7 @@ class ManyToMany extends CompositeField
         $this->setProperty('pivotMeta', new Meta('App\\Pivots\\'.ucfirst($offName).ucfirst($onName)));
         $this->pivotMeta->set(
             $offName,
-            $offField = Foreign::field()->on($this->getModelClass())->reversedName('pivot'.ucfirst($onTable))
+            $offField = Foreign::field()->on($this->getMeta()->getModelClass())->reversedName('pivot'.ucfirst($onTable))
         );
         $this->pivotMeta->set(
             $onName,
@@ -96,7 +96,7 @@ class ManyToMany extends CompositeField
     {
         $this->createPivotMeta();
 
-        $this->defineProperty('off', $this->getLink('reversed')->on = $this->getModelClass());
+        $this->defineProperty('off', $this->getLink('reversed')->on = $this->getMeta()->getModelClass());
 
         parent::owned();
     }

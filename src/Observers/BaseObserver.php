@@ -111,7 +111,7 @@ abstract class BaseObserver
      * @param Closure $callback
      * @return self
      */
-    public function setCallback(Closure $callback): self
+    public function setCallback(Closure $callback)
     {
         $this->needsToBeUnlocked();
 
@@ -126,7 +126,7 @@ abstract class BaseObserver
      * @param integer $priority
      * @return self
      */
-    public function setPriority(int $priority): self
+    public function setPriority(int $priority)
     {
         $this->needsToBeUnlocked();
 
@@ -145,7 +145,7 @@ abstract class BaseObserver
      * @param  string|array $entities
      * @return self
      */
-    public function observe($entities): self
+    public function observe($entities)
     {
         $this->needsToBeUnlocked();
 
@@ -164,13 +164,13 @@ abstract class BaseObserver
      * @param  string|array $entities
      * @return self
      */
-    public function observeOnly($entities): self
+    public function observeOnly($entities)
     {
         $this->needsToBeUnlocked();
 
         $this->observed = [];
 
-        return $this->for($entities);
+        return $this->observe($entities);
     }
 
     /**
@@ -179,7 +179,7 @@ abstract class BaseObserver
      * @param  string|array $entities
      * @return self
      */
-    public function except($entities): self
+    public function except($entities)
     {
         $this->needsToBeUnlocked();
 

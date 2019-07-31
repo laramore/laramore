@@ -13,7 +13,7 @@ namespace Laramore\Providers;
 use Illuminate\Support\ServiceProvider;
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Observers\{
-    GrammarObservableManager, ModelObservableManager
+    GrammarObservableManager, ModelObservableManager, ValidationManager
 };
 use Laramore\{
     TypeManager, Meta, MetaManager
@@ -108,6 +108,10 @@ class LaramoreProvider extends ServiceProvider
             return $this->typeManager;
         });
 
+        $this->app->singleton('ValidationManager', function() {
+            return $this->validationManager;
+        });
+
         $this->app->singleton('MetaManager', function() {
             return $this->metaManager;
         });
@@ -123,6 +127,7 @@ class LaramoreProvider extends ServiceProvider
         $this->grammarObservableManager = new GrammarObservableManager;
         $this->modelObserverManager = new ModelObservableManager;
         $this->typeManager = new TypeManager($this->defaultTypes);
+        $this->validationManager = new ValidationManager;
         $this->metaManager = new MetaManager;
     }
 

@@ -125,7 +125,7 @@ interface IsAField
      * @param  mixed $value
      * @return mixed
      */
-    public function castValue($model, $value);
+    public function castValue(Model $model, $value);
 
     /**
      * Give the field value for a specific model.
@@ -151,7 +151,7 @@ interface IsAField
      * @param  Model $model
      * @return mixed
      */
-    public function getRelationValue(Model $model);
+    // public function getRelationValue(Model $model);
 
     /**
      * Add a where condition from this field.

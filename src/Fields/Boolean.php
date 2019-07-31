@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Laramore\Facades\TypeManager;
+use Illuminate\Database\Eloquent\Model;
 use Laramore\Type;
 
 class Boolean extends Field
@@ -20,12 +21,19 @@ class Boolean extends Field
         return TypeManager::boolean();
     }
 
-    public function castValue($model, $value)
+    /**
+     * Return the casted value for a specific model object.
+     *
+     * @param  Model $model
+     * @param  mixed $value
+     * @return mixed
+     */
+    public function castValue(Model $model, $value)
     {
         return is_null($value) ? $value : (bool) $value;
     }
 
-    public function isValue($model, $value, $boolean=true)
+    public function isValue(Model $model, $value, $boolean=true)
     {
         return $value === $boolean;
     }

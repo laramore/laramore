@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Laramore\Facades\TypeManager;
+use Illuminate\Database\Eloquent\Model;
 use Laramore\Type;
 
 class Timestamp extends Field
@@ -27,6 +28,11 @@ class Timestamp extends Field
         return array_merge(parent::getPropertyKeys(), [
             'useCurrent'
         ]);
+    }
+
+    public function castValue(Model $model, $value)
+    {
+        return is_null($value) ? $value : (int) $value;
     }
 
     protected function locking()
