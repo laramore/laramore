@@ -85,21 +85,33 @@ abstract class BaseObservableHandler
             throw new \Exception('The observer is not of the right type');
         }
 
+        return $this->pushObserver($observer, $this->observers);
+    }
+
+    /**
+     * Add an observer to a list of observers.
+     *
+     * @param BaseObserver $observer
+     * @param array        $observers
+     * @return self
+     */
+    protected function pushObserver(BaseObserver $observer, array &$observers)
+    {
         $priority = $observer->getPriority();
 
-        for ($i = 0; $i < count($this->observers); $i++) {
-            if ($this->observers[$i]->getPriority() > $priority) {
-                $this->observers = array_values(array_merge(
-                    array_slice($this->observers, 0, $i),
+        for ($i = 0; $i < count($observers); $i++) {
+            if ($observers[$i]->getPriority() > $priority) {
+                $observers = array_values(array_merge(
+                    array_slice($observers, 0, $i),
                     [$observer],
-                    array_slice($this->observers, $i),
+                    array_slice($observers, $i),
                 ));
 
                 return $this;
             }
         }
 
-        array_push($this->observers, $observer);
+        array_push($observers, $observer);
 
         return $this;
     }
@@ -181,6 +193,16 @@ abstract class BaseObservableHandler
         $this->observers = array_values($this->observers);
 
         return $this;
+    }
+
+    /**
+     * Need to do anything.
+     *
+     * @return void
+     */
+    protected function locking()
+    {
+        // TODO: Here we should set the observer order.
     }
 
     /**
