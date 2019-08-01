@@ -16,6 +16,11 @@ use Laramore\Type;
 
 class Boolean extends Field
 {
+    /**
+     * Return the type object of the field.
+     *
+     * @return Type
+     */
     public function getType(): Type
     {
         return TypeManager::boolean();
@@ -33,8 +38,16 @@ class Boolean extends Field
         return is_null($value) ? $value : (bool) $value;
     }
 
-    public function isValue(Model $model, $value, $boolean=true)
+    /**
+     * Return if the value is true or false as expected.
+     *
+     * @param  Model   $model
+     * @param  mixed  $value
+     * @param  bool $expected
+     * @return bool
+     */
+    public function isValue(Model $model, $value, bool $expected=true): bool
     {
-        return $value === $boolean;
+        return $value == $expected;
     }
 }

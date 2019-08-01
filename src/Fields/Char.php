@@ -11,7 +11,9 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Model;
 use Laramore\Facades\TypeManager;
+use Laramore\Validations\Length;
 use Laramore\Type;
 
 class Char extends Text
@@ -41,7 +43,7 @@ class Char extends Text
     public const DOTS_ON_RESIZING = 16384;
 
     // Default rules
-    public const DEFAULT_CHAR = self::DEFAULT_TEXT;
+    public const DEFAULT_CHAR = (self::MAX_LENGTH | self::DEFAULT_TEXT);
 
     protected static $defaultRules = self::DEFAULT_CHAR;
 
@@ -64,12 +66,21 @@ class Char extends Text
         ], parent::getPropertyKeys());
     }
 
-    protected function locking()
+    protected function checkRules()
     {
-        parent::locking();
+        parent::checkRules();
 
         if ($this->hasRule(self::MAX_LENGTH) && is_null($this->maxLength)) {
             throw new \Exception('No length set for '.$this->name);
+        }
+    }
+
+    protected function setValidations()
+    {
+        parent::setValidations();
+
+        if ($this->hasRule(self::MAX_LENGTH)) {
+            $this->setValidation(Length::class)->maxLength($this->maxLength);
         }
     }
 
@@ -86,34 +97,30 @@ class Char extends Text
         return $this;
     }
 
-    public function setValue($model, $value)
+    public function transformValue(Model $model, $value)
     {
-        $value = parent::setValue($model, $value);
+        $value = parent::transformValue($model, $value);
 
         if ($this->maxLength < strlen($value) && !is_null($value)) {
             $dots = $this->hasRule(self::DOTS_ON_RESIZING) ? '...' : '';
 
-            if ($this->hasRule(self::MAX_LENGTH)) {
-                throw new \Exception('The value must respect the defined length for the field '.$this->name);
-            }
-
             if ($this->hasRule(self::CARACTERE_RESIZE)) {
-                $value = $this->resizeValue($value, $this->maxLength, '', $dots);
+                $value = $this->getResizedValue($model, $value, null, '', $dots);
             } else if ($this->hasRule(self::WORD_RESIZE)) {
-                $value = $this->resizeValue($value, $this->maxLength, ' ', $dots);
+                $value = $this->getResizedValue($model, $value, null, ' ', $dots);
             } else if ($this->hasRule(self::SENTENCE_RESIZE)) {
-                $value = $this->resizeValue($value, $this->maxLength, '.', $dots);
+                $value = $this->getResizedValue($model, $value, null, '.', $dots);
             }
         }
 
         return $value;
     }
 
-    public function resizeValue($value, $length, $delimiter='', $toAdd='...')
+    public function getResizedValue(Model $model, $value, $length=null, $delimiter='', $toAdd='...')
     {
         $parts = $delimiter === '' ? str_split($value) : explode($delimiter, $value);
         $valides = [];
-        $length -= strlen($toAdd);
+        $length = ($length ?: $this->maxLength) - strlen($toAdd);
 
         foreach ($parts as $part) {
             if (strlen($part) <= $length) {
