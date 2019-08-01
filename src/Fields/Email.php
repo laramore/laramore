@@ -64,7 +64,7 @@ class Email extends Pattern
     {
         $value = parent::setValue($model, $value);
 
-        if ($this->hasRule(self::ONLY_SAME_CDN, self::STRICT) && !Str::endsWith($value, $this->getCdn(false))) {
+        if ($this->hasRule(self::ONLY_SAME_CDN) && !Str::endsWith($value, $this->getCdn(false))) {
             throw new \Exception('The email adress is incorrect and does not correspond to the right cdn for the field `'.$this->name.'`');
         }
 

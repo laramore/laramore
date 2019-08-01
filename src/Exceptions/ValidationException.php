@@ -12,5 +12,4 @@ namespace Laramore\Exceptions;
 
 class ValidationException extends LaramoreException
 {
-
 }

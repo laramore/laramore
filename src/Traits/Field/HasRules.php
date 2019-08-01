@@ -55,7 +55,7 @@ trait HasRules
     /**
      * Add multiple rules to the resource.
      *
-     * @param integer|string|array $rule
+     * @param integer|string|array $rules
      * @return self
      */
     public function addRules($rules)

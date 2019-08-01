@@ -45,7 +45,7 @@ class MetaManager
      *
      * @param  string $tableName
      * @return Meta
-     * @throws \ErrorException
+     * @throws \ErrorException If no meta with the given table name exists.
      */
     public function getMetaForTableName(string $tableName): Meta
     {
@@ -89,7 +89,7 @@ class MetaManager
      *
      * @param Meta $meta
      * @return self
-     * @throws \LogicException
+     * @throws \LogicException If the meta already exists or one already exists for a the same table name.
      */
     public function addMeta(Meta $meta)
     {
@@ -114,7 +114,7 @@ class MetaManager
      * Lock all metas and checks that everything is locked as expected.
      *
      * @return void
-     * @throws \LogicException
+     * @throws \LogicException If an object is not locked properly.
      */
     public function locking()
     {

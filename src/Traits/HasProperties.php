@@ -30,7 +30,7 @@ trait HasProperties
      *
      * @param  string $key
      * @return mixed
-     * @throws \ErrorException If no property exists with this name
+     * @throws \ErrorException If no property exists with this name.
      */
     public function getProperty(string $key)
     {
@@ -65,7 +65,7 @@ trait HasProperties
      * @param string $key
      * @param mixed  $value
      * @return self
-     * @throws \ErrorException If no property exists with this name
+     * @throws \ErrorException If no property exists with this name.
      */
     public function setProperty(string $key, $value)
     {
@@ -91,7 +91,7 @@ trait HasProperties
      *
      * @param  string $key
      * @return mixed
-     * @throws \ErrorException If no property exists with this name
+     * @throws \ErrorException If no property exists with this name.
      */
     public function __get(string $key)
     {
@@ -103,7 +103,7 @@ trait HasProperties
      *
      * @param  string $key
      * @param mixed  $value
-     * @throws \ErrorException If no property exists with this name
+     * @throws \ErrorException If no property exists with this name.
      * @return mixed
      */
     public function __set(string $key, $value)
@@ -126,7 +126,7 @@ trait HasProperties
      * Return a property, or set one.
      *
      * @param  string $method
-     * @param  array  $arg
+     * @param  array  $args
      * @return mixed
      */
     public function __call(string $method, array $args)

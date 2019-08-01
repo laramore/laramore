@@ -47,7 +47,7 @@ class Text extends Field
     {
         $value = parent::setValue($model, $value);
 
-        if ($this->hasRule(self::NOT_BLANK, self::STRICT) && empty($value)) {
+        if ($this->hasRule(self::NOT_BLANK) && empty($value)) {
             throw new \Exception('The value cannot be empty for the field '.$this->name);
         }
 

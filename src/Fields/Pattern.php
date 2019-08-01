@@ -45,7 +45,7 @@ abstract class Pattern extends Char
         }
 
         if (!preg_match($this->getPattern(), $value)) {
-            if ($this->hasRule(self::MATCH_PATTERN, self::STRICT)) {
+            if ($this->hasRule(self::MATCH_PATTERN)) {
                 throw new \Exception('The value does not match the pattern of the field `'.$this->name.'`');
             }
 

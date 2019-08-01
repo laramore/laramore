@@ -120,7 +120,7 @@ class Number extends Field
         }
 
         if ($value === 0) {
-            if ($this->hasRule(self::NOT_ZERO, self::STRICT)) {
+            if ($this->hasRule(self::NOT_ZERO)) {
                 throw new \Exception('Cannot set the value 0 for the field `'.$this->name.'`');
             }
         } else if ($this->hasRule(self::UNSIGNED)) {
@@ -130,7 +130,7 @@ class Number extends Field
                 $newValue = - $newValue;
             }
 
-            if ($newValue !== $value && $this->hasRule(self::CORRECT_SIGN, self::STRICT)) {
+            if ($newValue !== $value && $this->hasRule(self::CORRECT_SIGN)) {
                 throw new \Exception('The value must be '.($this->hasRule(self::NEGATIVITY) ? 'negative' : 'positive').' for the field `'.$this->name.'`');
             }
 
