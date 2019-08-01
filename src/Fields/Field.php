@@ -83,7 +83,7 @@ abstract class Field extends BaseField
     }
 
     /**
-     * Return the field type.
+     * Return the type object of the field.
      *
      * @return Type
      */
@@ -279,7 +279,7 @@ abstract class Field extends BaseField
      *
      * @return void
      */
-    protected function locking()
+    protected function checkRules()
     {
         if ($this->hasProperty('default')) {
             if (is_null($this->default)) {
@@ -296,7 +296,13 @@ abstract class Field extends BaseField
                 throw new \LogicException("This field cannot be nullable and not nullable or strict on the same time");
             }
 
-            $this->addValidation(NotNullable::class);
+        }
+    }
+
+    protected function setValidations()
+    {
+        if ($this->hasRule(self::NOT_NULLABLE)) {
+            $this->setValidation(NotNullable::class);
         }
     }
 

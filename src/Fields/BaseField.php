@@ -85,6 +85,15 @@ abstract class BaseField implements IsAField
         return $this;
     }
 
+    protected function locking()
+    {
+        $this->checkRules();
+        $this->setValidations();
+    }
+
+    abstract protected function checkRules();
+    abstract protected function setValidations();
+
     /**
      * Return the meta of this field.
      * The owner could be a composite field and so on but not the coresponded meta.
@@ -100,11 +109,17 @@ abstract class BaseField implements IsAField
         return $owner;
     }
 
-    protected function addValidation(string $validationClass)
+    protected function setValidation(string $validationClass)
     {
-        $validation = new $validationClass($this->getName());
+        $handler = $this->getMeta()->getValidationHandler();
 
-        return $this->getMeta()->getValidationHandler()->addObserver($validation);
+        if ($handler->hasObserver($name = $validationClass::getStaticName())) {
+            $validation = $handler->getObserver($name);
+        } else {
+            $validation = new $validationClass($this->getName());
+
+            $handler->addObserver($validation);
+        }
 
         return $validation;
     }

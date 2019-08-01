@@ -289,7 +289,17 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
             throw new \Exception('A composite field needs at least one field or link');
         }
 
-        return $this;
+        return parent::locking();
+    }
+
+    protected function checkRules()
+    {
+
+    }
+
+    protected function setValidations()
+    {
+
     }
 
     protected function lockFields()

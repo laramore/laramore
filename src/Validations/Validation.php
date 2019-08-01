@@ -10,12 +10,16 @@
 
 namespace Laramore\Validations;
 
-use Laramore\Observers\BaseObserver;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Laramore\Observers\BaseObserver;
+use Laramore\Traits\HasProperties;
 use Closure;
 
 abstract class Validation extends BaseObserver
 {
+    use HasProperties;
+
     /**
      * An observer needs at least a name and a callback.
      *
@@ -34,7 +38,12 @@ abstract class Validation extends BaseObserver
 
     public function getName(): string
     {
-        return Str::snake((new \ReflectionClass($this))->getShortName());
+        return static::getStaticName();
+    }
+
+    public static function getStaticName(): string
+    {
+        return Str::snake((new \ReflectionClass(static::class))->getShortName());
     }
 
     /**
@@ -54,5 +63,5 @@ abstract class Validation extends BaseObserver
 
     abstract public function isValueValid(Model $model, $value): bool;
 
-    abstract public function getMessage(): string;
+    abstract public function getMessage();
 }

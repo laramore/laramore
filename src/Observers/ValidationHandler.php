@@ -118,7 +118,7 @@ class ValidationHandler extends BaseObservableHandler
             foreach ($this->getObservers($fieldName) as $validation) {
                 // Validation can fail only with same priorities.
                 if ($priority !== $validation->getPriority()) {
-                    if (count($bag->count())) {
+                    if ($bag->count()) {
                         break;
                     }
 
@@ -126,7 +126,9 @@ class ValidationHandler extends BaseObservableHandler
                 }
 
                 if (!$validation->isValueValid($model, $value)) {
-                    $bag->add($validation->getName(), $validation->getMessage());
+                    foreach ((array) $validation->getMessage() as $message) {
+                        $bag->add($validation->getName(), $message);
+                    }
                 }
             }
         }

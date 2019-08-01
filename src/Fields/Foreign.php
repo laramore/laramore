@@ -66,7 +66,7 @@ class Foreign extends CompositeField
         $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
     }
 
-    protected function locking()
+    protected function checkRules()
     {
         if (!$this->on) {
             throw new \Exception('Related model settings needed. Set it by calling `on` method');
@@ -74,7 +74,7 @@ class Foreign extends CompositeField
 
         $this->defineProperty('reversedName', $this->getLink('reversed')->name);
 
-        parent::locking();
+        parent::checkRules();
     }
 
     public function castValue($model, $value)

@@ -29,11 +29,16 @@ abstract class LinkField extends BaseField
         }
     }
 
-    protected function locking()
+    protected function checkRules()
     {
         if ($this->hasProperty('attname')) {
             throw new \Exception('The attribute name property cannot be set for a link field');
         }
+    }
+
+    protected function setValidations()
+    {
+
     }
 
     public function castValue($model, $value)

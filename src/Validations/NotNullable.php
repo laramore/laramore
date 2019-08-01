@@ -30,7 +30,7 @@ class NotNullable extends Validation
         return !is_null($value);
     }
 
-    public function getMessage(): string
+    public function getMessage()
     {
         return 'This field cannot be null.';
     }
