@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
 use Laramore\{
     Meta, Type, Builder
 };
+use Laramore\Validations\NotNullable;
 use Laramore\Traits\Field\HasRules;
 
 abstract class Field extends BaseField
@@ -44,13 +45,13 @@ abstract class Field extends BaseField
     // Except if trying to set a nullable value.
     public const NOT_NULLABLE = 2;
 
-    // Indicate it is visible by default.
+    // Indicate if it is visible by default.
     public const VISIBLE = 4;
 
-    // Indicate it is fillable by default.
+    // Indicate if it is fillable by default.
     public const FILLABLE = 8;
 
-    // Indicate it is required by default.
+    // Indicate if it is required by default.
     public const REQUIRED = 16;
 
     // Default rules for this type of field.
@@ -140,7 +141,7 @@ abstract class Field extends BaseField
      * @param  string $name
      * @return self
      */
-    public function name(string $name): self
+    public function name(string $name)
     {
         parent::name($name);
 
@@ -158,7 +159,7 @@ abstract class Field extends BaseField
      * @param  boolean $required
      * @return self
      */
-    public function required(bool $required=true): self
+    public function required(bool $required=true)
     {
         $this->needsToBeUnlocked();
 
@@ -177,7 +178,7 @@ abstract class Field extends BaseField
      * @param  boolean $fillable
      * @return self
      */
-    public function fillable(bool $fillable=true): self
+    public function fillable(bool $fillable=true)
     {
         $this->needsToBeUnlocked();
 
@@ -196,7 +197,7 @@ abstract class Field extends BaseField
      * @param  boolean $visible
      * @return self
      */
-    public function visible(bool $visible=true): self
+    public function visible(bool $visible=true)
     {
         $this->needsToBeUnlocked();
 
@@ -215,7 +216,7 @@ abstract class Field extends BaseField
      * @param  boolean $hidden
      * @return self
      */
-    public function hidden(bool $hidden=true): self
+    public function hidden(bool $hidden=true)
     {
         return $this->visible(!$hidden);
     }
@@ -226,7 +227,7 @@ abstract class Field extends BaseField
      * @param  boolean $nullable
      * @return self
      */
-    public function nullable(bool $nullable=true): self
+    public function nullable(bool $nullable=true)
     {
         $this->needsToBeUnlocked();
 
@@ -248,7 +249,7 @@ abstract class Field extends BaseField
      * @param  mixed $value
      * @return self
      */
-    public function default($value=null): self
+    public function default($value=null)
     {
         $this->needsToBeUnlocked();
 
@@ -280,16 +281,22 @@ abstract class Field extends BaseField
      */
     protected function locking()
     {
-        if ($this->hasProperty('default') && is_null($this->default)) {
-            if ($this->hasRule(self::NOT_NULLABLE)) {
-                throw new \LogicException("This field cannot be null and defined as null by default");
-            } else if (!$this->hasRule(self::NULLABLE) && !$this->hasRule(self::REQUIRED)) {
-                throw new \LogicException("This field cannot be null, defined as null by default and not required");
+        if ($this->hasProperty('default')) {
+            if (is_null($this->default)) {
+                if ($this->hasRule(self::NOT_NULLABLE)) {
+                    throw new \LogicException("This field cannot be null and defined as null by default");
+                } else if (!$this->hasRule(self::NULLABLE) && !$this->hasRule(self::REQUIRED)) {
+                    throw new \LogicException("This field cannot be null, defined as null by default and not required");
+                }
             }
         }
 
-        if ($this->hasRule(self::NULLABLE) && $this->hasRule(self::NOT_NULLABLE)) {
-            throw new \LogicException("This field cannot be nullable and not nullable or strict on the same time");
+        if ($this->hasRule(self::NOT_NULLABLE)) {
+            if ($this->hasRule(self::NULLABLE)) {
+                throw new \LogicException("This field cannot be nullable and not nullable or strict on the same time");
+            }
+
+            $this->addValidation(NotNullable::class);
         }
     }
 
@@ -299,7 +306,7 @@ abstract class Field extends BaseField
      * @param integer $rule
      * @return self
      */
-    protected function addRule(int $rule): self
+    protected function addRule(int $rule)
     {
         $this->needsToBeUnlocked();
 
@@ -317,25 +324,18 @@ abstract class Field extends BaseField
      * @param  mixed $value
      * @return mixed
      */
-    public function castValue(Model $model, $value)
-    {
-        return $value;
-    }
-
-    /**
-     * Return the casted value for a specific model object.
-     *
-     * @param  Model $model
-     * @param  mixed $value
-     * @return mixed
-     */
     public function getValue(Model $model, $value)
     {
         return $this->castValue($model, $value);
     }
 
+    public function transformValue(Model $model, $value)
+    {
+        return $this->castValue($model, $value);
+    }
+
     /**
-     * Return the value to set for a specific model object.
+     * Return the value to set for a specific model object after passing all checks.
      *
      * @param Model $model
      * @param mixed $value
@@ -343,11 +343,8 @@ abstract class Field extends BaseField
      */
     public function setValue(Model $model, $value)
     {
-        $value = $this->castValue($model, $value);
-
-        if (is_null($value) && $this->hasRule(self::NOT_NULLABLE)) {
-            throw new \ErrorException($this->name.' can not be null');
-        }
+        $value = $this->transformValue($model, $value);
+        $this->checkValue($model, $value);
 
         return $value;
     }

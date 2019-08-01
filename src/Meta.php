@@ -15,7 +15,9 @@ use Illuminate\Database\Eloquent\Model;
 use Laramore\Exceptions\{
 	MultipleExceptionsException, RequiredFieldException
 };
-use Laramore\Facades\ModelObservableManager;
+use Laramore\Facades\{
+	ModelObservableManager, ValidationManager
+};
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, Link\LinkField, Timestamp
 };
@@ -25,7 +27,7 @@ use Laramore\Interfaces\{
 use Laramore\Traits\IsLocked;
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Observers\{
-	ModelObserver, ModelObservableHandler
+	ModelObserver, ModelObservableHandler, ValidationHandler
 };
 use Laramore\Template;
 
@@ -79,7 +81,9 @@ class Meta implements IsAFieldOwner
         try {
             $this->modelClassName = \strtolower((new \ReflectionClass($modelClass))->getShortName());
             $this->tableName = $this->getDefaultTableName();
+
             $this->setDefaultObservers();
+            $this->setValidationHandler();
         } catch (\ReflectionException $e) {
             $this->tableName = $this->getDefaultTableName();
         }
@@ -87,6 +91,16 @@ class Meta implements IsAFieldOwner
         if (config('database.table.timestamps', false)) {
             $this->useTimestamps();
         }
+    }
+
+    /**
+     * Create a Validation handler for this meta.
+     *
+     * @return void
+     */
+    protected function setValidationHandler()
+    {
+        ValidationManager::createObservableHandler($this->modelClass);
     }
 
     /**
@@ -170,6 +184,16 @@ class Meta implements IsAFieldOwner
     }
 
     /**
+     * Return the validation handler for this meta.
+     *
+     * @return ValidationHandler
+     */
+    public function getValidationHandler(): ValidationHandler
+    {
+        return ValidationManager::getObservableHandler($this->getModelClass());
+    }
+
+    /**
      * Return the default table name for this meta.
      *
      * @return string
@@ -197,7 +221,7 @@ class Meta implements IsAFieldOwner
      * @param string $tableName
      * @return self
      */
-    public function setTableName(string $tableName): self
+    public function setTableName(string $tableName)
     {
         $this->needsToBeUnlocked();
 
@@ -265,7 +289,7 @@ class Meta implements IsAFieldOwner
      * @param Field  $field
      * @return self
      */
-    public function setField(string $name, Field $field): self
+    public function setField(string $name, Field $field)
     {
         $this->needsToBeUnlocked();
 
@@ -322,7 +346,7 @@ class Meta implements IsAFieldOwner
      * @param  LinkField $link
      * @return self
      */
-    public function setLink(string $name, LinkField $link): self
+    public function setLink(string $name, LinkField $link)
     {
         $this->needsToBeUnlocked();
 
@@ -387,7 +411,7 @@ class Meta implements IsAFieldOwner
      * @param CompositeField $composite
      * @return self
      */
-    public function setComposite(string $name, CompositeField $composite): self
+    public function setComposite(string $name, CompositeField $composite)
     {
         $this->needsToBeUnlocked();
 
@@ -452,7 +476,7 @@ class Meta implements IsAFieldOwner
      * @param BaseField $field
      * @return self
      */
-    public function set(string $name, BaseField $field): self
+    public function set(string $name, BaseField $field)
     {
         if ($field instanceof CompositeField) {
             return $this->setComposite($name, $field);
@@ -627,7 +651,7 @@ class Meta implements IsAFieldOwner
      * @param  Field $field
      * @return self
      */
-    public function primary(Field $field): self
+    public function primary(Field $field)
     {
         if ($this->primary) {
             throw new \Exception('A primary field is already set');
@@ -644,7 +668,7 @@ class Meta implements IsAFieldOwner
      * @param  mixed ...$fields
      * @return self
      */
-    public function unique(...$fields): self
+    public function unique(...$fields)
     {
         $unique = [];
 
@@ -702,7 +726,7 @@ class Meta implements IsAFieldOwner
      *
      * @return self
      */
-    public function useTimestamps(): self
+    public function useTimestamps()
     {
         try {
             $this->set(
@@ -777,7 +801,7 @@ class Meta implements IsAFieldOwner
      * @param BaseField $value
      * @return self
      */
-    public function __set(string $name, BaseField $value): self
+    public function __set(string $name, BaseField $value)
     {
         return $this->set($name, $value);
     }

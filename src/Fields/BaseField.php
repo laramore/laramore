@@ -12,11 +12,14 @@ namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
 use Laramore\Observers\ModelObserver;
+use Illuminate\Database\Eloquent\Model;
 use Laramore\Interfaces\IsAField;
 use Laramore\Traits\{
     IsOwnedAndLocked, HasProperties
 };
 use Laramore\Meta;
+use Laramore\Exceptions\FieldValidationException;
+use Laramore\Validations\ValidationErrorBag;
 
 abstract class BaseField implements IsAField
 {
@@ -69,7 +72,7 @@ abstract class BaseField implements IsAField
      * @param  string $name
      * @return self
      */
-    public function name(string $name): self
+    public function name(string $name)
     {
         $this->needsToBeUnlocked();
 
@@ -95,5 +98,33 @@ abstract class BaseField implements IsAField
         } while (!($owner instanceof Meta));
 
         return $owner;
+    }
+
+    protected function addValidation(string $validationClass)
+    {
+        $validation = new $validationClass($this->getName());
+
+        return $this->getMeta()->getValidationHandler()->addObserver($validation);
+
+        return $validation;
+    }
+
+    public function getValidationErrorsForValue(Model $model, $value): ValidationErrorBag
+    {
+        return $this->getMeta()->getValidationHandler()->getValidationErrors($this->name, $model, $value);
+    }
+
+    public function isAValidValue(Model $model, $value): bool
+    {
+        return $this->getValidationErrorsForValue($model, $value)->count() === 0;
+    }
+
+    public function checkValue(Model $model, $value): void
+    {
+        $errors = $this->getValidationErrorsForValue($model, $value);
+
+        if ($errors->count()) {
+            throw new FieldValidationException($this, $errors);
+        }
     }
 }
