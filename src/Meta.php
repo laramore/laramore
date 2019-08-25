@@ -77,16 +77,11 @@ class Meta implements IsAFieldOwner
     public function __construct(string $modelClass)
     {
         $this->modelClass = $modelClass;
+        $this->modelClassName = \strtolower((new \ReflectionClass($modelClass))->getShortName());
+        $this->tableName = $this->getDefaultTableName();
 
-        try {
-            $this->modelClassName = \strtolower((new \ReflectionClass($modelClass))->getShortName());
-            $this->tableName = $this->getDefaultTableName();
-
-            $this->setDefaultObservers();
-            $this->setValidationHandler();
-        } catch (\ReflectionException $e) {
-            $this->tableName = $this->getDefaultTableName();
-        }
+        $this->setDefaultObservers();
+        $this->setValidationHandler();
 
         if (config('database.table.timestamps', false)) {
             $this->useTimestamps();
@@ -626,7 +621,7 @@ class Meta implements IsAFieldOwner
      *
      * @return Field
      */
-    public function getPrimary(): Field
+    public function getPrimary(): ?Field
     {
         return $this->primary;
     }

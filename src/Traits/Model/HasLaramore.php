@@ -56,9 +56,9 @@ trait HasLaramore
     }
 
     /**
-     * Allow the user to define all metas for the current model.
+     * Allow the user to define all meta data for the current model.
      *
-     * @param  Meta $meta All model meta data.
+     * @param  Meta $meta
      * @return void
      */
     abstract protected static function __meta(Meta $meta);

@@ -13,13 +13,17 @@ namespace Laramore\Fields;
 use Illuminate\Support\Str;
 use Laramore\Facades\MetaManager;
 use Laramore\Traits\Field\ManyToManyRelation;
-use Laramore\Meta;
+use Laramore\{
+    Meta, FakePivot
+};
 
 class ManyToMany extends CompositeField
 {
     use ManyToManyRelation;
 
     protected $reversedName;
+    protected $usePivot;
+    protected $pivotClassName;
     protected $unique = true;
 
     protected static $defaultFields = [];
@@ -50,7 +54,19 @@ class ManyToMany extends CompositeField
 
     public function reversedName(string $reversedName=null)
     {
+        $this->needsToBeUnlocked();
+
         $this->linksName['reversed'] = $reversedName ?: '*{modelname}';
+
+        return $this;
+    }
+
+    public function usePivot(string $pivotClassName=null)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->defineProperty('usePivot', true);
+        $this->defineProperty('pivotClassName', $pivotClassName);
 
         return $this;
     }
@@ -62,7 +78,7 @@ class ManyToMany extends CompositeField
         $this->defineProperty('unique', $unique);
     }
 
-    protected function createPivotMeta()
+    protected function loadPivotMeta()
     {
         $offMeta = $this->getMeta();
         $onMeta = $this->on::getMeta();
@@ -71,19 +87,33 @@ class ManyToMany extends CompositeField
         $offName = $offMeta->getModelClassName();
         $onName = $onMeta->getModelClassName();
 
-        $this->setProperty('pivotMeta', new Meta('App\\Pivots\\'.ucfirst($offName).ucfirst($onName)));
-        $this->pivotMeta->set(
-            $offName,
-            $offField = Foreign::field()->on($this->getMeta()->getModelClass())->reversedName('pivot'.ucfirst($onTable))
-        );
-        $this->pivotMeta->set(
-            $onName,
-            $onField = Foreign::field()->on($this->on)->reversedName('pivot'.ucfirst($offTable))
-        );
-        $this->pivotMeta->setTableName($offTable.'_'.$onTable);
+        $pivotClassName = 'App\\Pivots\\'.ucfirst($offName).ucfirst($onName);
 
-        $this->setProperty('pivotTo', $onField->from);
-        $this->setProperty('pivotFrom', $offField->from);
+        if ($this->usePivot) {
+            if ($this->pivotClassName) {
+                $pivotClassName = $this->pivotClassName;
+            }
+        } else {
+            \class_alias(FakePivot::class, $pivotClassName);
+            $this->setProperty('pivotMeta', $pivotClassName::getMeta());
+
+            $this->pivotMeta->set(
+                $offName,
+                $offField = Foreign::field()->on($this->getMeta()->getModelClass())->reversedName('pivot'.ucfirst($onTable))
+            );
+
+            $this->pivotMeta->set(
+                $onName,
+                $onField = Foreign::field()->on($this->on)->reversedName('pivot'.ucfirst($offTable))
+            );
+
+            $this->pivotMeta->setTableName($offTable.'_'.$onTable);
+        }
+
+        [$to, $from] = $this->pivotMeta->getPivots();
+
+        $this->setProperty('pivotTo', $to);
+        $this->setProperty('pivotFrom', $from);
 
         if ($this->unique) {
             $this->pivotMeta->unique($this->pivotTo, $this->pivotFrom);
@@ -94,7 +124,7 @@ class ManyToMany extends CompositeField
 
     public function owned()
     {
-        $this->createPivotMeta();
+        $this->loadPivotMeta();
 
         $this->defineProperty('off', $this->getLink('reversed')->on = $this->getMeta()->getModelClass());
 

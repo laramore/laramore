@@ -63,6 +63,18 @@ class ValidationHandler extends BaseObservableHandler
     }
 
     /**
+     * Return if an observe exists with the given name.
+     *
+     * @param  string $fieldName
+     * @param  string $name
+     * @return boolean
+     */
+    public function hasValidation(string $fieldName, string $name=null): bool
+    {
+        return $this->hasObserver($fieldName, $name);
+    }
+
+    /**
      * Return the first observer with the given name.
      *
      * @param  string $fieldName
@@ -85,6 +97,18 @@ class ValidationHandler extends BaseObservableHandler
     }
 
     /**
+     * Return the first observer with the given name.
+     *
+     * @param  string $fieldName
+     * @param  string $name
+     * @return BaseObserver
+     */
+    public function getValidation(string $fieldName, string $name=null): BaseObserver
+    {
+        return $this->getObserver($fieldName, $name);
+    }
+
+    /**
      * Return the list of the handled observers.
      *
      * @param  string $fieldName
@@ -97,6 +121,17 @@ class ValidationHandler extends BaseObservableHandler
         }
 
         return $this->observers[$fieldName];
+    }
+
+    /**
+     * Return the list of the handled observers.
+     *
+     * @param  string $fieldName
+     * @return array
+     */
+    public function getValidations(string $fieldName=null): array
+    {
+        return $this->getObservers($fieldName);
     }
 
     /**

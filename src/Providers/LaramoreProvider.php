@@ -166,8 +166,12 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootingCallback()
     {
-        $this->addMetas();
-        $this->createGrammarObservers();
+        try {
+            $this->addMetas();
+            $this->createGrammarObservers();
+        } catch (\Exception $e) {
+            dd($e);
+        }
     }
 
     /**
@@ -177,9 +181,13 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootedCallback()
     {
-        $this->metaManager->lock();
-        $this->typeManager->lock();
-        $this->modelObserverManager->lock();
-        $this->grammarObservableManager->lock();
+        try {
+            $this->metaManager->lock();
+            $this->typeManager->lock();
+            $this->modelObserverManager->lock();
+            $this->grammarObservableManager->lock();
+        } catch (\Exception $e) {
+            dd($e);
+        }
     }
 }

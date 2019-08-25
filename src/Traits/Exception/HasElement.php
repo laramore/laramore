@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Exception;
+namespace Laramore\Traits\Exception;
 
 trait HasElement
 {

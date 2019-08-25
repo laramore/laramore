@@ -13,7 +13,7 @@ namespace Laramore;
 use Laramore\Traits\Model\HasLaramore;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
-class Model extends BaseModel
+abstract class Model extends BaseModel
 {
     use HasLaramore;
 }
