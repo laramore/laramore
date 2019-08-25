@@ -105,22 +105,22 @@ class Char extends Text
             $dots = $this->hasRule(self::DOTS_ON_RESIZING) ? '...' : '';
 
             if ($this->hasRule(self::CARACTERE_RESIZE)) {
-                $value = $this->getResizedValue($model, $value, null, '', $dots);
+                $value = $this->resizeValue($model, $value, null, '', $dots);
             } else if ($this->hasRule(self::WORD_RESIZE)) {
-                $value = $this->getResizedValue($model, $value, null, ' ', $dots);
+                $value = $this->resizeValue($model, $value, null, ' ', $dots);
             } else if ($this->hasRule(self::SENTENCE_RESIZE)) {
-                $value = $this->getResizedValue($model, $value, null, '.', $dots);
+                $value = $this->resizeValue($model, $value, null, '.', $dots);
             }
         }
 
         return $value;
     }
 
-    public function getResizedValue(Model $model, $value, $length=null, $delimiter='', $toAdd='...')
+    public function resizeValue(Model $model, $value, $length=null, $delimiter='', $toAdd='...')
     {
         $parts = $delimiter === '' ? str_split($value) : explode($delimiter, $value);
         $valides = [];
-        $length = ($length ?: $this->maxLength) - strlen($toAdd);
+        $length = (($length ?: $this->maxLength) - strlen($toAdd));
 
         foreach ($parts as $part) {
             if (strlen($part) <= $length) {

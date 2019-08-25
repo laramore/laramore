@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
+use Laramore\Validations\Pattern as PatternValidation;
 
 class Email extends Pattern
 {
@@ -26,13 +27,13 @@ class Email extends Pattern
      * @var integer
      */
     // Accept username and add to it the domain string
-    public const ACCEPT_USERNAME = (131072 | self::FIX_IF_WRONG);
+    public const ACCEPT_USERNAME = 65536;
 
     // Excepts if the email adress is from a different cdn
-    public const ONLY_SAME_CDN = 262144;
+    public const ONLY_SAME_CDN = 131072;
 
     // Default rules
-    public const DEFAULT_EMAIL = (self::NOT_NULLABLE | self::ACCEPT_USERNAME | self::DEFAULT_FIELD);
+    public const DEFAULT_EMAIL = (self::NOT_NULLABLE | self::DEFAULT_FIELD);
 
     protected static $defaultRules = self::DEFAULT_EMAIL;
 
@@ -60,9 +61,18 @@ class Email extends Pattern
         return $this->cdn;
     }
 
-    public function setValue($model, $value)
+    protected function setValidations()
     {
-        $value = parent::setValue($model, $value);
+        parent::setValidations();
+
+        if ($this->hasRule(self::MATCH_PATTERN)) {
+            $this->setValidation(PatternValidation::class)->type('email');
+        }
+    }
+
+    public function transformValue($model, $value)
+    {
+        $value = parent::transformValue($model, $value);
 
         if ($this->hasRule(self::ONLY_SAME_CDN) && !Str::endsWith($value, $this->getCdn(false))) {
             throw new \Exception('The email adress is incorrect and does not correspond to the right cdn for the field `'.$this->name.'`');

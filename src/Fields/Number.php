@@ -12,12 +12,11 @@ namespace Laramore\Fields;
 
 use Laramore\Facades\TypeManager;
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Validations\NotZero;
 use Laramore\Type;
 
 class Number extends Field
 {
-    protected $unsigned;
-
     /**
      * Set of rules.
      * Common to all integer fields.
@@ -42,7 +41,7 @@ class Number extends Field
 
     public function getType(): Type
     {
-        if ($this->getProperty('unsigned')) {
+        if ($this->hasRule(self::UNSIGNED)) {
             return TypeManager::unsignedInteger();
         }
 
@@ -106,14 +105,23 @@ class Number extends Field
         return $this;
     }
 
+    protected function setValidations()
+    {
+        parent::setValidations();
+
+        if ($this->hasRule(self::NOT_ZERO)) {
+            $this->setValidation(NotZero::class);
+        }
+    }
+
     public function castValue(Model $model, $value)
     {
         return is_null($value) ? $value : (int) $value;
     }
 
-    public function setValue(Model $model, $value)
+    public function transformValue(Model $model, $value)
     {
-        $value = parent::setValue($model, $value);
+        $value = parent::transformValue($model, $value);
 
         if (is_null($value)) {
             return $value;

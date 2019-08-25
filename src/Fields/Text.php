@@ -12,6 +12,7 @@ namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Schema;
 use Laramore\Facades\TypeManager;
+use Laramore\Validations\NotBlank;
 use Laramore\Type;
 
 class Text extends Field
@@ -43,14 +44,12 @@ class Text extends Field
         return is_null($value) ? $value : (string) $value;
     }
 
-    public function setValue($model, $value)
+    protected function setValidations()
     {
-        $value = parent::setValue($model, $value);
+        parent::setValidations();
 
-        if ($this->hasRule(self::NOT_BLANK) && empty($value)) {
-            throw new \Exception('The value cannot be empty for the field '.$this->name);
+        if ($this->hasRule(self::NOT_BLANK)) {
+            $this->setValidation(NotBlank::class);
         }
-
-        return $value;
     }
 }

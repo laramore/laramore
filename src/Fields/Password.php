@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Hash;
+use Laramore\Validations\Pattern as PatternValidation;
 
 class Password extends Pattern
 {
@@ -23,44 +24,44 @@ class Password extends Pattern
     public const REGEX_AT_LEAST_ONE_SPECIAL = '(?=\S*[\W])';
 
     // Need one lowercase caracter at least.
-    public const NEED_ONE_LOWERCASE = 131072;
+    public const NEED_ONE_LOWERCASE = 65536;
 
     // Need one uppercase caracter at least.
-    public const NEED_ONE_UPPERCASE = 262144;
+    public const NEED_ONE_UPPERCASE = 131072;
 
     // Need one number caracter at least.
-    public const NEED_ONE_NUMBER = 524288;
+    public const NEED_ONE_NUMBER = 262144;
 
     // Need one special caracter at least.
-    public const NEED_ONE_SPECIAL = 1048576;
+    public const NEED_ONE_SPECIAL = 524288;
 
     // The password length must be at least of the defined length.
-    public const MIN_LENGTH = 2097152;
-
-    // The password length must be at max of the defined length.
-    public const MAX_LENGTH = 4194304;
+    public const MIN_LENGTH = 1048576;
 
     // Default rules
-    public const DEFAULT_PASSWORD = (self::DEFAULT_TEXT | self::MATCH_PATTERN | self::NEED_ONE_LOWERCASE | self::NEED_ONE_UPPERCASE | self::NEED_ONE_NUMBER | self::MIN_LENGTH ^ self::VISIBLE);
+    public const DEFAULT_PASSWORD = (self::DEFAULT_PATTERN | self::NEED_ONE_LOWERCASE | self::NEED_ONE_UPPERCASE | self::NEED_ONE_NUMBER | self::MIN_LENGTH ^ self::VISIBLE);
 
     protected static $defaultRules = self::DEFAULT_PASSWORD;
 
-    protected function locking()
+    protected function checkRules()
     {
-        parent::locking();
+        parent::checkRules();
 
         if (!$this->hasRule(self::MATCH_PATTERN)) {
             throw new \Exception('A password has to follow a pattern');
         }
-
-        if ($this->hasRule(self::FIX_IF_WRONG)) {
-            throw new \Exception('A password is not fixable');
-        }
-
-        $this->setProperty('pattern', $this->getPattern());
     }
 
-    public function getPattern()
+    protected function setValidations()
+    {
+        $this->setProperty('pattern', $this->generatePattern());
+
+        parent::setValidations();
+
+        $this->setValidation(PatternValidation::class)->type('password');
+    }
+
+    protected function generatePattern()
     {
         return '/^\S*'.implode('', $this->getRegexRules()).'\S*$/';
     }
@@ -70,9 +71,8 @@ class Password extends Pattern
         $rules = [];
 
         if ($this->hasRule(self::MIN_LENGTH) || $this->hasRule(self::MAX_LENGTH)) {
-            $rules[] = str_replace('$min', $this->minLength ?: '',
-                str_replace('$max', $this->maxLength ?: '', static::REGEX_MIN_MAX_CARACTER)
-            );
+            $lengths = [$this->minLength ?: '', $this->maxLength ?: ''];
+            $rules[] = str_replace(['$min', '$max'], $lengths, static::REGEX_MIN_MAX_CARACTER);
         }
 
         if ($this->hasRule(self::NEED_ONE_LOWERCASE)) {
@@ -101,13 +101,8 @@ class Password extends Pattern
         return Hash::make($value);
     }
 
-    public function fixValue($model, $value)
+    public function isCorrectValue($model, $value, $password=null, bool $expected=true)
     {
-        throw new \Exception('A password is not fixable');
-    }
-
-    public function isCorrectValue($model, $value, $password=null, $boolean=true)
-    {
-        return Hash::check($password, $value) === $boolean;
+        return Hash::check($password, $value) === $expected;
     }
 }

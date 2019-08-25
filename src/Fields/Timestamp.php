@@ -35,9 +35,9 @@ class Timestamp extends Field
         return is_null($value) ? $value : (int) $value;
     }
 
-    protected function locking()
+    protected function checkRules()
     {
-        parent::locking();
+        parent::checkRules();
 
         if (!($this->hasRule(self::NULLABLE) ^ $this->useCurrent)) {
             throw new \Exception("This field must be either nullable or set by default as the current date");

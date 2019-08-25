@@ -42,9 +42,9 @@ class Boolean extends Field
      * Return if the value is true or false as expected.
      *
      * @param  Model   $model
-     * @param  mixed  $value
-     * @param  bool $expected
-     * @return bool
+     * @param  mixed   $value
+     * @param  boolean $expected
+     * @return boolean
      */
     public function isValue(Model $model, $value, bool $expected=true): bool
     {
