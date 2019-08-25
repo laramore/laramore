@@ -92,6 +92,7 @@ abstract class BaseField implements IsAField
     }
 
     abstract protected function checkRules();
+
     abstract protected function setValidations();
 
     /**
@@ -102,9 +103,11 @@ abstract class BaseField implements IsAField
      */
     public function getMeta(): Meta
     {
-        do {
-            $owner = $this->getOwner();
-        } while (!($owner instanceof Meta));
+        $owner = $this->getOwner();
+
+        while (!($owner instanceof Meta)) {
+            $owner = $owner->getOwner();
+        }
 
         return $owner;
     }
@@ -113,12 +116,12 @@ abstract class BaseField implements IsAField
     {
         $handler = $this->getMeta()->getValidationHandler();
 
-        if ($handler->hasObserver($name = $validationClass::getStaticName())) {
-            $validation = $handler->getObserver($name);
+        if ($handler->hasValidation($this->name, $name = $validationClass::getStaticName())) {
+            $validation = $handler->getValidation($this->name, $name);
         } else {
             $validation = new $validationClass($this->getName());
 
-            $handler->addObserver($validation);
+            $handler->addValidation($validation);
         }
 
         return $validation;

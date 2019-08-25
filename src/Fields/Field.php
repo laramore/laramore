@@ -127,7 +127,7 @@ abstract class Field extends BaseField
         $properties = [];
 
         foreach ($this->getPropertyKeys() as $key) {
-            if (!is_null($value = $this->getProperty($key))) {
+            if (!is_null($value = $this->$key)) {
                 $properties[$key] = $value;
             }
         }
@@ -295,7 +295,6 @@ abstract class Field extends BaseField
             if ($this->hasRule(self::NULLABLE)) {
                 throw new \LogicException("This field cannot be nullable and not nullable or strict on the same time");
             }
-
         }
     }
 
