@@ -31,12 +31,24 @@ class Foreign extends CompositeField
     {
         $this->needsToBeUnlocked();
 
-        $this->defineProperty('on', $this->getLink('reversed')->off = $model);
-        $this->to($this->getLink('reversed')->off::getMeta()->getPrimary()->attname);
+        if ($model === 'self') {
+            $this->defineProperty('on', $model);
+        } else {
+            $this->defineProperty('on', $this->getLink('reversed')->off = $model);
+            $this->to($this->getLink('reversed')->off::getMeta()->getPrimary()->attname);
+        }
 
-        $this->reversedName($reversedName);
+
+        if ($reversedName) {
+            $this->reversedName($reversedName);
+        }
 
         return $this;
+    }
+
+    public function onSelf()
+    {
+        return $this->on('self');
     }
 
     public function to(string $name)
@@ -59,6 +71,10 @@ class Foreign extends CompositeField
 
     public function owned()
     {
+        if ($this->on === 'self') {
+            $this->on($this->getMeta()->getModelClass());
+        }
+
         $this->defineProperty('off', $this->getLink('reversed')->on = $this->getMeta()->getModelClass());
 
         parent::owned();
@@ -142,5 +158,10 @@ class Foreign extends CompositeField
     public function getFieldValue($model, $field, $value)
     {
         return $field->getValue($model, $value);
+    }
+
+    public function isOnSelf()
+    {
+        return $this->on === $this->getMeta()->getModelClass();
     }
 }

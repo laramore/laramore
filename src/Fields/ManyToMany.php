@@ -23,8 +23,8 @@ class ManyToMany extends CompositeField
 
     protected $reversedName;
     protected $usePivot;
-    protected $pivotClassName;
-    protected $unique = true;
+    protected $pivotClass;
+    protected $unique;
 
     protected static $defaultFields = [];
     protected static $defaultLinks = [
@@ -35,12 +35,23 @@ class ManyToMany extends CompositeField
     {
         $this->needsToBeUnlocked();
 
-        $this->defineProperty('on', $this->getLink('reversed')->off = $model);
-        $this->to($model::getMeta()->getPrimary()->attname);
+        if ($model === 'self') {
+            $this->defineProperty('on', $model);
+        } else {
+            $this->defineProperty('on', $this->getLink('reversed')->off = $model);
+            $this->to($model::getMeta()->getPrimary()->attname);
+        }
 
-        $this->reversedName($reversedName);
+        if ($reversedName) {
+            $this->reversedName($reversedName);
+        }
 
         return $this;
+    }
+
+    public function onSelf()
+    {
+        return $this->on('self');
     }
 
     public function to(string $name)
@@ -61,21 +72,23 @@ class ManyToMany extends CompositeField
         return $this;
     }
 
-    public function usePivot(string $pivotClassName=null)
+    public function usePivot(string $pivotClass=null)
     {
         $this->needsToBeUnlocked();
 
         $this->defineProperty('usePivot', true);
-        $this->defineProperty('pivotClassName', $pivotClassName);
+        $this->defineProperty('pivotClass', $pivotClass);
 
         return $this;
     }
 
     public function unique(bool $unique=true)
     {
-        $this->checkOwned();
+        $this->needsToBeUnlocked();
 
         $this->defineProperty('unique', $unique);
+
+        return $this;
     }
 
     protected function loadPivotMeta()
@@ -85,17 +98,20 @@ class ManyToMany extends CompositeField
         $offTable = $offMeta->getTableName();
         $onTable = $onMeta->getTableName();
         $offName = $offMeta->getModelClassName();
-        $onName = $onMeta->getModelClassName();
+        $onName = Str::singular($this->name);
 
-        $pivotClassName = 'App\\Pivots\\'.ucfirst($offName).ucfirst($onName);
+        $namespaceName = 'App\\Pivots';
+        $pivotClassName = ucfirst($offName).ucfirst($onName);
+        $pivotClass = "$namespaceName\\$pivotClassName";
 
         if ($this->usePivot) {
-            if ($this->pivotClassName) {
-                $pivotClassName = $this->pivotClassName;
+            if ($this->pivotClass) {
+                $pivotClass = $this->pivotClass;
             }
         } else {
-            \class_alias(FakePivot::class, $pivotClassName);
-            $this->setProperty('pivotMeta', $pivotClassName::getMeta());
+            // Create dynamically the pivot class (only and first time I use eval, really).
+            eval("namespace $namespaceName; class $pivotClassName extends \Laramore\FakePivot {}");
+            $this->setProperty('pivotMeta', $pivotClass::getMeta());
 
             $this->pivotMeta->set(
                 $offName,
@@ -104,7 +120,7 @@ class ManyToMany extends CompositeField
 
             $this->pivotMeta->set(
                 $onName,
-                $onField = Foreign::field()->on($this->on)->reversedName('pivot'.ucfirst($offTable))
+                $onField = Foreign::field()->on($this->on)->reversedName('pivot'.ucfirst($this->name))
             );
 
             $this->pivotMeta->setTableName($offTable.'_'.$onTable);
@@ -116,14 +132,17 @@ class ManyToMany extends CompositeField
         $this->setProperty('pivotFrom', $from);
 
         if ($this->unique) {
+            dump($this->pivotMeta->getModelClass());
             $this->pivotMeta->unique($this->pivotTo, $this->pivotFrom);
         }
-
-        MetaManager::addMeta($this->pivotMeta);
     }
 
     public function owned()
     {
+        if ($this->on === 'self') {
+            $this->on($this->getMeta()->getModelClass());
+        }
+
         $this->loadPivotMeta();
 
         $this->defineProperty('off', $this->getLink('reversed')->on = $this->getMeta()->getModelClass());
@@ -141,5 +160,10 @@ class ManyToMany extends CompositeField
         $this->defineProperty('from', $this->getLink('reversed')->to = $this->getMeta()->getPrimary()->attname);
 
         parent::locking();
+    }
+
+    public function isOnSelf()
+    {
+        return $this->on === $this->getMeta()->getModelClass();
     }
 }
