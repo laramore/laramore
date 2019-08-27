@@ -126,9 +126,13 @@ abstract class Field extends BaseField
     {
         $properties = [];
 
-        foreach ($this->getPropertyKeys() as $key) {
+        foreach ($this->getPropertyKeys() as $property) {
+            $nameKey = explode(':', $property);
+            $name = $nameKey[0];
+            $key = ($nameKey[1] ?? $name);
+
             if (!is_null($value = $this->$key)) {
-                $properties[$key] = $value;
+                $properties[$name] = $value;
             }
         }
 

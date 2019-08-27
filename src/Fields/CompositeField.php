@@ -275,7 +275,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
 
         foreach ($this->links as $linkname => $link) {
             $keyValues['linkname'] = $linkname;
-            $name = $this->replaceInTemplate(($this->linksName[$linkname] ?? static::$defaultFieldNameTemplate), $keyValues);
+            $name = $this->replaceInTemplate(($this->linksName[$linkname] ?? static::$defaultLinkNameTemplate), $keyValues);
             $this->links[$linkname] = $link->own($this, $name);
         }
     }

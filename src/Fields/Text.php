@@ -17,8 +17,6 @@ use Laramore\Type;
 
 class Text extends Field
 {
-    protected $length;
-
     /**
      * Set of rules.
      * Common to all string fields.

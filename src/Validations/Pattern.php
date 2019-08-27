@@ -20,7 +20,6 @@ class Pattern extends Validation
 
     public function isValueValid(Model $model, $value): bool
     {
-        dump($value, $this->pattern);
         return \preg_match($this->pattern, $value, $_, $this->flags);
     }
 

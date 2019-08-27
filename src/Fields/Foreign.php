@@ -38,7 +38,6 @@ class Foreign extends CompositeField
             $this->to($this->getLink('reversed')->off::getMeta()->getPrimary()->attname);
         }
 
-
         if ($reversedName) {
             $this->reversedName($reversedName);
         }

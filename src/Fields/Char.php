@@ -59,10 +59,15 @@ class Char extends Text
         return TypeManager::char();
     }
 
+    public function getLength(): ?int
+    {
+        return $this->maxLength;
+    }
+
     public function getPropertyKeys(): array
     {
         return array_merge([
-            'length'
+            'length:maxLength'
         ], parent::getPropertyKeys());
     }
 
@@ -84,15 +89,15 @@ class Char extends Text
         }
     }
 
-    public function length(int $length)
+    public function maxLength(int $maxLength)
     {
         $this->needsToBeUnlocked();
 
-        if ($length <= 0) {
-            throw new \Exception('The length must be a positive number');
+        if ($maxLength <= 0) {
+            throw new \Exception('The max length must be a positive number');
         }
 
-        $this->defineProperty('length', $length);
+        $this->defineProperty('maxLength', $maxLength);
 
         return $this;
     }
