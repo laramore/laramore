@@ -140,7 +140,7 @@ class LaramoreProvider extends ServiceProvider
     {
         foreach ((new ReflectionNamespace($this->modelNamespace))->getClasses() as $modelClass) {
             if (\in_array(HasLaramore::class, $modelClass->getTraitNames())) {
-                $this->metaManager->addMeta($modelClass->getName()::getMeta());
+                $modelClass->getName()::getMeta();
             }
         }
     }
@@ -166,12 +166,8 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootingCallback()
     {
-        try {
-            $this->addMetas();
-            $this->createGrammarObservers();
-        } catch (\Exception $e) {
-            dd($e);
-        }
+        $this->addMetas();
+        $this->createGrammarObservers();
     }
 
     /**
@@ -181,13 +177,9 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootedCallback()
     {
-        try {
-            $this->metaManager->lock();
-            $this->typeManager->lock();
-            $this->modelObserverManager->lock();
-            $this->grammarObservableManager->lock();
-        } catch (\Exception $e) {
-            dd($e);
-        }
+        $this->metaManager->lock();
+        $this->typeManager->lock();
+        $this->modelObserverManager->lock();
+        $this->grammarObservableManager->lock();
     }
 }

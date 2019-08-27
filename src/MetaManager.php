@@ -59,9 +59,32 @@ class MetaManager
     }
 
     /**
-     * Return all Metas.
+     * Indicate if a meta exists a specific model.
      *
-     * @return array
+     * @param  string $modelClass
+     * @return boolean
+     */
+    public function hasMeta(string $modelClass): bool
+    {
+        return isset($this->metas[$modelClass]);
+    }
+
+    /**
+     * Indicate if a meta exists a specific model.
+     *
+     * @param  string $modelClass
+     * @return boolean
+     */
+    public function getMeta(string $modelClass): Meta
+    {
+        return $this->metas[$modelClass];
+    }
+
+    /**
+     * Return the meta for a specific model.
+     *
+     * @param  string $modelClass
+     * @return boolean
      */
     public function getMetas(): array
     {
@@ -97,15 +120,17 @@ class MetaManager
 
         $tableName = $meta->getTableName();
 
-        foreach ($this->getMetas() as $inMeta) {
+        foreach ($this->getMetas() as $modelClass => $inMeta) {
             if ($meta === $inMeta) {
                 throw new \LogicException('This meta is already added');
             } else if ($inMeta->getTableName() === $tableName) {
                 throw new \LogicException('A meta already exists for this table');
+            } else if ($modelClass === $meta->getModelClass()) {
+                throw new \LogicException('A meta already exists for this model');
             }
         }
 
-        $this->metas[] = $meta;
+        $this->metas[$meta->getModelClass()] = $meta;
 
         return $this;
     }

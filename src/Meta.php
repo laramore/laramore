@@ -76,16 +76,29 @@ class Meta implements IsAFieldOwner
      */
     public function __construct(string $modelClass)
     {
-        $this->modelClass = $modelClass;
-        $this->modelClassName = \strtolower((new \ReflectionClass($modelClass))->getShortName());
-        $this->tableName = $this->getDefaultTableName();
-
+        $this->setModelClass($modelClass);
         $this->setDefaultObservers();
         $this->setValidationHandler();
 
         if (config('database.table.timestamps', false)) {
             $this->useTimestamps();
         }
+    }
+
+    /**
+     * Define the model class name for this meta.
+     *
+     * @param string $modelClass
+     * @return void
+     */
+    protected function setModelClass(string $modelClass)
+    {
+        $this->modelClass = $modelClass;
+
+        $parts = \explode('\\', $modelClass);
+        $this->modelClassName = \end($parts);
+
+        $this->tableName = $this->getDefaultTableName();
     }
 
     /**

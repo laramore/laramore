@@ -10,7 +10,9 @@
 
 namespace Laramore\Traits\Model;
 
-use Laramore\Facades\TypeManager;
+use Laramore\Facades\{
+    TypeManager, MetaManager
+};
 use Laramore\Fields\{
     Field, CompositeField, LinkField
 };
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\MassAssignmentException;
 
 trait HasLaramore
 {
-    protected static $meta;
+    protected static $metas;
 
     protected $required = [];
 
@@ -48,8 +50,11 @@ trait HasLaramore
         $this->timestamps = $meta->hasTimestamps();
 
         // Define all model metas.
-        $this->setKeyName($meta->getPrimary()->attname);
-        $this->setIncrementing($meta->getPrimary()->type === TypeManager::getType('increment'));
+        if ($primary = $meta->getPrimary()) {
+            $this->setKeyName($primary->attname);
+            $this->setIncrementing($primary->type === TypeManager::getType('increment'));
+        }
+
         $this->setTable($meta->getTableName());
 
         parent::__construct(...$args);
@@ -70,10 +75,23 @@ trait HasLaramore
      */
     protected static function prepareMeta()
     {
-        static::$meta = new Meta(static::class);
+        // Generate all meta data defined by the user in the current pivot.
+        $metaClass = static::getMetaClass();
+        MetaManager::addMeta($meta = new $metaClass(static::class));
 
-        // Generate all meta data defined by the user in the current model.
-        static::__meta(static::$meta);
+        static::__meta($meta);
+
+        return $meta;
+    }
+
+    /**
+     * Return the meta class to use.
+     *
+     * @return string
+     */
+    public static function getMetaClass(): string
+    {
+        return Meta::class;
     }
 
     /**
@@ -83,11 +101,11 @@ trait HasLaramore
      */
     public static function getMeta()
     {
-        if (!static::$meta) {
-            static::prepareMeta();
+        if (!MetaManager::hasMeta(static::class)) {
+            return static::prepareMeta();
         }
 
-        return static::$meta;
+        return MetaManager::getMeta(static::class);
     }
 
     /**

@@ -19,15 +19,12 @@ abstract class Pivot extends BasePivot
     use HasLaramore;
 
     /**
-     * Generate one time the pivot meta.
+     * Return the meta class to use.
      *
-     * @return void
+     * @return string
      */
-    protected static function prepareMeta()
+    public static function getMetaClass(): string
     {
-        static::$meta = new PivotMeta(static::class);
-
-        // Generate all meta data defined by the user in the current pivot.
-        static::__meta(static::$meta);
+        return PivotMeta::class;
     }
 }

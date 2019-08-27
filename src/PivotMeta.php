@@ -75,11 +75,4 @@ class PivotMeta extends Meta
 
         $this->pivots[] = $pivot;
     }
-
-    public function setModelClassName(string $modelClassName)
-    {
-        $this->needsToBeUnlocked();
-
-        $this->modelClassName = $modelClassName;
-    }
 }
