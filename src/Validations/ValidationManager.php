@@ -8,23 +8,24 @@
  * @license MIT
  */
 
-namespace Laramore\Observers;
+namespace Laramore\Validations;
 
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Observers\BaseManager;
 
-class ValidationManager extends BaseObservableManager
+class ValidationManager extends BaseManager
 {
     /**
      * Allowed observable sub class.
      *
      * @var string
      */
-    protected $observableSubClass = Model::class;
+    protected $managedClass = Model::class;
 
     /**
      * The observable handler class to generate.
      *
      * @var string
      */
-    protected $observableHandlerClass = ValidationHandler::class;
+    protected $handlerClass = ValidationHandler::class;
 }

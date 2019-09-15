@@ -8,14 +8,16 @@
  * @license MIT
  */
 
-namespace Laramore\Observers;
+namespace Laramore\Validations;
 
 use Illuminate\Database\Eloquent\Model;
-use Laramore\Validations\{
-    Validation, ValidationErrorBag
+use Laramore\Validations\ValidationErrorBag;
+use Laramore\Fields\BaseField;
+use Laramore\Observers\{
+    BaseObserver, BaseHandler
 };
 
-class ValidationHandler extends BaseObservableHandler
+class ValidationHandler extends BaseHandler
 {
     /**
      * The observable class.
@@ -31,13 +33,13 @@ class ValidationHandler extends BaseObservableHandler
      * @param array        $observers
      * @return self
      */
-    protected function pushObserver(BaseObserver $observer, array &$observers)
+    protected function push(BaseObserver $observer, array &$observers)
     {
-        if (!isset($observers[$name = $observer->getFieldName()])) {
+        if (!isset($observers[$name = $observer->getField()->attname])) {
             $observers[$name] = [];
         }
 
-        return parent::pushObserver($observer, $observers[$name]);
+        return parent::push($observer, $observers[$name]);
     }
 
     /**
@@ -47,7 +49,7 @@ class ValidationHandler extends BaseObservableHandler
      * @param  string $name
      * @return boolean
      */
-    public function hasObserver(string $fieldName, string $name=null): bool
+    public function has(string $fieldName, string $name=null): bool
     {
         if (is_null($name)) {
             return isset($this->observers[$fieldName]);
@@ -63,28 +65,16 @@ class ValidationHandler extends BaseObservableHandler
     }
 
     /**
-     * Return if an observe exists with the given name.
-     *
-     * @param  string $fieldName
-     * @param  string $name
-     * @return boolean
-     */
-    public function hasValidation(string $fieldName, string $name=null): bool
-    {
-        return $this->hasObserver($fieldName, $name);
-    }
-
-    /**
      * Return the first observer with the given name.
      *
      * @param  string $fieldName
      * @param  string $name
-     * @return BaseObserver
+     * @return mixed
      */
-    public function getObserver(string $fieldName, string $name=null): BaseObserver
+    public function get(string $fieldName, string $name=null)
     {
         if (is_null($name)) {
-            throw new \Exception('The name information is required');
+            return $this->observers[$fieldName];
         }
 
         foreach ($this->observers[$fieldName] as $key => $observer) {
@@ -97,60 +87,27 @@ class ValidationHandler extends BaseObservableHandler
     }
 
     /**
-     * Return the first observer with the given name.
-     *
-     * @param  string $fieldName
-     * @param  string $name
-     * @return BaseObserver
-     */
-    public function getValidation(string $fieldName, string $name=null): BaseObserver
-    {
-        return $this->getObserver($fieldName, $name);
-    }
-
-    /**
      * Return the list of the handled observers.
      *
      * @param  string $fieldName
      * @return array
      */
-    public function getObservers(string $fieldName=null): array
+    public function all(string $fieldName=null): array
     {
         if (is_null($fieldName)) {
             return $this->observers;
         }
 
-        return $this->observers[$fieldName];
+        return $this->get($fieldName);
     }
 
-    /**
-     * Return the list of the handled observers.
-     *
-     * @param  string $fieldName
-     * @return array
-     */
-    public function getValidations(string $fieldName=null): array
-    {
-        return $this->getObservers($fieldName);
-    }
-
-    /**
-     * Need to do anything.
-     *
-     * @return void
-     */
-    protected function locking()
-    {
-
-    }
-
-    public function getValidationErrors(string $fieldName, Model $model, $value): ValidationErrorBag
+    public function getValidationErrors(BaseField $field, $value): ValidationErrorBag
     {
         $bag = new ValidationErrorBag;
         $priority = Validation::MAX_PRIORITY;
 
-        if ($this->hasObserver($fieldName)) {
-            foreach ($this->getObservers($fieldName) as $validation) {
+        if ($this->has($field->attname)) {
+            foreach ($this->all($field->attname) as $validation) {
                 // Validation can fail only with same priorities.
                 if ($priority !== $validation->getPriority()) {
                     if ($bag->count()) {
@@ -160,7 +117,7 @@ class ValidationHandler extends BaseObservableHandler
                     $priority = $validation->getPriority();
                 }
 
-                if (!$validation->isValueValid($model, $value)) {
+                if (!$validation->isValueValid($value)) {
                     foreach ((array) $validation->getMessage() as $message) {
                         $bag->add($validation->getName(), $message);
                     }
