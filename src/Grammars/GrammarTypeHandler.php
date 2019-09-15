@@ -8,18 +8,19 @@
  * @license MIT
  */
 
-namespace Laramore\Observers;
+namespace Laramore\Grammars;
 
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Observers\BaseHandler;
 
-class GrammarObservableHandler extends BaseObservableHandler
+class GrammarTypeHandler extends BaseHandler
 {
     /**
      * The observer class to use to generate.
      *
      * @var string
      */
-    protected $observerClass = GrammarObserver::class;
+    protected $observerClass = GrammarType::class;
 
     /**
      * Observe all model events with our observers.
@@ -29,11 +30,11 @@ class GrammarObservableHandler extends BaseObservableHandler
     protected function locking()
     {
         foreach ($this->observers as $observer) {
-            foreach ($observer->getObserved() as $type) {
+            foreach ($observer->all() as $type) {
                 $this->observableClass::macro('type'.ucfirst($type), $observer->getCallback());
             }
-
-            $observer->lock();
         }
+
+        parent::locking();
     }
 }

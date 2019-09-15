@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the GrammarObservableManager.
+ * Add a facade for the GrammarTypeManager.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class GrammarObservableManager extends Facade
+class GrammarTypeManager extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class GrammarObservableManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'GrammarObservableManager';
+        return 'GrammarTypeManager';
     }
 }
