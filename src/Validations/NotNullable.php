@@ -10,12 +10,10 @@
 
 namespace Laramore\Validations;
 
-use Illuminate\Database\Eloquent\Model;
-
 class NotNullable extends Validation
 {
     /**
-     * An observer needs at least a name and a callback.
+     * An observer needs at least a name and a \Closure.
      *
      * @param mixed   $field
      * @param integer $priority
@@ -25,7 +23,7 @@ class NotNullable extends Validation
         parent::__construct($field, $priority);
     }
 
-    public function isValueValid(Model $model, $value): bool
+    public function isValueValid($value): bool
     {
         return !is_null($value);
     }

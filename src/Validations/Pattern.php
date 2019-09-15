@@ -10,17 +10,15 @@
 
 namespace Laramore\Validations;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Pattern extends Validation
 {
     protected $pattern;
     protected $flags;
     protected $type;
 
-    public function isValueValid(Model $model, $value): bool
+    public function isValueValid($value): bool
     {
-        return \preg_match($this->pattern, $value, $_, $this->flags);
+        return \preg_match($this->pattern, $value, $attValue, $this->flags);
     }
 
     public function getMessage()

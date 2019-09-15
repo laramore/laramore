@@ -10,14 +10,12 @@
 
 namespace Laramore\Validations;
 
-use Illuminate\Database\Eloquent\Model;
-
 class Length extends Validation
 {
     protected $minLength;
     protected $maxLength;
 
-    public function isValueValid(Model $model, $value): bool
+    public function isValueValid($value): bool
     {
         $length = strlen($value);
 

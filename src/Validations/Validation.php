@@ -12,33 +12,28 @@ namespace Laramore\Validations;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use Laramore\Observers\BaseObserver;
+use Laramore\Fields\BaseField;
 use Laramore\Traits\HasProperties;
+use Laramore\Observers\BaseObserver;
 use Closure;
 
 abstract class Validation extends BaseObserver
 {
     use HasProperties;
 
+    protected $field;
+
     /**
-     * An observer needs at least a name and a callback.
+     * An observer needs at least a name and a Closure.
      *
-     * @param mixed   $field
-     * @param integer $priority
+     * @param BaseField $field
+     * @param integer   $priority
      */
-    public function __construct($field, int $priority=self::MEDIUM_PRIORITY)
+    public function __construct(BaseField $field, int $priority=self::MEDIUM_PRIORITY)
     {
-        $this->observe($field);
-        $this->setPriority($priority);
-    }
+        $this->setField($field);
 
-    protected function locking()
-    {
-    }
-
-    public function getName(): string
-    {
-        return static::getStaticName();
+        parent::__construct(static::getStaticName(), null, $priority);
     }
 
     public static function getStaticName(): string
@@ -47,7 +42,27 @@ abstract class Validation extends BaseObserver
     }
 
     /**
-     * Return the callback function.
+     * Define the proxy field.
+     *
+     * @param BaseField $field
+     * @return self
+     */
+    public function setField(BaseField $field)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->field = $field;
+
+        return $this;
+    }
+
+    public function getField()
+    {
+        return $this->field;
+    }
+
+    /**
+     * Return the Closure function.
      *
      * @return Closure
      */
@@ -56,12 +71,7 @@ abstract class Validation extends BaseObserver
         return [$this, 'isValueValid'];
     }
 
-    public function getFieldName(): string
-    {
-        return $this->getObserved()[0];
-    }
-
-    abstract public function isValueValid(Model $model, $value): bool;
+    abstract public function isValueValid($value): bool;
 
     abstract public function getMessage();
 }

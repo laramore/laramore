@@ -10,11 +10,9 @@
 
 namespace Laramore\Validations;
 
-use Illuminate\Database\Eloquent\Model;
-
 class NotBlank extends Validation
 {
-    public function isValueValid(Model $model, $value): bool
+    public function isValueValid($value): bool
     {
         return !empty(trim($value));
     }

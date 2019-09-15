@@ -10,13 +10,11 @@
 
 namespace Laramore\Validations;
 
-use Illuminate\Database\Eloquent\Model;
-
 class NotZero extends Validation
 {
-    public function isValueValid(Model $model, $value): bool
+    public function isValueValid($value): bool
     {
-        return (int) $value !== 0;
+        return $value !== 0;
     }
 
     public function getMessage()
