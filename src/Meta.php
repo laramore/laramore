@@ -16,24 +16,29 @@ use Laramore\Exceptions\{
 	MultipleExceptionsException, RequiredFieldException
 };
 use Laramore\Facades\{
-	ModelObservableManager, ValidationManager
+	ModelEventManager, ValidationManager, ProxyManager
 };
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, Link\LinkField, Timestamp
 };
 use Laramore\Interfaces\{
-	IsAField, IsAPrimaryField, IsAFieldOwner
+	IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied
 };
 use Laramore\Traits\IsLocked;
+use Laramore\Traits\Meta\HasFields;
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Observers\{
-	ModelObserver, ModelObservableHandler, ValidationHandler
+use Laramore\Models\{
+	ModelEvent, ModelEventHandler
+};
+use Laramore\Validations\ValidationHandler;
+use Laramore\Proxies\{
+	BaseProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
 
 class Meta implements IsAFieldOwner
 {
-    use IsLocked;
+    use IsLocked, HasFields;
 
     /**
      * All data relative to the model and the table.
@@ -79,6 +84,7 @@ class Meta implements IsAFieldOwner
         $this->setModelClass($modelClass);
         $this->setDefaultObservers();
         $this->setValidationHandler();
+        $this->setProxyHandlers();
 
         if (config('database.table.timestamps', false)) {
             $this->useTimestamps();
@@ -106,9 +112,19 @@ class Meta implements IsAFieldOwner
      *
      * @return void
      */
+    protected function setProxyHandlers()
+    {
+        ProxyManager::createHandler($this->modelClass);
+    }
+
+    /**
+     * Create a Validation handler for this meta.
+     *
+     * @return void
+     */
     protected function setValidationHandler()
     {
-        ValidationManager::createObservableHandler($this->modelClass);
+        ValidationManager::createHandler($this->modelClass);
     }
 
     /**
@@ -120,9 +136,9 @@ class Meta implements IsAFieldOwner
      */
     protected function setDefaultObservers()
     {
-        ModelObservableManager::createObservableHandler($this->modelClass);
+        ModelEventManager::createHandler($this->modelClass);
 
-        $this->getModelObservableHandler()->addObserver(new ModelObserver('autofill_default', function (Model $model) {
+        $this->getModelEventHandler()->add(new ModelEvent('autofill_default', function (Model $model) {
             $attributes = $model->getAttributes();
 
             foreach ($this->getFields() as $field) {
@@ -132,9 +148,9 @@ class Meta implements IsAFieldOwner
                     }
                 }
             }
-        }, ModelObserver::HIGH_PRIORITY, 'saving'));
+        }, ModelEvent::HIGH_PRIORITY, 'saving'));
 
-        $this->getModelObservableHandler()->addObserver(new ModelObserver('check_required_fields', function (Model $model) {
+        $this->getModelEventHandler()->add(new ModelEvent('check_required_fields', function (Model $model) {
             $missingFields = \array_diff($this->getRequiredFieldNames(), \array_keys($model->getAttributes()));
 
             foreach ($missingFields as $key => $field) {
@@ -148,7 +164,7 @@ class Meta implements IsAFieldOwner
                     return new RequiredFieldException($this->get($name), "The field $name is required");
                 }, array_values($missingFields)));
             }
-        }, ModelObserver::LOW_PRIORITY, 'saving'));
+        }, ModelEvent::LOW_PRIORITY, 'saving'));
     }
 
     /**
@@ -184,11 +200,11 @@ class Meta implements IsAFieldOwner
     /**
      * Return the model observable handler for this meta.
      *
-     * @return ModelObservableHandler
+     * @return ModelEventHandler
      */
-    public function getModelObservableHandler(): ModelObservableHandler
+    public function getModelEventHandler(): ModelEventHandler
     {
-        return ModelObservableManager::getObservableHandler($this->getModelClass());
+        return ModelEventManager::getHandler($this->getModelClass());
     }
 
     /**
@@ -198,7 +214,17 @@ class Meta implements IsAFieldOwner
      */
     public function getValidationHandler(): ValidationHandler
     {
-        return ValidationManager::getObservableHandler($this->getModelClass());
+        return ValidationManager::getHandler($this->getModelClass());
+    }
+
+    /**
+     * Return the validation handler for this meta.
+     *
+     * @return ProxyHandler
+     */
+    public function getProxyHandler(): ProxyHandler
+    {
+        return ProxyManager::getHandler($this->getModelClass());
     }
 
     /**
@@ -650,6 +676,8 @@ class Meta implements IsAFieldOwner
             if ($field->getOwner() === $this) {
                 $field->lock();
             }
+
+            // $this->add();
         }
     }
 
@@ -766,32 +794,6 @@ class Meta implements IsAFieldOwner
     }
 
     /**
-     * Return the set value for a specific field.
-     *
-     * @param Model     $model
-     * @param BaseField $field
-     * @param mixed     $value
-     * @return mixed
-     */
-    public function setFieldValue(Model $model, BaseField $field, $value)
-    {
-        return $field->setValue($model, $value);
-    }
-
-    /**
-     * Return the get value for a specific field.
-     *
-     * @param Model     $model
-     * @param BaseField $field
-     * @param mixed     $value
-     * @return mixed
-     */
-    public function getFieldValue(Model $model, BaseField $field, $value)
-    {
-        return $field->getValue($model, $value);
-    }
-
-    /**
      * Return the field with a given name.
      *
      * @param  string $name
@@ -812,5 +814,53 @@ class Meta implements IsAFieldOwner
     public function __set(string $name, BaseField $value)
     {
         return $this->set($name, $value);
+    }
+
+    /**
+     * Set a field with a given name.
+     *
+     * @param string $method
+     * @param array  $args
+     * @return self
+     */
+    public function __call(string $method, array $args)
+    {
+        if (\preg_match('/^(.*)FieldAttribute$/', $method, $matches)) {
+            return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
+        }
+
+        throw new \Exception("The method [$method] does not exist.");
+    }
+
+    protected function getProxyInjection(string $argName, ?IsProxied $proxiedInstance=null)
+    {
+        switch ($argName) {
+            case 'instance':
+                return $proxiedInstance;
+            break;
+
+            case 'value':
+                return $proxiedInstance->getAttribute($field->attname);
+            break;
+
+            default:
+                throw new \Exception("The proxy arg [$argName] does not exist.");
+        }
+    }
+
+    public function proxyCall(BaseProxy $proxy, ?IsProxied $proxiedInstance=null, array $args=[])
+    {
+        if ($proxy instanceof MultiProxy) {
+            $proxy = $proxy->get(\array_shift($args));
+        }
+
+        $field = $proxy->getField();
+        $methodName = $proxy->getMethodName();
+
+        foreach ($proxy->getInjections() as $name) {
+            \array_unshift($args, $this->getProxyInjection($name, $proxiedInstance));
+        }
+
+        return $this->callFieldAttributeMethod($field, $methodName, $args);
     }
 }
