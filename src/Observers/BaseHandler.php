@@ -10,11 +10,9 @@
 
 namespace Laramore\Observers;
 
-use Illuminate\Database\Eloquent\Model;
 use Laramore\Traits\IsLocked;
-use Closure;
 
-abstract class BaseObservableHandler
+abstract class BaseHandler
 {
     use IsLocked;
 
@@ -40,7 +38,7 @@ abstract class BaseObservableHandler
     protected $observers = [];
 
     /**
-     * Create an ObservableHandler for a specific class.
+     * Create an Handler for a specific class.
      *
      * @param string $observableClass
      */
@@ -75,17 +73,17 @@ abstract class BaseObservableHandler
      * @param BaseObserver $observer
      * @return self
      */
-    public function addObserver(BaseObserver $observer)
+    public function add(BaseObserver $observer)
     {
         $this->needsToBeUnlocked();
 
         $observerClass = $this->getObserverClass();
 
         if (!($observer instanceof $observerClass)) {
-            throw new \Exception('The observer is not of the right type');
+            throw new \Exception("The observer [$observerClass] is not of the right type");
         }
 
-        return $this->pushObserver($observer, $this->observers);
+        return $this->push($observer, $this->observers);
     }
 
     /**
@@ -95,7 +93,7 @@ abstract class BaseObservableHandler
      * @param array        $observers
      * @return self
      */
-    protected function pushObserver(BaseObserver $observer, array &$observers)
+    protected function push(BaseObserver $observer, array &$observers)
     {
         $priority = $observer->getPriority();
 
@@ -121,13 +119,13 @@ abstract class BaseObservableHandler
      *
      * @param  string|array $data
      * @param  string       $name
-     * @param  Closure      $callback
+     * @param  \Closure     $callback
      * @param  integer      $priority
      * @return static
      */
-    public function createObserver($data, string $name, Closure $callback, int $priority=BaseObserver::MEDIUM_PRIORITY)
+    public function create($data, string $name, \Closure $callback, int $priority=BaseObserver::MEDIUM_PRIORITY)
     {
-        return $this->addObserver(new $this->observerClass($name, $callback, $priority, $data));
+        return $this->add(new $this->observerClass($name, $callback, $priority, $data));
     }
 
     /**
@@ -136,7 +134,7 @@ abstract class BaseObservableHandler
      * @param  string $name
      * @return boolean
      */
-    public function hasObserver(string $name): bool
+    public function has(string $name): bool
     {
         foreach ($this->observers as $key => $observer) {
             if ($observer->getName() === $name) {
@@ -153,15 +151,15 @@ abstract class BaseObservableHandler
      * @param  string $name
      * @return BaseObserver
      */
-    public function getObserver(string $name): BaseObserver
+    public function get(string $name)
     {
-        foreach ($this->observers as $key => $observer) {
+        foreach ($this->observers as $observer) {
             if ($observer->getName() === $name) {
                 return $observer;
             }
         }
 
-        throw new \Exception('The observer does not exist');
+        throw new \Exception("The observer [$name] does not exist");
     }
 
     /**
@@ -169,7 +167,7 @@ abstract class BaseObservableHandler
      *
      * @return array
      */
-    public function getObservers(): array
+    public function all(): array
     {
         return $this->observers;
     }
@@ -180,11 +178,11 @@ abstract class BaseObservableHandler
      * @param  string $name
      * @return static
      */
-    public function removeObserver(string $name)
+    public function remove(string $name)
     {
         $this->needsToBeUnlocked();
 
-        foreach ($this->observers as $key => $observer) {
+        foreach ($this->observers as $observer) {
             if ($observer->getName() === $name) {
                 unset($this->observers);
             }
@@ -202,26 +200,10 @@ abstract class BaseObservableHandler
      */
     protected function locking()
     {
-        // TODO: Here we should set the observer order.
-    }
-
-    /**
-     * Add or create an observer for a specific method.
-     *
-     * @param  string $method
-     * @param  array  $args
-     * @return static
-     */
-    public function __call(string $method, array $args)
-    {
-        $this->needsToBeUnlocked();
-
-        if (count($args) === 1 && $args[0] instanceof $this->observerClass) {
-            $this->addObserver($args[0]->observe($method));
-        } else {
-            $this->createObserver($method, ...$args);
+        foreach ($this->observers as $observer) {
+            if (!$observer->isLocked()) {
+                $observer->lock();
+            }
         }
-
-        return $this;
     }
 }

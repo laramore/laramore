@@ -1,6 +1,6 @@
 <?php
 /**
- * Create an Observer to add a callback on a specific model event.
+ * Create an Observer to add a Closure on a specific model event.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -59,20 +59,19 @@ abstract class BaseObserver
     public const LOW_PRIORITY = ((self::MIN_PRIORITY + self::MEDIUM_PRIORITY) / 2);
 
     /**
-     * An observer needs at least a name and a callback.
+     * An observer needs at least a name and a Closure.
      *
      * @param string  $name
      * @param Closure $callback
      * @param integer $priority
      * @param mixed   $data
      */
-    public function __construct(string $name, Closure $callback, int $priority=self::MEDIUM_PRIORITY, $data=[])
+    public function __construct(string $name, ?Closure $callback, int $priority=self::MEDIUM_PRIORITY, $data=[])
     {
-        $this->name = $name;
-
+        $this->setName($name);
         $this->setCallback($callback);
         $this->setPriority($priority);
-        $this->observe($data);
+        $this->on($data);
     }
 
     /**
@@ -86,7 +85,7 @@ abstract class BaseObserver
     }
 
     /**
-     * Return the callback function.
+     * Return the Closure function.
      *
      * @return Closure
      */
@@ -106,12 +105,27 @@ abstract class BaseObserver
     }
 
     /**
-     * Define the callback method until the observer is locked.
+     * Define the name of the observer.
+     *
+     * @param string $name
+     * @return self
+     */
+    public function setName(string $name)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * Define the Closure method until the observer is locked.
      *
      * @param Closure $callback
      * @return self
      */
-    public function setCallback(Closure $callback)
+    public function setCallback(?Closure $callback)
     {
         $this->needsToBeUnlocked();
 
@@ -145,12 +159,13 @@ abstract class BaseObserver
      * @param  string|array $entities
      * @return self
      */
-    public function observe($entities)
+    public function on($entities)
     {
         $this->needsToBeUnlocked();
+        $entities = is_array($entities) ? $entities : [$entities];
 
-        foreach ((array) $entities as $element) {
-            if (!in_array($element, $this->observed)) {
+        foreach ($entities as $element) {
+            if (!in_array($element, $this->observed, true)) {
                 $this->observed[] = $element;
             }
         }
@@ -164,13 +179,13 @@ abstract class BaseObserver
      * @param  string|array $entities
      * @return self
      */
-    public function observeOnly($entities)
+    public function only($entities)
     {
         $this->needsToBeUnlocked();
 
         $this->observed = [];
 
-        return $this->observe($entities);
+        return $this->on($entities);
     }
 
     /**
@@ -195,10 +210,54 @@ abstract class BaseObserver
     /**
      * Get all observed entities.
      *
+     * @return boolean
+     */
+    public function has($entity): bool
+    {
+        foreach ($this->all() as $observed) {
+            if ($observed == $entity) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Get all observed entities.
+     *
      * @return array
      */
-    public function getObserved(): array
+    public function get($entity)
+    {
+        foreach ($this->all() as $observed) {
+            if ($observed == $entity) {
+                return $observed;
+            }
+        }
+
+        throw new \Exception("[$entity] not found !");
+    }
+
+    /**
+     * Get all observed entities.
+     *
+     * @return array
+     */
+    public function all(): array
     {
         return $this->observed;
+    }
+
+    /**
+     * Actions during locking.
+     *
+     * @return void
+     */
+    protected function locking()
+    {
+        if (!$this->callback) {
+            throw new \LogicException('An observer needs a callback value.');
+        }
     }
 }
