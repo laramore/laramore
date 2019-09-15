@@ -11,10 +11,12 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laramore\Traits\Model\HasLaramore;
-use Laramore\Observers\{
-    GrammarObservableManager, ModelObservableManager, ValidationManager
-};
+use Laramore\Interfaces\IsALaramoreModel;
+use Laramore\Observers\BaseManager;
+use Laramore\Grammars\GrammarTypeManager;
+use Laramore\Models\ModelEventManager;
+use Laramore\Validations\ValidationManager;
+use Laramore\Proxies\ProxyManager;
 use Laramore\{
     TypeManager, Meta, MetaManager
 };
@@ -25,10 +27,11 @@ class LaramoreProvider extends ServiceProvider
     /**
      * Grammar and Model observer managers.
      *
-     * @var BaseObservableManager
+     * @var BaseManager
      */
-    protected $grammarObservableManager;
-    protected $modelObserverManager;
+    protected $grammarTypeManager;
+    protected $modelEventManager;
+    protected $proxyManager;
 
     /**
      * Type manager.
@@ -64,19 +67,19 @@ class LaramoreProvider extends ServiceProvider
      * @var array
      */
     protected $defaultTypes = [
-        'boolean',
-        'increment',
-        'integer',
-        'unsignedInteger',
-        'char',
-        'text',
-        'string',
-        'datetime',
-        'timestamp',
+        'boolean' => 'bool',
+        'integer' => 'integer',
+        'unsignedInteger' => 'integer',
+        'increment' => 'integer',
+        'string' => 'string',
+        'text' => 'string',
+        'char' => 'string',
+        'datetime' => 'string',
+        'timestamp' => 'integer',
     ];
 
     /**
-     * Prepare all singletons and add booting and booted callbacks.
+     * Prepare all singletons and add booting and booted \Closures.
      *
      * @return void
      */
@@ -90,18 +93,22 @@ class LaramoreProvider extends ServiceProvider
     }
 
     /**
-     * Create all singletons: GrammarObservableManager, ModelObservableManager, TypeManager, MetaManager.
+     * Create all singletons: GrammarTypeManager, ModelEventManager, ProxyManager, TypeManager, MetaManager.
      *
      * @return void
      */
     protected function createSigletons()
     {
-        $this->app->singleton('GrammarObservableManager', function() {
-            return $this->grammarObservableManager;
+        $this->app->singleton('GrammarTypeManager', function() {
+            return $this->grammarTypeManager;
         });
 
-        $this->app->singleton('ModelObservableManager', function() {
-            return $this->modelObserverManager;
+        $this->app->singleton('ModelEventManager', function() {
+            return $this->modelEventManager;
+        });
+
+        $this->app->singleton('ProxyManager', function() {
+            return $this->proxyManager;
         });
 
         $this->app->singleton('TypeManager', function() {
@@ -118,14 +125,15 @@ class LaramoreProvider extends ServiceProvider
     }
 
     /**
-     * Create all singleton objects: GrammarObservableManager, ModelObservableManager, TypeManager, MetaManager.
+     * Create all singleton objects: GrammarTypeManager, ModelEventManager, ProxyManager, TypeManager, MetaManager.
      *
      * @return void
      */
     protected function createObjects()
     {
-        $this->grammarObservableManager = new GrammarObservableManager;
-        $this->modelObserverManager = new ModelObservableManager;
+        $this->grammarTypeManager = new GrammarTypeManager;
+        $this->modelEventManager = new ModelEventManager;
+        $this->proxyManager = new ProxyManager;
         $this->typeManager = new TypeManager($this->defaultTypes);
         $this->validationManager = new ValidationManager;
         $this->metaManager = new MetaManager;
@@ -139,22 +147,22 @@ class LaramoreProvider extends ServiceProvider
     protected function addMetas()
     {
         foreach ((new ReflectionNamespace($this->modelNamespace))->getClasses() as $modelClass) {
-            if (\in_array(HasLaramore::class, $modelClass->getTraitNames())) {
+            if ($modelClass->implementsInterface(IsALaramoreModel::class)) {
                 $modelClass->getName()::getMeta();
             }
         }
     }
 
     /**
-     * Create grammar observable handlers for each possible grammars and add them to the GrammarObservableManager.
+     * Create grammar observable handlers for each possible grammars and add them to the GrammarTypeManager.
      *
      * @return void
      */
     protected function createGrammarObservers()
     {
         foreach ((new ReflectionNamespace($this->grammarNamespace))->getClassNames() as $class) {
-            if ($this->grammarObservableManager->isObservable($class)) {
-                $this->grammarObservableManager->createObservableHandler($class);
+            if ($this->grammarTypeManager->doesManage($class)) {
+                $this->grammarTypeManager->createHandler($class);
             }
         }
     }
@@ -179,7 +187,8 @@ class LaramoreProvider extends ServiceProvider
     {
         $this->metaManager->lock();
         $this->typeManager->lock();
-        $this->modelObserverManager->lock();
-        $this->grammarObservableManager->lock();
+        $this->modelEventManager->lock();
+        $this->proxyManager->lock();
+        $this->grammarTypeManager->lock();
     }
 }

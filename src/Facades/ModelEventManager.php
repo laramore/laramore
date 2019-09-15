@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the ModelObservableManager.
+ * Add a facade for the ModelEventManager.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class ModelObservableManager extends Facade
+class ModelEventManager extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class ModelObservableManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'ModelObservableManager';
+        return 'ModelEventManager';
     }
 }
