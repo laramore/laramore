@@ -10,8 +10,9 @@
 
 namespace Laramore\Fields;
 
-use Laramore\Facades\TypeManager;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
+use Laramore\Facades\TypeManager;
 use Laramore\Type;
 
 class Timestamp extends Field
@@ -39,14 +40,14 @@ class Timestamp extends Field
         }
     }
 
-    public function dry($value)
-    {
-        return is_null($value) ? $value : (int) $value;
-    }
-
     public function cast($value)
     {
-        return is_null($value) ? $value : (int) $value;
+        return is_null($value) ? null : new Carbon($value);
+    }
+
+    public function dry($value)
+    {
+        return is_null($value) ? null : (int) $value;
     }
 
     public function transform($value)
