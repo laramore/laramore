@@ -37,11 +37,6 @@ class Text extends Field
         return TypeManager::text();
     }
 
-    public function castValue($model, $value)
-    {
-        return is_null($value) ? $value : (string) $value;
-    }
-
     protected function setValidations()
     {
         parent::setValidations();
@@ -49,5 +44,20 @@ class Text extends Field
         if ($this->hasRule(self::NOT_BLANK)) {
             $this->setValidation(NotBlank::class);
         }
+    }
+
+    public function dry($value)
+    {
+        return is_null($value) ? $value : (string) $value;
+    }
+
+    public function cast($value)
+    {
+        return is_null($value) ? $value : (string) $value;
+    }
+
+    public function transform($value)
+    {
+        return $value;
     }
 }

@@ -20,7 +20,7 @@ trait ManyToManyRelation
     protected $pivotTo;
     protected $pivotFrom;
 
-    public function castValue($model, $value)
+    public function castFieldValue($model, $value)
     {
         if (is_null($value) || $value instanceof $this->on) {
             return $value;
@@ -34,7 +34,7 @@ trait ManyToManyRelation
 
     public function getValue($model, $value)
     {
-        return $this->relationValue($model)->get();
+        return $this->getRelationValue($model)->get();
     }
 
     public function setValue($model, $value)
@@ -42,9 +42,9 @@ trait ManyToManyRelation
         return $this->sync($model, $value);
     }
 
-    public function relationValue($model)
+    public function getRelationValue($model)
     {
-        return $model->belongsToMany($this->on, $this->pivotMeta->getTableName(), $this->pivotTo, $this->pivotFrom);
+        return $model->belongsToMany($this->on, $this->pivotMeta->getTableName(), $this->pivotTo->from, $this->pivotFrom->from);
     }
 
     public function whereValue($query, ...$args)
@@ -56,6 +56,7 @@ trait ManyToManyRelation
             $value = $args[0] ?? null;
         }
 
+        dump($query, $args);
         if (is_object($value)) {
             $value = $value->{$this->on};
         } else if (!is_null($value)) {
@@ -75,33 +76,33 @@ trait ManyToManyRelation
         return $field->getValue($model, $value);
     }
 
-    public function attachValue($model, ...$args)
+    public function attachValue($model, $current, ...$args)
     {
-        return ($this->relationValue()->attach(...$args) ?? $model);
+        return ($this->getRelationValue($model)->attach(...$args) ?? $model);
     }
 
-    public function detachValue($model, ...$args)
+    public function detachValue($model, $current, ...$args)
     {
-        return ($this->relationValue()->detach(...$args) ?? $model);
+        return ($this->getRelationValue($model)->detach(...$args) ?? $model);
     }
 
-    public function syncValue($model, ...$args)
+    public function syncValue($model, $current, ...$args)
     {
-        return ($this->relationValue()->sync(...$args) ?? $model);
+        return ($this->getRelationValue($model)->sync(...$args) ?? $model);
     }
 
-    public function toggleValue($model, ...$args)
+    public function toggleValue($model, $current, ...$args)
     {
-        return ($this->relationValue()->toggle(...$args) ?? $model);
+        return ($this->getRelationValue($model)->toggle(...$args) ?? $model);
     }
 
-    public function syncWithoutDetachingValue($model, ...$args)
+    public function syncWithoutDetachingValue($model, $current, ...$args)
     {
-        return ($this->relationValue()->syncWithoutDetaching(...$args) ?? $model);
+        return ($this->getRelationValue($model)->syncWithoutDetaching(...$args) ?? $model);
     }
 
-    public function updateExistingPivotValue($model, ...$args)
+    public function updateExistingPivotValue($model, $current, ...$args)
     {
-        return ($this->relationValue()->updateExistingPivotValue(...$args) ?? $model);
+        return ($this->getRelationValue($model)->updateExistingPivotValue(...$args) ?? $model);
     }
 }

@@ -11,15 +11,16 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
-use Laramore\Observers\ModelObserver;
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Interfaces\IsAField;
 use Laramore\Traits\{
     IsOwnedAndLocked, HasProperties
 };
+use Laramore\Proxies\FieldProxy;
 use Laramore\Meta;
 use Laramore\Exceptions\FieldValidationException;
 use Laramore\Validations\ValidationErrorBag;
+use Closure;
 
 abstract class BaseField implements IsAField
 {
@@ -87,13 +88,22 @@ abstract class BaseField implements IsAField
 
     protected function locking()
     {
-        $this->checkRules();
         $this->setValidations();
+        $this->setProxies();
     }
 
-    abstract protected function checkRules();
-
     abstract protected function setValidations();
+
+    protected function setProxies()
+    {
+        $this->setProxy('dry', []);
+        $this->setProxy('cast', []);
+        $this->setProxy('transform', []);
+        $this->setProxy('getErrors', [], ['model'], $this->generateProxyMethodName('get', 'errors'));
+        $this->setProxy('isValid', [], ['model'], $this->generateProxyMethodName('is', 'valid'));
+        $this->setProxy('check', []);
+        $this->setProxy('where', ['instance'], ['builder']);
+    }
 
     /**
      * Return the meta of this field.
@@ -112,34 +122,52 @@ abstract class BaseField implements IsAField
         return $owner;
     }
 
-    protected function setValidation(string $validationClass)
+    protected function setValidation(string $validationClass, int $property=null)
     {
         $handler = $this->getMeta()->getValidationHandler();
 
-        if ($handler->hasValidation($this->name, $name = $validationClass::getStaticName())) {
-            $validation = $handler->getValidation($this->name, $name);
+        if ($handler->has($this->name, $name = $validationClass::getStaticName())) {
+            $validation = $handler->get($this->name, $name);
         } else {
-            $validation = new $validationClass($this->getName());
+            if (is_null($property)) {
+                $validation = new $validationClass($this);
+            } else {
+                $validation = new $validationClass($this, $property);
+            }
 
-            $handler->addValidation($validation);
+            $handler->add($validation);
         }
 
         return $validation;
     }
 
-    public function getValidationErrorsForValue(Model $model, $value): ValidationErrorBag
+    protected function setProxy(string $methodName, array $injections=[], array $on=['model'], string $proxyName=null)
     {
-        return $this->getMeta()->getValidationHandler()->getValidationErrors($this->name, $model, $value);
+        $proxy = new FieldProxy(($proxyName ?? $this->generateProxyMethodName($methodName)), $this, $methodName, $injections, $on);
+
+        $this->getMeta()->getProxyHandler()->add($proxy);
+
+        return $proxy;
     }
 
-    public function isAValidValue(Model $model, $value): bool
+    protected function generateProxyMethodName(string $methodName, string $secondPart='')
     {
-        return $this->getValidationErrorsForValue($model, $value)->count() === 0;
+        return $methodName.\ucfirst(Str::camel($this->attname)).\ucfirst($secondPart);
     }
 
-    public function checkValue(Model $model, $value): void
+    public function getErrors($value): ValidationErrorBag
     {
-        $errors = $this->getValidationErrorsForValue($model, $value);
+        return $this->getMeta()->getValidationHandler()->getValidationErrors($this, $value);
+    }
+
+    public function isValid($value): bool
+    {
+        return $this->getOwner()->getErrorsFieldAttribute($this, $value)->count() === 0;
+    }
+
+    public function check($value)
+    {
+        $errors = $this->getOwner()->getErrorsFieldAttribute($this, $value);
 
         if ($errors->count()) {
             throw new FieldValidationException($this, $errors);

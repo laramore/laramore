@@ -292,15 +292,9 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         return parent::locking();
     }
 
-    protected function checkRules()
-    {
+    abstract protected function checkRules();
 
-    }
-
-    protected function setValidations()
-    {
-
-    }
+    abstract protected function setValidations();
 
     protected function lockFields()
     {
@@ -321,27 +315,127 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         return $this->unique;
     }
 
-    abstract public function castValue($model, $value);
-
-    public function getValue($mode, $value)
+    /**
+     * Return the get value for a specific field.
+     *
+     * @param Model     $model
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function getModelAttribute(Model $model, BaseField $field)
     {
-        return $value;
+        return $this->getOwner()->getModelAttribute($model, $field);
     }
 
-    public function setValue($mode, $value)
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param Model     $model
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function setModelAttribute(Model $model, BaseField $field, $value)
     {
-        $value = $this->castValue($model, $value);
-
-        $model->setAttribute($this->name, $value);
+        return $this->getOwner()->setModelAttribute($model, $field, $value);
     }
 
-    public function whereValue($model, ...$args)
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param Model     $model
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function resetModelAttribute(Model $model, BaseField $field)
     {
-        return $model->where($this->name, ...$args);
+        return $this->getOwner()->resetModelAttribute($model, $field);
     }
 
-    public function getRelationValue($model)
+    public function relateModelAttribute(Model $model, BaseField $field)
     {
-        return $this->whereValue($model, $model->{$this->name});
+        return $field->where($model, $model->{$this->attname});
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function transformFieldAttribute(BaseField $field, $value)
+    {
+        return $this->getOwner()->transformFieldAttribute($field, $value);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function checkFieldAttribute(BaseField $field, $value)
+    {
+        return $this->getOwner()->checkFieldAttribute($field, $value);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function dryFieldAttribute(BaseField $field, $value)
+    {
+        return $this->getOwner()->dryFieldAttribute($field, $value);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function castFieldAttribute(BaseField $field, $value)
+    {
+        return $this->getOwner()->castFieldAttribute($field, $value);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @return mixed
+     */
+    public function defaultFieldAttribute(BaseField $field)
+    {
+        return $this->getOwner()->defaultFieldAttribute($field);
+    }
+
+    public function callFieldAttributeMethod(BaseField $field, string $methodName, array $args)
+    {
+        return $this->getOwner()->callFieldAttributeMethod($field, $methodName, $args);
+    }
+
+    /**
+     * Set a field with a given name.
+     *
+     * @param string $method
+     * @param array  $args
+     * @return self
+     */
+    public function __call(string $method, array $args)
+    {
+        if (\preg_match('/^(.*)FieldAttribute$/', $method, $matches)) {
+            return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
+        }
+
+        throw new \Exception("The method [$method] does not exist.");
     }
 }

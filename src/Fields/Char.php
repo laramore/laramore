@@ -89,6 +89,13 @@ class Char extends Text
         }
     }
 
+    protected function setProxies()
+    {
+        parent::setProxies();
+
+        $this->setProxy('resize', []);
+    }
+
     public function maxLength(int $maxLength)
     {
         $this->needsToBeUnlocked();
@@ -102,26 +109,26 @@ class Char extends Text
         return $this;
     }
 
-    public function transformValue(Model $model, $value)
+    public function transform($value)
     {
-        $value = parent::transformValue($model, $value);
+        $value = parent::transform($value);
 
         if ($this->maxLength < strlen($value) && !is_null($value)) {
             $dots = $this->hasRule(self::DOTS_ON_RESIZING) ? '...' : '';
 
             if ($this->hasRule(self::CARACTERE_RESIZE)) {
-                $value = $this->resizeValue($model, $value, null, '', $dots);
+                $value = $this->resize($model, $attValue, $value, null, '', $dots);
             } else if ($this->hasRule(self::WORD_RESIZE)) {
-                $value = $this->resizeValue($model, $value, null, ' ', $dots);
+                $value = $this->resize($model, $attValue, $value, null, ' ', $dots);
             } else if ($this->hasRule(self::SENTENCE_RESIZE)) {
-                $value = $this->resizeValue($model, $value, null, '.', $dots);
+                $value = $this->resize($model, $attValue, $value, null, '.', $dots);
             }
         }
 
         return $value;
     }
 
-    public function resizeValue(Model $model, $value, $length=null, $delimiter='', $toAdd='...')
+    public function resize(string $value, $length=null, $delimiter='', $toAdd='...')
     {
         $parts = $delimiter === '' ? str_split($value) : explode($delimiter, $value);
         $valides = [];

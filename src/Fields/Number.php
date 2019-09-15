@@ -114,30 +114,30 @@ class Number extends Field
         }
     }
 
-    public function castValue(Model $model, $value)
+    public function dry($value)
     {
         return is_null($value) ? $value : (int) $value;
     }
 
-    public function transformValue(Model $model, $value)
+    public function cast($value)
     {
-        $value = parent::transformValue($model, $value);
+        return is_null($value) ? $value : (int) $value;
+    }
 
+    public function transform($value)
+    {
         if (is_null($value)) {
             return $value;
         }
 
-        if ($value === 0) {
-            if ($this->hasRule(self::NOT_ZERO)) {
-                throw new \Exception('Cannot set the value 0 for the field `'.$this->name.'`');
-            }
-        } else if ($this->hasRule(self::UNSIGNED)) {
+        if ($this->hasRule(self::UNSIGNED)) {
             $newValue = abs($value);
 
             if ($this->hasRule(self::NEGATIVITY)) {
                 $newValue = - $newValue;
             }
 
+            // TODO
             if ($newValue !== $value && $this->hasRule(self::CORRECT_SIGN)) {
                 throw new \Exception('The value must be '.($this->hasRule(self::NEGATIVITY) ? 'negative' : 'positive').' for the field `'.$this->name.'`');
             }

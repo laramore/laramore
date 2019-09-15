@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Laramore\Validations\Pattern as PatternValidation;
 
 class Password extends Pattern
@@ -39,7 +40,7 @@ class Password extends Pattern
     public const MIN_LENGTH = 1048576;
 
     // Default rules
-    public const DEFAULT_PASSWORD = (self::DEFAULT_PATTERN | self::NEED_ONE_LOWERCASE | self::NEED_ONE_UPPERCASE | self::NEED_ONE_NUMBER | self::MIN_LENGTH ^ self::VISIBLE);
+    public const DEFAULT_PASSWORD = (self::NEED_ONE_LOWERCASE | self::NEED_ONE_UPPERCASE | self::NEED_ONE_NUMBER | self::MIN_LENGTH | self::DEFAULT_PATTERN ^ self::VISIBLE);
 
     protected static $defaultRules = self::DEFAULT_PASSWORD;
 
@@ -59,6 +60,14 @@ class Password extends Pattern
         parent::setValidations();
 
         $this->setValidation(PatternValidation::class)->type('password');
+    }
+
+    protected function setProxies()
+    {
+        parent::setProxies();
+
+        $this->setProxy('hash', []);
+        $this->setProxy('isCorrect', ['value'], ['model'], $this->generateProxyMethodName('is', 'correct'));
     }
 
     protected function generatePattern()
@@ -94,14 +103,17 @@ class Password extends Pattern
         return $rules;
     }
 
-    public function setValue($model, $value)
+    public function transform($value)
     {
-        $value = parent::setValue($model, $value);
+        return $this->hash(parent::transform($value));
+    }
 
+    public function hash($value)
+    {
         return Hash::make($value);
     }
 
-    public function isCorrectValue($model, $value, $password=null, bool $expected=true)
+    public function isCorrect($value, $password=null, bool $expected=true)
     {
         return Hash::check($password, $value) === $expected;
     }

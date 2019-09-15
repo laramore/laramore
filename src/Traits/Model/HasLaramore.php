@@ -10,21 +10,26 @@
 
 namespace Laramore\Traits\Model;
 
+use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Laramore\Facades\{
-    TypeManager, MetaManager
+    TypeManager, MetaManager, ProxyManager
 };
 use Laramore\Fields\{
     Field, CompositeField, LinkField
 };
+use Laramore\Models\Builder;
 use Laramore\{
-    Meta, FieldManager, Builder
+    Meta, FieldManager
 };
-use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\MassAssignmentException;
+use Laramore\Proxies\{
+    BaseProxy, MultiProxy, ProxyHandler
+};
 
 trait HasLaramore
 {
-    protected static $metas;
+    protected static $metaClass = Meta::class;
+    protected static $builderClass = Builder::class;
 
     protected $required = [];
 
@@ -76,8 +81,7 @@ trait HasLaramore
     protected static function prepareMeta()
     {
         // Generate all meta data defined by the user in the current pivot.
-        $metaClass = static::getMetaClass();
-        MetaManager::addMeta($meta = new $metaClass(static::class));
+        MetaManager::addMeta($meta = new static::$metaClass(static::class));
 
         static::__meta($meta);
 
@@ -145,17 +149,51 @@ trait HasLaramore
     }
 
     /**
-     * Cast and check a value for a specific key.
+     * Dry a value for a specific field.
+     *
+     * @param  string $key   Name of the field.
+     * @param  mixed  $value
+     * @return mixed		 The naturalized value.
+     */
+    public static function dry(string $key, $value)
+    {
+        return ($field = static::getField($key))->getOwner()->dryFieldAttribute($field, $value);
+    }
+
+    /**
+     * Cast a value for a specific field.
      *
      * @param  string $key   Name of the field.
      * @param  mixed  $value
      * @return mixed		 The casted value.
      */
-    public function cast(string $key, $value)
+    public static function cast(string $key, $value)
     {
-        if ($this->hasField($key)) {
-            return $this->getField($key)->castValue($this, $value);
-        }
+        return ($field = static::getField($key))->getOwner()->castFieldAttribute($field, $value);
+    }
+
+    /**
+     * Re turn the default value for a specific field.
+     *
+     * @param  string $key Name of the field.
+     * @return mixed		 The casted value.
+     */
+    public static function default(string $key)
+    {
+        return ($field = static::getField($key))->getOwner()->defaultFieldAttribute($field);
+    }
+
+    /**
+     * Reset a specific field.
+     *
+     * @param  string $key Name of the field.
+     * @return $this
+     */
+    public function resetAttribute(string $key)
+    {
+        ($field = static::getField($key))->getOwner()->resetModelAttribute($model, $field);
+
+        return $this;
     }
 
     /**
@@ -167,40 +205,37 @@ trait HasLaramore
      */
     public function getAttributeValue($key)
     {
-        $value = $this->getAttributeFromArray($key);
-
         // If the attribute has a get mutator, we will call that then return what
         // it returns as the value, which is useful for transforming values on
         // retrieval from the model to a form that is more useful for usage.
         if ($this->hasGetMutator($key)) {
-            return $this->mutateAttribute($key, $value);
+            return $this->mutateAttribute($key, $this->getAttributeFromArray($key));
         }
-
-        // If the attribute exists within the cast array, we will convert it to
-        // an appropriate native PHP type dependant upon the associated value
-        // given with the key in the pair. Dayle made this comment line up.
-        if ($this->hasCast($key)) {
-            return $this->castAttribute($key, $value);
-        }
-
-        // If the attribute is listed as a date, we will convert it to a DateTime
-        // instance on retrieval, which makes it quite convenient to work with
-        // date fields without having to create a mutator for each property.
-        if (in_array($key, $this->getDates()) && !is_null($value)) {
-            return $this->asDateTime($value);
-        }
-
-        $key = Str::snake($key);
 
         // If the user did not set any custom methods to handle this attribute,
         // we call the field getter.
         if (static::hasField($key)) {
             $field = static::getField($key);
 
-            return $field->getOwner()->getFieldValue($this, $field, $value);
+            return $field->getOwner()->getFieldAttribute($field, $this);
         }
 
-        return $value;
+        return $this->getRawAttribute($key);
+    }
+
+    /**
+     * Get an attribute from the $attributes array.
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function getAttributeFromArray($key)
+    {
+        if (isset($this->attributes[$key])) {
+            return $this->attributes[$key];
+        }
+
+        throw new \Exception("The model has no field and value for the key $key");
     }
 
     /**
@@ -248,46 +283,43 @@ trait HasLaramore
     }
 
     /**
+     * Set the array of model attributes. No checking is done.
+     *
+     * @param  array $attributes
+     * @param  mixed $sync
+     * @return $this
+     */
+    public function setAttributes(array $attributes, $sync=false)
+    {
+        foreach ($attributes as $key => $value) {
+            $this->setAttribute($key, $value);
+        }
+
+        if ($sync) {
+            $this->syncOriginal();
+        }
+
+        return $this;
+    }
+
+    /**
      * Set a given attribute on the model.
      * Override the original method.
      *
-     * @param  mixed   $key
-     * @param  mixed   $value
-     * @param  boolean $force
+     * @param  mixed $key
+     * @param  mixed $value
      * @return mixed
      *
      * @throws Exception Except if the field is not fillable.
      */
-    public function setAttribute($key, $value, bool $force=false)
+    public function setAttribute($key, $value)
     {
         if ($this->hasSetMutator($key)) {
             // First we will check for the presence of a mutator for the set operation
             // which simply lets the developers tweak the attribute as it is set on
             // the model, such as "json_encoding" an listing of data for storage.
             return $this->setMutatedAttributeValue($key, $value);
-        } else if ($value && $this->isDateAttribute($key)) {
-            // If an attribute is listed as a "date", we'll convert it from a DateTime
-            // instance into a form proper for storage on the database tables using
-            // the connection grammar's date format. We will auto set the values.
-            $this->attributes[$key] = $this->fromDateTime($value);
-
-            return $this;
         }
-
-        if ($this->isJsonCastable($key) && ! is_null($value)) {
-            $this->attributes[$key] = $this->castAttributeAsJson($key, $value);
-
-            return $this;
-        }
-
-        // If this attribute contains a JSON ->, we'll set the proper value in the
-        // attribute's underlying array. This takes care of properly nesting an
-        // attribute in the array's value in the case of deeply nested items.
-        if (Str::contains($key, '->')) {
-            return $this->fillJsonAttribute($key, $value);
-        }
-
-        $key = Str::snake($key);
 
         // Check if the field exists to cast the value.
         if (static::hasField($key)) {
@@ -301,11 +333,7 @@ trait HasLaramore
                 ));
             }
 
-            $value = $field->getOwner()->setFieldValue($this, $field, $value);
-
-            if ($field instanceof Field) {
-                $this->attributes[$key] = $value;
-            }
+            $field->getOwner()->setFieldAttribute($field, $this, $value);
         } else {
             $this->attributes[$key] = $value;
         }
@@ -323,7 +351,7 @@ trait HasLaramore
     public function setRawAttributes(array $attributes, $sync=false)
     {
         foreach ($attributes as $key => $value) {
-            $this->setAttribute($key, $value, true);
+            $this->setRawAttribute($key, $value);
         }
 
         if ($sync) {
@@ -331,6 +359,38 @@ trait HasLaramore
         }
 
         return $this;
+    }
+
+    public function setRawAttribute(string $key, $value)
+    {
+        $this->attributes[$key] = static::cast($key, $value);
+
+        return $this;
+    }
+
+    public function getRawAttribute(string $key)
+    {
+        return $this->attributes[$key];
+    }
+
+    /**
+     * Create a new model instance that is existing.
+     *
+     * @param  array       $attributes
+     * @param  string|null $connection
+     * @return static
+     */
+    public function newFromBuilder($attributes=[], $connection=null)
+    {
+        $model = $this->newInstance([], true);
+
+        $model->setRawAttributes((array) $attributes, true);
+
+        $model->setConnection($connection ?: $this->getConnectionName());
+
+        $model->fireModelEvent('retrieved', false);
+
+        return $model;
     }
 
     /**
@@ -344,18 +404,23 @@ trait HasLaramore
     {
         $id = $query->insertGetId($attributes, $keyName = $this->getKeyName());
 
-        $this->setAttribute($keyName, $id, true);
+        $this->setAttribute($keyName, $id);
     }
 
     /**
      * Get the relation value for a specific key.
      *
-     * @param  string $key
+     * @param  string $key Not specified because Model has no parameter types.
      * @return mixed
      */
-    public function relation(string $key)
+    public function getRelation($key)
     {
         return static::getField($key)->getRelationValue($this);
+    }
+
+    public static function getEloquentBuilderClass()
+    {
+        return static::$builderClass;
     }
 
     /**
@@ -367,7 +432,9 @@ trait HasLaramore
      */
     public function newEloquentBuilder($query)
     {
-        return new Builder($query);
+        $class = static::getEloquentBuilderClass();
+
+        return new $class($query);
     }
 
     /**
@@ -382,46 +449,67 @@ trait HasLaramore
         static::registerModelEvent($event, $callback);
     }
 
+    public static function getProxyHandler(): ProxyHandler
+    {
+        return ProxyManager::getHandler(static::class);
+    }
+
     /**
-     * Handle dynamically unknown calls.
-     * - {fieldName}(): Returns the relation with the field.
-     * - {fieldName}(...$args): Set the field value for this instance.
-     * - {anyMethod}{FieldName}(...$args): Returns the value of the field method {anyMethod}Value.
+     * Dynamically retrieve attributes on the model.
      *
-     * @param  mixed $method
-     * @param  mixed $args
+     * @param  string $action
      * @return mixed
      */
-    public function __call($method, $args)
+    public function __get($action)
     {
-        if (static::hasField($method)) {
-            $field = static::getField($method);
+        return call_user_func([$this, 'get'.ucfirst($action).'Attribute']);
+    }
 
-            if (count($args) === 0) {
-                return $field->getRelationValue($this);
-            } else {
-                return $field->setValue($this, ...$args);
-            }
-        } else {
-            $parts = explode('_', Str::snake($method));
-            $fieldName = '';
+    /**
+     * Dynamically set attributes on the model.
+     *
+     * @param  string $action
+     * @param  mixed  $value
+     * @return void
+     */
+    public function __set($action, $value)
+    {
+        return call_user_func([$this, 'set'.ucfirst($action).'Attribute'], $value);
+    }
 
-            while (count($parts) > 1) {
-                $fieldName = array_pop($parts).Str::studly($fieldName);
+    /**
+     * Dynamically set attributes on the model.
+     *
+     * @param  string $action
+     * @param  mixed  $args
+     * @return void
+     */
+    public function __call($action, $args)
+    {
+        $proxyHandler = static::getProxyHandler();
 
-                if (static::getMeta()->has($fieldName)) {
-                    $field = static::getMeta()->get($fieldName);
-                    $name = Str::camel(implode('_', $parts)).'Value';
-
-                    if (\method_exists($field, $name)) {
-                        return $field->$name($this, $this->{$fieldName}, ...$args);
-                    } else {
-                        throw new \Exception("The method $method does not exists for the field $name");
-                    }
-                }
-            }
+        if ($proxyHandler->has($action, $proxyHandler::MODEL_TYPE)) {
+            return static::getMeta()->proxyCall($proxyHandler->get($action, $proxyHandler::MODEL_TYPE), $this, $args);
         }
 
-        return parent::__call($method, $args);
+        return parent::__call($action, $args);
+    }
+
+    /**
+     * Dynamically set attributes on the model.
+     *
+     * @param  string $action
+     * @param  mixed  $args
+     * @return void
+     */
+    public static function __callStatic($action, $args)
+    {
+        $proxyHandler = static::getProxyHandler();
+
+        if ($proxyHandler->has($action, $proxyHandler::MODEL_TYPE)) {
+            return static::getMeta()->proxyCall($proxyHandler->get($action, $proxyHandler::MODEL_TYPE), null, $args);
+        }
+
+        return parent::__callStatic($action, $args);
     }
 }

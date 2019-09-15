@@ -92,7 +92,12 @@ class Foreign extends CompositeField
         parent::checkRules();
     }
 
-    public function castValue($model, $value)
+    public function isOnSelf()
+    {
+        return $this->on === $this->getMeta()->getModelClass();
+    }
+
+    public function cast($model, $value)
     {
         if (is_null($value) || $value instanceof $this->on) {
             return $value;
@@ -104,9 +109,9 @@ class Foreign extends CompositeField
         }
     }
 
-    public function getValue($model, $value)
+    public function getRawAttributeFieldValue($model)
     {
-        return $this->getRelationValue($model)->first();
+        return $this->getRelationFieldValue($model)->first();
     }
 
     public function setValue($model, $value)
@@ -118,17 +123,17 @@ class Foreign extends CompositeField
         return $value;
     }
 
-    protected function setRelationValue($model, $value)
+    protected function setRelationFieldValue($model, $value)
     {
-        $model->setRelation($this->name, $value);
+        return $model->setRelation($this->name, $value);
     }
 
-    public function getRelationValue($model)
+    public function getRelationFieldValue($model)
     {
         return $model->belongsTo($this->on, $this->from, $this->to);
     }
 
-    public function whereValue($query, ...$args)
+    public function whereFieldValue($query, ...$args)
     {
         if (count($args) > 1) {
             [$operator, $value] = $args;
@@ -149,18 +154,12 @@ class Foreign extends CompositeField
     public function setFieldValue($model, $field, $value)
     {
         $value = $field->setValue($model, $value);
-        $this->setRelationValue($model, $this->castValue($model, $value));
 
-        return $value;
+        return $this->setRelationFieldValue($model, $this->castFieldValue($model, $value));
     }
 
     public function getFieldValue($model, $field, $value)
     {
         return $field->getValue($model, $value);
-    }
-
-    public function isOnSelf()
-    {
-        return $this->on === $this->getMeta()->getModelClass();
     }
 }

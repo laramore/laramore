@@ -33,7 +33,7 @@ class Email extends Pattern
     public const ONLY_SAME_CDN = 131072;
 
     // Default rules
-    public const DEFAULT_EMAIL = (self::NOT_NULLABLE | self::DEFAULT_FIELD);
+    public const DEFAULT_EMAIL = (self::NOT_NULLABLE | self::DEFAULT_PATTERN);
 
     protected static $defaultRules = self::DEFAULT_EMAIL;
 
@@ -70,10 +70,18 @@ class Email extends Pattern
         }
     }
 
-    public function transformValue($model, $value)
+    protected function setProxies()
     {
-        $value = parent::transformValue($model, $value);
+        parent::setProxies();
 
+        $this->setProxy('fix', []);
+    }
+
+    public function transform($value)
+    {
+        $value = parent::transform($value);
+
+        // TODO
         if ($this->hasRule(self::ONLY_SAME_CDN) && !Str::endsWith($value, $this->getCdn(false))) {
             throw new \Exception('The email adress is incorrect and does not correspond to the right cdn for the field `'.$this->name.'`');
         }
@@ -81,12 +89,12 @@ class Email extends Pattern
         return $value;
     }
 
-    public function fixValue($model, $value)
+    public function fix(string $value)
     {
         if ($this->hasRule(self::ACCEPT_USERNAME)) {
             return $value.'@'.$this->getCdn();
         }
 
-        return parent::fixValue($model, $value);
+        return parent::fix($value);
     }
 }

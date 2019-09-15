@@ -26,28 +26,56 @@ class Boolean extends Field
         return TypeManager::boolean();
     }
 
-    /**
-     * Return the casted value for a specific model object.
-     *
-     * @param  Model $model
-     * @param  mixed $value
-     * @return mixed
-     */
-    public function castValue(Model $model, $value)
+    protected function setProxies()
     {
-        return is_null($value) ? $value : (bool) $value;
+        parent::setProxies();
+
+        $this->setProxy('is', ['value']);
+    }
+
+    public function dry($value)
+    {
+        return is_null($value) ? $value : (boolean) $value;
+    }
+
+    public function cast($value)
+    {
+        return is_null($value) ? $value : (boolean) $value;
+    }
+
+    public function transform($value)
+    {
+        if (is_null($value)) {
+            return $value;
+        }
+
+        if ($this->hasRule(self::UNSIGNED)) {
+            $newValue = abs($value);
+
+            if ($this->hasRule(self::NEGATIVITY)) {
+                $newValue = - $newValue;
+            }
+
+            // TODO
+            if ($newValue !== $value && $this->hasRule(self::CORRECT_SIGN)) {
+                throw new \Exception('The value must be '.($this->hasRule(self::NEGATIVITY) ? 'negative' : 'positive').' for the field `'.$this->name.'`');
+            }
+
+            $value = $newValue;
+        }
+
+        return $value;
     }
 
     /**
      * Return if the value is true or false as expected.
      *
-     * @param  Model   $model
      * @param  mixed   $value
      * @param  boolean $expected
      * @return boolean
      */
-    public function isValue(Model $model, $value, bool $expected=true): bool
+    public function is(?bool $value, bool $expected=true): bool
     {
-        return $value == $expected;
+        return $value === $expected;
     }
 }

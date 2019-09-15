@@ -11,6 +11,7 @@
 namespace Laramore\Interfaces;
 
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Interfaces\IsProxied;
 use Laramore\Builder;
 
 interface IsAField
@@ -106,10 +107,10 @@ interface IsAField
      * Set a property value.
      *
      * @param  string $key
-     * @param  mixed  $value
+     * @param  mixed  $attvalue
      * @return mixed
      */
-    public function __set(string $key, $value);
+    public function __set(string $key, $attvalue);
 
     /**
      * Indicate if a property exists.
@@ -122,43 +123,41 @@ interface IsAField
     /**
      * Cast the value in the correct format.
      *
-     * @param  mixed $value
+     * @param  mixed $attvalue
      * @return mixed
      */
-    public function castValue(Model $model, $value);
+    public function dry($value);
 
     /**
-     * Give the field value for a specific model.
+     * Cast the value in the correct format.
      *
-     * @param  Model $model
-     * @param  mixed $value
+     * @param  mixed $attvalue
      * @return mixed
      */
-    public function getValue(Model $model, $value);
+    public function cast($value);
 
     /**
-     * Return the value to set for a specific model.
+     * Cast the value in the correct format.
      *
-     * @param Model $model
-     * @param  mixed $value
+     * @param  mixed $attvalue
      * @return mixed
      */
-    public function setValue(Model $model, $value);
+    public function transform($value);
 
     /**
-     * Return the relation beetween this field and a specific model
+     * Cast the value in the correct format.
      *
-     * @param  Model $model
+     * @param  mixed $attvalue
      * @return mixed
      */
-    // public function getRelationValue(Model $model);
+    public function check($value);
 
     /**
      * Add a where condition from this field.
      *
-     * @param  Builder $query
-     * @param  mixed   ...$args
+     * @param  IsProxied $query
+     * @param  mixed     ...$args
      * @return Builder|null
      */
-    public function whereValue(Builder $query, ...$args);
+    public function where(IsProxied $query, ...$args);
 }

@@ -15,8 +15,11 @@ use Illuminate\Database\Eloquent\Model;
 use Laramore\{
     Meta, Type, Builder
 };
-use Laramore\Validations\NotNullable;
+use Laramore\Validations\{
+    Typed, NotNullable
+};
 use Laramore\Traits\Field\HasRules;
+use Laramore\Interfaces\IsProxied;
 
 abstract class Field extends BaseField
 {
@@ -261,9 +264,16 @@ abstract class Field extends BaseField
             $this->nullable();
         }
 
-        $this->defineProperty('default', $this->castValue($model, $value));
+        $this->defineProperty('default', $value);
 
         return $this;
+    }
+
+    protected function locking()
+    {
+        $this->checkRules();
+
+        parent::locking();
     }
 
     /**
@@ -304,6 +314,8 @@ abstract class Field extends BaseField
 
     protected function setValidations()
     {
+        $this->setValidation(Typed::class)->type($this->getType());
+
         if ($this->hasRule(self::NOT_NULLABLE)) {
             $this->setValidation(NotNullable::class);
         }
@@ -327,46 +339,14 @@ abstract class Field extends BaseField
     }
 
     /**
-     * Return the casted value for a specific model object.
-     *
-     * @param  Model $model
-     * @param  mixed $value
-     * @return mixed
-     */
-    public function getValue(Model $model, $value)
-    {
-        return $this->castValue($model, $value);
-    }
-
-    public function transformValue(Model $model, $value)
-    {
-        return $this->castValue($model, $value);
-    }
-
-    /**
-     * Return the value to set for a specific model object after passing all checks.
-     *
-     * @param Model $model
-     * @param mixed $value
-     * @return mixed
-     */
-    public function setValue(Model $model, $value)
-    {
-        $value = $this->transformValue($model, $value);
-        $this->checkValue($model, $value);
-
-        return $value;
-    }
-
-    /**
      * Return the query with this field as condition.
      *
      * @param  Builder $query
      * @param  mixed   ...$args
      * @return Builder
      */
-    public function whereValue(Builder $query, ...$args)
+    public function where(IsProxied $query, ...$args)
     {
-        return $query->where($this->name, ...$args);
+        return $query->where($this->attname, ...$args);
     }
 }
