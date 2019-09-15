@@ -12,10 +12,12 @@ namespace Laramore\Proxies;
 
 use Laramore\Fields\BaseField;
 use Laramore\Traits\IsLocked;
+use Laramore\Meta;
 use Closure;
 
-class Proxy extends BaseProxy
+class MetaProxy extends BaseProxy
 {
+    protected $meta;
     protected $field;
 
     /**
@@ -25,11 +27,32 @@ class Proxy extends BaseProxy
      * @param integer $priority
      * @param array   $data
      */
-    public function __construct(string $name, BaseField $field, string $methodName, array $injections=[], array $data=[])
+    public function __construct(string $name, Meta $meta, BaseField $field, string $methodName, array $injections=[], array $data=[])
     {
+        $this->setMeta($meta);
         $this->setField($field);
 
         parent::__construct($name, $methodName, $injections, $data);
+    }
+
+    /**
+     * Define the proxy field.
+     *
+     * @param BaseField $field
+     * @return self
+     */
+    public function setMeta(Meta $meta)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->meta = $meta;
+
+        return $this;
+    }
+
+    public function getMeta()
+    {
+        return $this->meta;
     }
 
     /**
@@ -59,7 +82,7 @@ class Proxy extends BaseProxy
      */
     protected function locking()
     {
-        $this->setCallback(Closure::fromCallable([$this->getField(), $this->getMethodName()]));
+        $this->setCallback(Closure::fromCallable([$this->getMeta(), $this->getMethodName()]));
 
         parent::locking();
     }

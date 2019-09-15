@@ -32,7 +32,7 @@ use Laramore\Models\{
 };
 use Laramore\Validations\ValidationHandler;
 use Laramore\Proxies\{
-	BaseProxy, MultiProxy, ProxyHandler
+	BaseProxy, MetaProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
 
@@ -677,8 +677,34 @@ class Meta implements IsAFieldOwner
                 $field->lock();
             }
 
-            // $this->add();
+            $this->setFieldAttributeProxy('get', $field, ['instance']);
+            $this->setFieldAttributeProxy('set', $field, ['instance']);
+            $this->setFieldAttributeProxy('reset', $field, ['instance']);
+            $this->setFieldAttributeProxy('transform', $field);
+            $this->setFieldAttributeProxy('check', $field);
+            $this->setFieldAttributeProxy('dry', $field);
+            $this->setFieldAttributeProxy('cast', $field);
+            $this->setFieldAttributeProxy('default', $field);
         }
+    }
+
+    protected function setFieldAttributeProxy(string $methodName, BaseField $field, array $injections=[], array $on=['model'])
+    {
+        return $this->setProxy("${methodName}FieldAttribute", $this->generateProxyMethodName($field, $methodName, 'attribute'), $field, array_merge(['field'], $injections), $on);
+    }
+
+    protected function setProxy(string $methodName, string $proxyName, BaseField $field, array $injections=[], array $on=['model'])
+    {
+        $proxy = new MetaProxy($proxyName, $this, $field, $methodName, $injections, $on);
+
+        $this->getProxyHandler()->add($proxy);
+
+        return $proxy;
+    }
+
+    protected function generateProxyMethodName(BaseField $field, string $firstPart, string $secondPart='')
+    {
+        return $firstPart.\ucfirst(Str::camel($field->attname)).\ucfirst($secondPart);
     }
 
     /**
@@ -832,16 +858,20 @@ class Meta implements IsAFieldOwner
         throw new \Exception("The method [$method] does not exist.");
     }
 
-    protected function getProxyInjection(string $argName, ?IsProxied $proxiedInstance=null)
+    protected function getProxyInjection(BaseProxy $proxy, string $argName, ?IsProxied $proxiedInstance=null)
     {
         switch ($argName) {
             case 'instance':
                 return $proxiedInstance;
-            break;
+            	break;
+
+            case 'field':
+                return $proxy->getField();
+            	break;
 
             case 'value':
                 return $proxiedInstance->getAttribute($field->attname);
-            break;
+            	break;
 
             default:
                 throw new \Exception("The proxy arg [$argName] does not exist.");
@@ -857,10 +887,18 @@ class Meta implements IsAFieldOwner
         $field = $proxy->getField();
         $methodName = $proxy->getMethodName();
 
-        foreach ($proxy->getInjections() as $name) {
-            \array_unshift($args, $this->getProxyInjection($name, $proxiedInstance));
+        foreach (\array_reverse($proxy->getInjections()) as $name) {
+            \array_unshift($args, $this->getProxyInjection($proxy, $name, $proxiedInstance));
         }
 
-        return $this->callFieldAttributeMethod($field, $methodName, $args);
+        if ($proxy instanceof MetaProxy) {
+            return $this->$methodName(...$args);
+        }
+
+        if (\method_exists($owner = $field->getOwner(), $methodOwnerName = "${methodName}FieldAttribute")) {
+            return $owner->$methodOwnerName($field, ...$args);
+        }
+
+        return $owner->callFieldAttributeMethod($field, $methodName, $args);
     }
 }
