@@ -462,7 +462,7 @@ trait HasLaramore
      */
     public function __get($action)
     {
-        return call_user_func([$this, 'get'.ucfirst($action).'Attribute']);
+        return call_user_func([$this, 'get'.ucfirst(Str::camel($action)).'Attribute']);
     }
 
     /**
@@ -474,7 +474,7 @@ trait HasLaramore
      */
     public function __set($action, $value)
     {
-        return call_user_func([$this, 'set'.ucfirst($action).'Attribute'], $value);
+        return call_user_func([$this, 'set'.ucfirst(Str::camel($action)).'Attribute'], $value);
     }
 
     /**

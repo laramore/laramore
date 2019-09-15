@@ -55,7 +55,7 @@ trait HasFields
      */
     public function resetFieldAttribute(BaseField $field, Model $model)
     {
-        return $model->setModelRawAttribute($field->attname, $field->getOwner()->defaultFieldAttribute($field));
+        return $model->setRawAttribute($field->attname, $field->getOwner()->defaultFieldAttribute($field));
     }
 
     /**
@@ -114,7 +114,7 @@ trait HasFields
      */
     public function defaultFieldAttribute(BaseField $field)
     {
-        return $field->default;
+        return $field->getProperty('default', false);
     }
 
     public function callFieldAttributeMethod(BaseField $field, string $methodName, array $args)
