@@ -38,8 +38,8 @@ class TypeManager
      */
     public function __construct(array $defaultTypes=[])
     {
-        foreach ($defaultTypes as $name) {
-            $this->types[$name] = new Type($name);
+        foreach ($defaultTypes as $name => $native) {
+            $this->types[$name] = (new Type($name))->setValue('native', $native);
         }
     }
 

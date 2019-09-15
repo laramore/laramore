@@ -66,10 +66,10 @@ class Type
      * Return the type value for a given name.
      *
      * @param  string $key
-     * @return string
+     * @return mixed
      * @throws \ErrorException If this type has no value for a specific key name.
      */
-    public function getValue(string $key='name'): string
+    public function getValue(string $key='name')
     {
         if ($key === 'name') {
             return $this->name;
@@ -84,16 +84,27 @@ class Type
      * Set the value for a given name.
      *
      * @param string $key
-     * @param string $value
+     * @param mixed  $value
      * @return self
      */
-    public function setValue(string $key, string $value)
+    public function setValue(string $key, $value)
     {
         $this->needsToBeUnlocked();
 
         $this->values[$key] = $value;
 
         return $this;
+    }
+
+    public function isType($value)
+    {
+        $native = $this->getValue('native');
+
+        if ($native instanceof \Closure) {
+            return $native($value);
+        }
+
+        return ${"\is_$native"}($value);
     }
 
     /**
@@ -110,9 +121,9 @@ class Type
      * Return the value for a given name.
      *
      * @param  string $key
-     * @return string
+     * @return mixed
      */
-    public function __get(string $key): string
+    public function __get(string $key)
     {
         return $this->getValue($key);
     }
@@ -121,10 +132,10 @@ class Type
      * Set the value for a given name.
      *
      * @param string $key
-     * @param string $value
+     * @param mixed  $value
      * @return self
      */
-    public function __set(string $key, string $value)
+    public function __set(string $key, $value)
     {
         return $this->setValue($key, $value);
     }
