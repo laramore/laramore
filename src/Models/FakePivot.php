@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Models;
 
 use Laramore\Exceptions\LaramoreException;
 

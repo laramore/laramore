@@ -8,18 +8,19 @@
  * @license MIT
  */
 
-namespace Laramore\Observers;
+namespace Laramore\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Observers\BaseHandler;
 
-class ModelObservableHandler extends BaseObservableHandler
+class ModelEventHandler extends BaseHandler
 {
     /**
      * The observable class.
      *
      * @var string
      */
-    protected $observerClass = ModelObserver::class;
+    protected $observerClass = ModelEvent::class;
 
     /**
      * Observe all model events with our observers.
@@ -29,11 +30,11 @@ class ModelObservableHandler extends BaseObservableHandler
     protected function locking()
     {
         foreach ($this->observers as $observer) {
-            foreach ($observer->getObserved() as $event) {
+            foreach ($observer->all() as $event) {
                 $this->observableClass::addModelEvent($event, $observer->getCallback());
             }
-
-            $observer->lock();
         }
+
+        parent::locking();
     }
 }

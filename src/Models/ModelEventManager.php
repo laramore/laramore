@@ -8,23 +8,24 @@
  * @license MIT
  */
 
-namespace Laramore\Observers;
+namespace Laramore\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Laramore\Observers\BaseManager;
 
-class ModelObservableManager extends BaseObservableManager
+class ModelEventManager extends BaseManager
 {
     /**
      * Allowed observable sub class.
      *
      * @var string
      */
-    protected $observableSubClass = Model::class;
+    protected $managedClass = Model::class;
 
     /**
      * The observable handler class to generate.
      *
      * @var string
      */
-    protected $observableHandlerClass = ModelObservableHandler::class;
+    protected $handlerClass = ModelEventHandler::class;
 }

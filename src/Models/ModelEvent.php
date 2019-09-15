@@ -1,6 +1,6 @@
 <?php
 /**
- * Create an Observer to add a callback on a specific model event.
+ * Create an Observer to add a \Closure on a specific model event.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -8,12 +8,12 @@
  * @license MIT
  */
 
-namespace Laramore\Observers;
+namespace Laramore\Models;
 
 use Laramore\Traits\IsLocked;
-use Closure;
+use Laramore\Observers\BaseObserver;
 
-class ModelObserver extends BaseObserver
+class ModelEvent extends BaseObserver
 {
     /**
      * All possible events.
@@ -34,15 +34,5 @@ class ModelObserver extends BaseObserver
     public function getEvents(): array
     {
         return $this->events;
-    }
-
-    /**
-     * Actions during locking.
-     *
-     * @return void
-     */
-    protected function locking()
-    {
-        // Nothing to do here.
     }
 }

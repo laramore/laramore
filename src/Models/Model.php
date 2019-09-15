@@ -8,12 +8,13 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Models;
 
 use Laramore\Traits\Model\HasLaramore;
+use Laramore\Interfaces\IsALaramoreModel;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
-abstract class Model extends BaseModel
+abstract class Model extends BaseModel implements IsALaramoreModel
 {
     use HasLaramore;
 }

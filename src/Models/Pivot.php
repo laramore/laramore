@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Model;
 
 use Laramore\Traits\Model\HasLaramore;
 use Illuminate\Database\Eloquent\Relations\Pivot as BasePivot;
