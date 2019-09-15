@@ -37,7 +37,7 @@ abstract class BaseField implements IsAField
      * @return mixed
      * @throws \ErrorException If no property exists with this name.
      */
-    public function getProperty(string $key)
+    public function getProperty(string $key, bool $fail=true)
     {
         if ($this->hasProperty($key)) {
             if (\method_exists($this, $method = 'get'.\ucfirst($key))) {
@@ -49,7 +49,9 @@ abstract class BaseField implements IsAField
             return $this->hasRule(\constant($const));
         }
 
-        throw new \ErrorException("The property $key does not exist");
+        if ($fail) {
+            throw new \ErrorException("The property $key does not exist");
+        }
     }
 
     /**
@@ -96,12 +98,8 @@ abstract class BaseField implements IsAField
 
     protected function setProxies()
     {
-        $this->setProxy('dry', []);
-        $this->setProxy('cast', []);
-        $this->setProxy('transform', []);
         $this->setProxy('getErrors', [], ['model'], $this->generateProxyMethodName('get', 'errors'));
         $this->setProxy('isValid', [], ['model'], $this->generateProxyMethodName('is', 'valid'));
-        $this->setProxy('check', []);
         $this->setProxy('where', ['instance'], ['builder']);
     }
 
@@ -150,9 +148,9 @@ abstract class BaseField implements IsAField
         return $proxy;
     }
 
-    protected function generateProxyMethodName(string $methodName, string $secondPart='')
+    protected function generateProxyMethodName(string $firstPart, string $secondPart='')
     {
-        return $methodName.\ucfirst(Str::camel($this->attname)).\ucfirst($secondPart);
+        return $firstPart.\ucfirst(Str::camel($this->attname)).\ucfirst($secondPart);
     }
 
     public function getErrors($value): ValidationErrorBag

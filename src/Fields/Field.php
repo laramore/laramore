@@ -99,13 +99,13 @@ abstract class Field extends BaseField
      * @return mixed
      * @throws \ErrorException If no property exists with this name.
      */
-    public function getProperty(string $key)
+    public function getProperty(string $key, bool $fail=true)
     {
         if ($key === 'type') {
             return $this->getType();
         }
 
-        return parent::getProperty($key);
+        return parent::getProperty($key, $fail);
     }
 
     /**

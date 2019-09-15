@@ -32,7 +32,7 @@ trait HasProperties
      * @return mixed
      * @throws \ErrorException If no property exists with this name.
      */
-    public function getProperty(string $key)
+    public function getProperty(string $key, bool $fail=true)
     {
         if ($this->hasProperty($key)) {
             if (\method_exists($this, $method = 'get'.\ucfirst($key))) {
@@ -42,7 +42,9 @@ trait HasProperties
             return $this->$key;
         }
 
-        throw new \ErrorException("The property $key does not exist");
+        if ($fail) {
+            throw new \ErrorException("The property $key does not exist");
+        }
     }
 
     /**
