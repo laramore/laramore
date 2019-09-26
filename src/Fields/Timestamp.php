@@ -42,12 +42,12 @@ class Timestamp extends Field
 
     public function cast($value)
     {
-        return is_null($value) ? null : new Carbon($value);
+        return \is_null($value) ? null : new Carbon($value);
     }
 
     public function dry($value)
     {
-        return is_null($value) ? null : (int) $value;
+        return \is_null($value) ? null : (string) $value;
     }
 
     public function transform($value)
