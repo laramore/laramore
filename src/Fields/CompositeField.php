@@ -28,8 +28,10 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     protected static $defaultFieldNameTemplate = '${name}_${fieldname}';
     protected static $defaultLinkNameTemplate = '*{modelname}';
 
-    protected function __construct(array $fields=null, array $links=null)
+    protected function __construct($rules=null, array $fields=null, array $links=null)
     {
+        parent::__construct($rules);
+
         foreach ($fields ?: static::$defaultFields as $key => $field) {
             if (!is_string($key)) {
                 throw new \Exception('The composite fields need names');
@@ -48,18 +50,14 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     }
 
     /**
-     * Call the constructor and generate the composite field.
+     * Call the constructor and generate the field.
      *
+     * @param  array|integer|null $rules
      * @return static
      */
-    public static function field()
+    public static function field($rules=null, array $fields=null, array $links=null)
     {
-        return new static();
-    }
-
-    public static function composite(array $fields=null, array $links=null)
-    {
-        return new static($fields, $links);
+        return new static($rules, $fields, $links);
     }
 
     protected function generateField($field): Field
@@ -78,7 +76,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         if (is_array($link)) {
             return array_shift($link)::field(...$link);
         } else if (is_string($link)) {
-            return $link::link();
+            return $link::field();
         } else {
             return $link;
         }
@@ -209,7 +207,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
     public function getPropagatedPropertyKeys(): array
     {
         return [
-            'nullable', 'default'
+            'nullable'
         ];
     }
 
@@ -248,6 +246,8 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
 
     public function owned()
     {
+        parent::owned();
+
         $this->ownFields();
         $this->ownLinks();
     }
@@ -292,9 +292,15 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         return parent::locking();
     }
 
-    abstract protected function checkRules();
+    protected function checkRules()
+    {
 
-    abstract protected function setValidations();
+    }
+
+    protected function setValidations()
+    {
+
+    }
 
     protected function lockFields()
     {
@@ -315,10 +321,24 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
         return $this->unique;
     }
 
+    abstract public function consume(IsALaramoreModel $model, $value);
+
     /**
-     * Return the get value for a specific field.
+      * Return the get value for a specific field.
+      *
+      * @param BaseField $field
+      * @param IsALaramoreModel     $model
+      * @param mixed     $value
+      * @return mixed
+      */
+    public function getFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    {
+        return $this->getOwner()->getFieldAttribute($field, $model);
+    }
+
+    /**
+     * Return the set value for a specific field.
      *
-     * @param Model     $model
      * @param BaseField $field
      * @param mixed     $value
      * @return mixed

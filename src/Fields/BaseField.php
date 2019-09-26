@@ -16,6 +16,7 @@ use Laramore\Interfaces\IsAField;
 use Laramore\Traits\{
     IsOwnedAndLocked, HasProperties
 };
+use Laramore\Traits\Field\HasRules;
 use Laramore\Proxies\FieldProxy;
 use Laramore\Meta;
 use Laramore\Exceptions\FieldValidationException;
@@ -24,11 +25,67 @@ use Closure;
 
 abstract class BaseField implements IsAField
 {
-    use IsOwnedAndLocked, HasProperties {
+    use IsOwnedAndLocked, HasProperties, HasRules {
         setProperty as protected forceProperty;
     }
 
-    protected $nullable;
+    protected $rules;
+
+    protected $default;
+    protected $unique;
+
+    /**
+     * Set of rules.
+     * Common to all fields.
+     *
+     * @var integer
+     */
+
+    // Indicate that no rules are applied.
+    public const NONE = 0;
+
+    // Indicate that the field accepts nullable values.
+    public const NULLABLE = 1;
+
+    // Except if trying to set a nullable value.
+    public const NOT_NULLABLE = 2;
+
+    // Indicate if it is visible by default.
+    public const VISIBLE = 4;
+
+    // Indicate if it is fillable by default.
+    public const FILLABLE = 8;
+
+    // Indicate if it is required by default.
+    public const REQUIRED = 16;
+
+    // Default rules for this type of field.
+    public const DEFAULT_FIELD = (self::VISIBLE | self::FILLABLE | self::REQUIRED);
+
+    protected static $defaultRules = self::DEFAULT_FIELD;
+
+    /**
+     * Create a new field with basic rules.
+     * The constructor is protected so the field is created writing left to right.
+     * ex: Text::field()->maxLength(255) insteadof (new Text)->maxLength(255).
+     *
+     * @param integer|string|array $rules
+     */
+    protected function __construct($rules=null)
+    {
+        $this->addRules($rules ?: static::$defaultRules);
+    }
+
+    /**
+     * Call the constructor and generate the field.
+     *
+     * @param  array|integer|null $rules
+     * @return static
+     */
+    public static function field($rules=null)
+    {
+        return new static($rules);
+    }
 
     /**
      * Return a property by its name.
@@ -96,6 +153,16 @@ abstract class BaseField implements IsAField
         return $this;
     }
 
+    /**
+     * Define the field as not visible.
+     *
+     * @param  boolean $hidden
+     * @return self
+     */
+    public function hidden(bool $hidden=true)
+    {
+        return $this->visible(!$hidden);
+    }
     protected function locking()
     {
         $this->setValidations();
