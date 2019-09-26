@@ -106,8 +106,8 @@ class ValidationHandler extends BaseHandler
         $bag = new ValidationErrorBag;
         $priority = Validation::MAX_PRIORITY;
 
-        if ($this->has($field->attname)) {
-            foreach ($this->all($field->attname) as $validation) {
+        if ($this->has($field->name)) {
+            foreach ($this->all($field->name) as $validation) {
                 // Validation can fail only with same priorities.
                 if ($priority !== $validation->getPriority()) {
                     if ($bag->count()) {
