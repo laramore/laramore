@@ -163,6 +163,21 @@ abstract class BaseField implements IsAField
     {
         return $this->visible(!$hidden);
     }
+
+    protected function owned()
+    {
+        if (!($this->getOwner() instanceof Meta) && !($this->getOwner() instanceof CompositeField)) {
+            throw new \LogicException('A field should be owned by a Meta or a CompositeField');
+        }
+
+        $owner = $this->getOwner();
+
+        while (!($owner instanceof Meta)) {
+            $owner = $owner->getOwner();
+        }
+
+        $this->setMeta($owner);
+    }
     protected function locking()
     {
         $this->setValidations();
@@ -179,6 +194,25 @@ abstract class BaseField implements IsAField
     }
 
     /**
+     * Define the name of the field.
+     *
+     * @param  string $name
+     * @return self
+     */
+    public function setMeta(Meta $meta)
+    {
+        $this->needsToBeUnlocked();
+
+        if (!is_null($this->meta)) {
+            throw new \LogicException('The meta cannot be defined multiple times');
+        }
+
+        $this->meta = $meta;
+
+        return $this;
+    }
+
+    /**
      * Return the meta of this field.
      * The owner could be a composite field and so on but not the coresponded meta.
      *
@@ -186,13 +220,7 @@ abstract class BaseField implements IsAField
      */
     public function getMeta(): Meta
     {
-        $owner = $this->getOwner();
-
-        while (!($owner instanceof Meta)) {
-            $owner = $owner->getOwner();
-        }
-
-        return $owner;
+        return $this->meta;
     }
 
     protected function setValidation(string $validationClass, int $property=null)
