@@ -66,6 +66,14 @@ abstract class BaseField implements IsAField
     {
         $this->needsToBeUnlocked();
 
+        if (\defined($const = 'static::'.\strtoupper(Str::snake($key)))) {
+            if ($key === false) {
+                return $this->removeRule(\constant($const));
+            } else {
+                return $this->addRule(\constant($const));
+            }
+        }
+
         return $this->forceProperty($key, $value);
     }
 

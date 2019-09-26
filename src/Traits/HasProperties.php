@@ -75,12 +75,6 @@ trait HasProperties
             \call_user_func([$this, $key], $value);
         } else if (\property_exists($this, $key)) {
             $this->defineProperty($key, $value);
-        } else if (\defined($const = 'static::'.strtoupper(Str::snake($key)))) {
-            if ($value) {
-                $this->addRule(constant($const));
-            } else {
-                $this->removeRule(constant($const));
-            }
         } else {
             throw new \ErrorException("The property $key cannot be set as it does not exist");
         }

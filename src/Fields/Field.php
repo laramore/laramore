@@ -11,79 +11,18 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
+use Laramore\Models\{
+    Builder, Model
+};
 use Laramore\{
-    Meta, Type, Builder
+    Meta, Type
 };
-use Laramore\Validations\{
-    Typed, NotNullable
-};
-use Laramore\Traits\Field\HasRules;
 use Laramore\Interfaces\IsProxied;
 
 abstract class Field extends BaseField
 {
-    use HasRules {
-        HasRules::addRule as private addRuleFromHasRule;
-    }
-
     protected $attname;
-    protected $default;
-    protected $unique;
-    protected $rules;
-
-    /**
-     * Set of rules.
-     * Common to all fields.
-     *
-     * @var integer
-     */
-
-    // Indicate that no rules are applied.
-    public const NONE = 0;
-
-    // Indicate that the field accepts nullable values.
-    public const NULLABLE = 1;
-
-    // Except if trying to set a nullable value.
-    public const NOT_NULLABLE = 2;
-
-    // Indicate if it is visible by default.
-    public const VISIBLE = 4;
-
-    // Indicate if it is fillable by default.
-    public const FILLABLE = 8;
-
-    // Indicate if it is required by default.
-    public const REQUIRED = 16;
-
-    // Default rules for this type of field.
-    public const DEFAULT_FIELD = (self::VISIBLE | self::FILLABLE | self::REQUIRED);
-
-    protected static $defaultRules = self::DEFAULT_FIELD;
-
-    /**
-     * Create a new field with basic rules.
-     * The constructor is protected so the field is created writing left to right.
-     * ex: Text::field()->maxLength(255) insteadof (new Text)->maxLength(255).
-     *
-     * @param integer|string|array $rules
-     */
-    protected function __construct($rules=null)
-    {
-        $this->addRules($rules ?: static::$defaultRules);
-    }
-
-    /**
-     * Call the constructor and generate the field.
-     *
-     * @param  array|integer|null $rules
-     * @return static
-     */
-    public static function field($rules=null)
-    {
-        return new static($rules);
-    }
 
     /**
      * Return the type object of the field.
@@ -134,7 +73,11 @@ abstract class Field extends BaseField
             $name = $nameKey[0];
             $key = ($nameKey[1] ?? $name);
 
-            if (!is_null($value = $this->$key)) {
+            if (\defined($const = 'static::'.\strtoupper(Str::snake($key)))) {
+                if ($this->hasRule(\constant($const))) {
+                    $properties[$name] = true;
+                }
+            } else if (!is_null($value = $this->$key)) {
                 $properties[$name] = $value;
             }
         }
@@ -161,96 +104,6 @@ abstract class Field extends BaseField
     }
 
     /**
-     * Define this field as required or not.
-     *
-     * @param  boolean $required
-     * @return self
-     */
-    public function required(bool $required=true)
-    {
-        $this->needsToBeUnlocked();
-
-        if ($required) {
-            return $this->addRule(self::REQUIRED);
-        } else {
-            return $this->removeRule(self::REQUIRED);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Define this field as fillable.
-     *
-     * @param  boolean $fillable
-     * @return self
-     */
-    public function fillable(bool $fillable=true)
-    {
-        $this->needsToBeUnlocked();
-
-        if ($fillable) {
-            return $this->addRule(self::FILLABLE);
-        } else {
-            return $this->removeRule(self::FILLABLE);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Define this field as visible.
-     *
-     * @param  boolean $visible
-     * @return self
-     */
-    public function visible(bool $visible=true)
-    {
-        $this->needsToBeUnlocked();
-
-        if ($visible) {
-            return $this->addRule(self::VISIBLE);
-        } else {
-            return $this->removeRule(self::VISIBLE);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Define the field as not visible.
-     *
-     * @param  boolean $hidden
-     * @return self
-     */
-    public function hidden(bool $hidden=true)
-    {
-        return $this->visible(!$hidden);
-    }
-
-    /**
-     * Define the field as nullable.
-     *
-     * @param  boolean $nullable
-     * @return self
-     */
-    public function nullable(bool $nullable=true)
-    {
-        $this->needsToBeUnlocked();
-
-        if ($nullable) {
-            $this->addRuleFromHasRule(self::NULLABLE);
-            $this->removeRule(self::NOT_NULLABLE | self::REQUIRED);
-        } else {
-            $this->removeRule(self::NULLABLE);
-        }
-
-        $this->defineProperty('nullable', $nullable);
-
-        return $this;
-    }
-
-    /**
      * Define a default value for this field.
      *
      * @param  mixed $value
@@ -269,73 +122,16 @@ abstract class Field extends BaseField
         return $this;
     }
 
-    protected function locking()
-    {
-        $this->checkRules();
-
-        parent::locking();
-    }
-
     /**
-     * Check it is owned correctly.
+     * Return the query with this field as condition.
      *
-     * @return void
+     * @param  QueryBuilder $query
+     * @param  mixed   ...$args
+     * @return QueryBuilder
      */
-    protected function owned()
+    public function where(QueryBuilder $query, $operator=null, $value=null, $boolean='and')
     {
-        if (!($this->getOwner() instanceof Meta) && !($this->getOwner() instanceof CompositeField)) {
-            throw new \LogicException('A field should be owned by a Meta or a CompositeField');
-        }
-    }
-
-    /**
-     * Check all properties and rules before locking the field.
-     *
-     * @return void
-     */
-    protected function checkRules()
-    {
-        if ($this->hasProperty('default')) {
-            if (is_null($this->default)) {
-                if ($this->hasRule(self::NOT_NULLABLE)) {
-                    throw new \LogicException("This field cannot be null and defined as null by default");
-                } else if (!$this->hasRule(self::NULLABLE) && !$this->hasRule(self::REQUIRED)) {
-                    throw new \LogicException("This field cannot be null, defined as null by default and not required");
-                }
-            }
-        }
-
-        if ($this->hasRule(self::NOT_NULLABLE)) {
-            if ($this->hasRule(self::NULLABLE)) {
-                throw new \LogicException("This field cannot be nullable and not nullable or strict on the same time");
-            }
-        }
-    }
-
-    protected function setValidations()
-    {
-        $this->setValidation(Typed::class)->type($this->getType());
-
-        if ($this->hasRule(self::NOT_NULLABLE)) {
-            $this->setValidation(NotNullable::class);
-        }
-    }
-
-    /**
-     * Add a rule to the resource.
-     *
-     * @param integer $rule
-     * @return self
-     */
-    protected function addRule(int $rule)
-    {
-        $this->needsToBeUnlocked();
-
-        if ($this->rulesContain($rule, self::NULLABLE)) {
-            $this->nullable();
-        }
-
-        return $this->addRuleFromHasRule($rule);
+        return $query->where($this->attname, $operator, $value, $boolean);
     }
 
     /**
@@ -345,8 +141,14 @@ abstract class Field extends BaseField
      * @param  mixed   ...$args
      * @return Builder
      */
-    public function where(IsProxied $query, ...$args)
+    public function relate(IsProxied $instance)
     {
-        return $query->where($this->attname, ...$args);
+        if ($instance instanceof Model) {
+            return $this->getOwner()->whereFieldAttribute($this, $instance, $instance->getAttribute($this->attname));
+        }
+
+        if ($instance instanceof Builder) {
+            return $this->getOwner()->whereFieldAttribute($this, $instance, $instance->getModel()->getAttribute($this->attname));
+        }
     }
 }
