@@ -12,6 +12,7 @@ namespace Laramore\Models;
 
 use Illuminate\Database\Eloquent\Builder as BuilderBase;
 use Illuminate\Support\Str;
+use Laramore\Facades\MetaManager;
 use Laramore\Interfaces\IsProxied;
 
 class Builder extends BuilderBase implements IsProxied
@@ -30,9 +31,19 @@ class Builder extends BuilderBase implements IsProxied
         if ($column instanceof Closure) {
             $column($query = $this->model->newModelQuery());
 
-            $this->query->addNestedWhereQuery($query->getQuery(), $boolean);
+            $this->query->addNestedWhereQuery($query->getQuery(), 'and');
 
             return $this;
+        }
+
+        $parts = explode('.', $column);
+
+        if (count($parts) === 2) {
+            [$table, $column] = $parts;
+
+            if ($table !== $this->getModel()->getTable()) {
+                throw new \Exception('A gérer bae');
+            }
         }
 
         // If the column is an array, we will assume it is an array of key-value pairs
@@ -40,23 +51,47 @@ class Builder extends BuilderBase implements IsProxied
         // received when the method was called and pass it into the nested where.
         if (is_array($column)) {
             foreach ($column as $attname => $value) {
-                $column[$attname] = $this->getModel()::dry($attname, $value);
+                $this->where($attname, $value);
             }
 
-            $this->query->where($column, $operator, $value, $boolean);
-
-            // If the value is a Closure, it means the developer is performing an entire
-            // sub-select within the query and we will need to compile the sub-select
-            // within the where clause to get the appropriate query record results.
-        } else if ($value instanceof Closure) {
-            $this->query->where($column, $operator, $value, $boolean);
-        } else if (func_num_args() === 2) {
-            $this->query->where($column, $this->getModel()::dry($column, $operator));
-        } else {
-            $this->query->where($column, $operator, $this->getModel()::dry($column, $value), $boolean);
+            return $this;
         }
 
-        return $this;
+        $args = \func_get_args();
+        \array_shift($args);
+
+        return \call_user_func([$this, 'where'.\ucfirst(Str::camel($column))], $args);
+    }
+
+    public function insert($values)
+    {
+        foreach ($values as $attname => $value) {
+            $values[$attname] = $this->dry($attname, $value);
+        }
+
+        return $this->toBase()->insert($values);
+    }
+
+    public function insertGetId($values)
+    {
+        foreach ($values as $attname => $value) {
+            $values[$attname] = $this->dry($attname, $value);
+        }
+
+        return $this->toBase()->insertGetId($values);
+    }
+
+    protected function dry($attname, $value)
+    {
+        $parts = explode('.', $attname);
+
+        if (count($parts) === 2) {
+            [$table, $attname] = $parts;
+
+            return MetaManager::getMetaForTableName($table)->getModelClass()::dry($attname, $value);
+        }
+
+        return $this->getModel()::dry($attname, $value);
     }
 
     /**
