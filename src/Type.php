@@ -104,7 +104,9 @@ class Type
             return $native($value);
         }
 
-        return ${"\is_$native"}($value);
+        $type = "\is_$native";
+
+        return $type($value);
     }
 
     /**

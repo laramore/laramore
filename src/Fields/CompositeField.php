@@ -12,10 +12,12 @@ namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
 use Laramore\Fields\Link\LinkField;
-use Laramore\Interfaces\IsAFieldOwner;
+use Laramore\Interfaces\{
+    IsProxied, IsAFieldOwner, IsALaramoreModel, IsARelationField
+};
 use Laramore\Meta;
 
-abstract class CompositeField extends BaseField implements IsAFieldOwner
+abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARelationField
 {
     protected $fields = [];
     protected $links = [];
@@ -340,43 +342,60 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
      * Return the set value for a specific field.
      *
      * @param BaseField $field
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function getModelAttribute(Model $model, BaseField $field)
+    public function setFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
     {
-        return $this->getOwner()->getModelAttribute($model, $field);
+        return $this->getOwner()->setFieldAttribute($field, $model, $value);
     }
 
     /**
      * Return the set value for a specific field.
      *
-     * @param Model     $model
      * @param BaseField $field
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function setModelAttribute(Model $model, BaseField $field, $value)
+    public function whereFieldAttribute(BaseField $field, IsProxied $model, $operator=null, $value=null, $boolean='and')
     {
-        return $this->getOwner()->setModelAttribute($model, $field, $value);
+        if (func_num_args() === 2) {
+            throw new \BadMethodCallException('Missing params');
+        }
+
+		if (func_num_args() === 3) {
+            return $this->getOwner()->whereFieldAttribute($field, $model, '=', $operator);
+		}
+
+        return $this->getOwner()->whereFieldAttribute($field, $model, $operator, $value, $boolean);
     }
 
     /**
      * Return the set value for a specific field.
      *
-     * @param Model     $model
      * @param BaseField $field
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function resetModelAttribute(Model $model, BaseField $field)
+    public function relateFieldAttribute(BaseField $field, IsALaramoreModel $model)
     {
-        return $this->getOwner()->resetModelAttribute($model, $field);
+        return $this->getOwner()->relateFieldAttribute($field, $model);
     }
 
-    public function relateModelAttribute(Model $model, BaseField $field)
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param IsALaramoreModel     $model
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function resetFieldAttribute(BaseField $field, IsALaramoreModel $model)
     {
-        return $field->where($model, $model->{$this->attname});
+        return $this->getOwner()->resetFieldAttribute($field, $model);
     }
 
     /**
@@ -431,6 +450,30 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
      * Return the set value for a specific field.
      *
      * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function getRelationFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    {
+        return $this->getOwner()->getRelationFieldAttribute($field, $model);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function setRelationFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
+    {
+        return $this->getOwner()->setRelationFieldAttribute($field, $model, $value);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
      * @return mixed
      */
     public function defaultFieldAttribute(BaseField $field)
@@ -456,6 +499,6 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner
             return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
         }
 
-        throw new \Exception("The method [$method] does not exist.");
+        parent::__call($method, $args);
     }
 }

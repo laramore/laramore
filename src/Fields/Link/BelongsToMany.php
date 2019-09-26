@@ -20,14 +20,8 @@ class BelongsToMany extends LinkField
     {
         parent::owned();
 
-        if (is_null($this->off)) {
-            throw new \Exception('You need to specify `off`');
-        }
-
         $this->defineProperty('pivotMeta', $this->getOwner()->pivotMeta);
         $this->defineProperty('pivotTo', $this->getOwner()->pivotTo);
         $this->defineProperty('pivotFrom', $this->getOwner()->pivotFrom);
-
-        $this->off::getMeta()->set($this->name, $this);
     }
 }

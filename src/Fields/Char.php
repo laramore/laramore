@@ -27,23 +27,20 @@ class Char extends Text
      * @var integer
      */
 
-    // Except if the length is longer than allowed
-    public const MAX_LENGTH = 1024;
-
     // If the string is too long, auto cut at the defined length
-    public const CARACTERE_RESIZE = 2048;
+    public const CARACTERE_RESIZE = 1024;
 
     // If the string is too long, auto cut at the last word before the defined length
-    public const WORD_RESIZE = 4096;
+    public const WORD_RESIZE = 2048;
 
     // If the string is too long, auto cut at the last sentence before the defined length
-    public const SENTENCE_RESIZE = 8192;
+    public const SENTENCE_RESIZE = 4096;
 
     // If the string is too long, auto cut and add dots
-    public const DOTS_ON_RESIZING = 16384;
+    public const DOTS_ON_RESIZING = 8192;
 
     // Default rules
-    public const DEFAULT_CHAR = (self::MAX_LENGTH | self::DEFAULT_TEXT);
+    public const DEFAULT_CHAR = (self::CARACTERE_RESIZE | self::DEFAULT_TEXT);
 
     protected static $defaultRules = self::DEFAULT_CHAR;
 
@@ -71,20 +68,11 @@ class Char extends Text
         ], parent::getPropertyKeys());
     }
 
-    protected function checkRules()
-    {
-        parent::checkRules();
-
-        if ($this->hasRule(self::MAX_LENGTH) && is_null($this->maxLength)) {
-            throw new \Exception('No length set for '.$this->name);
-        }
-    }
-
     protected function setValidations()
     {
         parent::setValidations();
 
-        if ($this->hasRule(self::MAX_LENGTH)) {
+        if (!\is_null($this->maxLength)) {
             $this->setValidation(Length::class)->maxLength($this->maxLength);
         }
     }

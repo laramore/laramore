@@ -11,14 +11,16 @@
 namespace Laramore\Traits\Model;
 
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\MassAssignmentException;
+use Illuminate\Database\Eloquent\{
+    Builder, MassAssignmentException
+};
 use Laramore\Facades\{
     TypeManager, MetaManager, ProxyManager
 };
 use Laramore\Fields\{
     Field, CompositeField, LinkField
 };
-use Laramore\Models\Builder;
+use Laramore\Models\Builder as LaramoreBuilder;
 use Laramore\{
     Meta, FieldManager
 };
@@ -29,7 +31,7 @@ use Laramore\Proxies\{
 trait HasLaramore
 {
     protected static $metaClass = Meta::class;
-    protected static $builderClass = Builder::class;
+    protected static $builderClass = LaramoreBuilder::class;
 
     protected $required = [];
 
@@ -149,6 +151,27 @@ trait HasLaramore
     }
 
     /**
+     * Update the creation and update timestamps.
+     *
+     * @return void
+     */
+    protected function updateTimestamps()
+    {
+        $time = $this->freshTimestamp();
+
+        if (!$this->exists && !is_null(static::CREATED_AT) && !$this->isDirty(static::CREATED_AT)) {
+            $this->setCreatedAt($time);
+        }
+
+        // Only update the updated field if the model already exists or the field cannot be null.
+        if (!\is_null(static::UPDATED_AT) && !$this->isDirty(static::UPDATED_AT) && (
+            $this->exists || !$this->getField(static::UPDATED_AT)->nullable
+        )) {
+            $this->setUpdatedAt($time);
+        }
+    }
+
+    /**
      * Dry a value for a specific field.
      *
      * @param  string $key   Name of the field.
@@ -197,6 +220,36 @@ trait HasLaramore
     }
 
     /**
+     * Get an attribute from the model.
+     *
+     * @param  string  $key
+     * @return mixed
+     */
+    public function getAttribute($key)
+    {
+        if (! $key) {
+            return;
+        }
+
+        // If the attribute exists in the attribute array or has a "get" mutator we will
+        // get the attribute's value. Otherwise, we will proceed as if the developers
+        // are asking for a relationship's value. This covers both types of values.
+        if (array_key_exists($key, $this->attributes) ||
+            $this->hasGetMutator($key)) {
+            return $this->getAttributeValue($key);
+        }
+
+        // Here we will determine if the model base class itself contains this given key
+        // since we don't want to treat any of those methods as relationships because
+        // they are all intended as helper methods and none of these are relations.
+        if (method_exists(self::class, $key)) {
+            return;
+        }
+
+        return $this->getRelation($key);
+    }
+
+    /**
      * Get a plain attribute (not a relationship).
      * Override the original method.
      *
@@ -232,10 +285,21 @@ trait HasLaramore
     public function getAttributeFromArray($key)
     {
         if (isset($this->attributes[$key])) {
-            return $this->attributes[$key];
+            return $this->getRawAttribute($key);
         }
 
         throw new \Exception("The model has no field and value for the key $key");
+    }
+
+    /**
+     * Get the relation value for a specific key.
+     *
+     * @param  string $key Not specified because Model has no parameter types.
+     * @return mixed
+     */
+    public function getRelation($key)
+    {
+        return \call_user_func([$this, $key]);
     }
 
     /**
@@ -251,35 +315,83 @@ trait HasLaramore
         // relationship has already been locked, so we'll just return it out of
         // here because there is no need to query within the relations twice.
         if ($this->relationLoaded($key)) {
-            return $this->relations[$key];
+            return $this->getRawRelationValue($key);
         }
 
         // If the "attribute" exists as a method on the model, we will just assume
-        // it is a relationship and will lock and return results from the query
+        // it is a relationship and will load and return results from the query
         // and hydrate the relationship's value on the "relationships" array.
-        if (method_exists($this, $key)) {
+        if (\method_exists($this, $key)) {
             return $this->getRelationshipFromMethod($key);
         }
 
-        // Check if a composite of link field exist with this name and return the relation.
-        if (static::getMeta()->hasComposite($key) || static::getMeta()->hasLink($key)) {
-            return $this->getRelationshipFromMeta($key);
+        // If the user did not set any custom methods to handle this attribute,
+        // we call the field getter.
+        if (static::getMeta()->has($key)) {
+            $field = static::getMeta()->get($key);
+
+            return tap($field->getOwner()->getRelationFieldAttribute($field, $this), function ($results) use ($key) {
+                $this->setRawRelationValue($key, $results);
+            });
         }
     }
 
+    public function getRawRelationValue($key)
+    {
+        return $this->relations[$key];
+    }
+
     /**
-     * Get a relationship value from the meta.
+     * Get a relationship value from a method.
      *
-     * @param  mixed $key
+     * @param  string  $method
      * @return mixed
      *
-     * @throws \LogicException Except if the relation does not exist.
+     * @throws \LogicException
      */
-    protected function getRelationshipFromMeta($key)
+    protected function getRelationshipFromMethod($method)
     {
-        return tap(static::getMeta()->get($key)->getValue($this, $key), function ($results) use ($key) {
-            $this->setRelation($key, $results);
+        $relation = $this->$method();
+
+        if (! $relation instanceof Relation) {
+            throw new LogicException(sprintf(
+                '%s::%s must return a relationship instance.', static::class, $method
+            ));
+        }
+
+        return tap($relation->getResults(), function ($results) use ($method) {
+            $this->setRawRelationValue($method, $results);
         });
+    }
+
+    /**
+     * Set the given relationship on the model.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @return $this
+     */
+    public function setRelationValue($key, $value)
+    {
+        $field = static::getMeta()->get($key);
+
+        $field->getOwner()->setRelationFieldAttribute($field, $this, $value);
+
+        return $this;
+    }
+
+    /**
+     * Set the given relationship on the model.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @return $this
+     */
+    public function setRawRelationValue($key, $value)
+    {
+        $this->relations[$key] = $value;
+
+        return $this;
     }
 
     /**
@@ -326,7 +438,7 @@ trait HasLaramore
             $field = static::getField($key);
 
             // If the field is not fillable, throw an exception.
-            if ($field instanceof Field && !$this->isFillable($key) && !$force) {
+            if (!$this->isFillable($key)) {
                 throw new MassAssignmentException(sprintf(
                     'Add [%s] to fillable property to allow mass assignment on [%s].',
                     $key, get_class($this)
@@ -370,7 +482,32 @@ trait HasLaramore
 
     public function getRawAttribute(string $key)
     {
-        return $this->attributes[$key];
+        return $this->attributes[$key] ?? null;
+    }
+
+    /**
+     * Create a new instance of the given model.
+     *
+     * @param  array   $attributes
+     * @param  boolean $exists
+     * @return static
+     */
+    public function newInstance($attributes=[], $exists=false)
+    {
+        // This method just provides a convenient way for us to generate fresh model
+        // instances of this current model. It is particularly useful during the
+        // hydration of new objects via the Eloquent query builder instances.
+        $model = new static((array) $attributes);
+
+        $model->exists = $exists;
+
+        $model->setConnection(
+            $this->getConnectionName()
+        );
+
+        $model->setTable($this->getTable());
+
+        return $model;
     }
 
     /**
@@ -397,25 +534,14 @@ trait HasLaramore
      * Insert the given attributes and set the ID on the model.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  mixed                                 $attributes
+     * @param  array                                 $attributes
      * @return void
      */
-    protected function insertAndSetId(\Illuminate\Database\Eloquent\Builder $query, $attributes)
+    protected function insertAndSetId(Builder $query, $attributes)
     {
         $id = $query->insertGetId($attributes, $keyName = $this->getKeyName());
 
-        $this->setAttribute($keyName, $id);
-    }
-
-    /**
-     * Get the relation value for a specific key.
-     *
-     * @param  string $key Not specified because Model has no parameter types.
-     * @return mixed
-     */
-    public function getRelation($key)
-    {
-        return static::getField($key)->getRelationValue($this);
+        $this->setRawAttribute($keyName, $id);
     }
 
     public static function getEloquentBuilderClass()

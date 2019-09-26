@@ -10,10 +10,11 @@
 
 namespace Laramore\Interfaces;
 
-use Illuminate\Database\Eloquent\Model;
 use Laramore\Builder;
 use Laramore\Fields\BaseField;
-use Laramore\Interfaces\IsProxied;
+use Laramore\Interfaces\{
+    IsProxied, IsALaramoreModel, IsARelationField
+};
 
 interface IsAFieldOwner
 {
@@ -21,31 +22,31 @@ interface IsAFieldOwner
      * Return the get value for a specific field.
      *
      * @param BaseField $field
-     * @param Model     $model
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function getFieldAttribute(BaseField $field, Model $model);
+    public function getFieldAttribute(BaseField $field, IsALaramoreModel $model);
 
     /**
      * Return the set value for a specific field.
      *
      * @param BaseField $field
-     * @param Model     $model
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function setFieldAttribute(BaseField $field, Model $model, $value);
+    public function setFieldAttribute(BaseField $field, IsALaramoreModel $model, $value);
 
     /**
      * Return the set value for a specific field.
      *
-     * @param Model     $model
+     * @param IsALaramoreModel     $model
      * @param BaseField $field
      * @param mixed     $value
      * @return mixed
      */
-    public function resetFieldAttribute(BaseField $field, Model $model);
+    public function resetFieldAttribute(BaseField $field, IsALaramoreModel $model);
 
     /**
      * Return the set value for a specific field.

@@ -8,10 +8,13 @@
 
 namespace Laramore\Traits\Meta;
 
-use Illuminate\Database\Eloquent\Model;
 use Laramore\Builder;
-use Laramore\Fields\BaseField;
-use Laramore\Interfaces\IsProxied;
+use Laramore\Fields\{
+	BaseField, Field
+};
+use Laramore\Interfaces\{
+	IsProxied, IsARelationField, IsALaramoreModel
+};
 
 trait HasFields
 {
@@ -19,41 +22,121 @@ trait HasFields
      * Return the get value for a specific field.
      *
      * @param BaseField $field
-     * @param Model     $model
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function getFieldAttribute(BaseField $field, Model $model)
+    public function getFieldAttribute(BaseField $field, IsALaramoreModel $model)
     {
-        return $model->getRawAttribute($field->attname);
+		if ($field instanceof IsARelationField) {
+			return $model->getRelationValue($field->name);
+		}
+
+        return $model->getRawAttribute($field->attname) ?? null;
     }
 
     /**
      * Return the set value for a specific field.
      *
      * @param BaseField $field
-     * @param Model     $model
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function setFieldAttribute(BaseField $field, Model $model, $value)
+    public function setFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
+    {
+		if ($field instanceof IsARelationField) {
+			return $model->setRelationValue($field->name, $value);
+		}
+
+		$owner = $field->getOwner();
+        $value = $owner->transformFieldAttribute($field, $value);
+        $owner->checkFieldAttribute($field, $value);
+
+		return $model->setRawAttribute($field->attname, $value);
+    }
+
+    /**
+     * Return the get value for a specific field.
+     *
+     * @param IsARelationField $field
+     * @param IsALaramoreModel     $model
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function getRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model)
+    {
+        return $field->retrieve($model);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param IsARelationField $field
+     * @param IsALaramoreModel     $model
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function setRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model, $value)
     {
         $owner = $field->getOwner();
         $value = $owner->transformFieldAttribute($field, $value);
         $owner->checkFieldAttribute($field, $value);
 
-        return $model->setRawAttribute($field->attname, $value);
+        $model->setRawRelationValue($field->name, $field->consume($model, $value));
+
+		return $model;
     }
 
     /**
      * Return the set value for a specific field.
      *
      * @param BaseField $field
-     * @param Model     $model
+     * @param IsALaramoreModel     $model
      * @param mixed     $value
      * @return mixed
      */
-    public function resetFieldAttribute(BaseField $field, Model $model)
+    public function whereFieldAttribute(BaseField $field, IsProxied $query, $operator=null, $value=null, $boolean='and')
+    {
+		if (func_num_args() === 2) {
+            throw new \BadMethodCallException('Missing params');
+        }
+
+		if (func_num_args() === 3) {
+			[$operator, $value] = ['=', $operator];
+		}
+
+		if ($query instanceof IsALaramoreModel) {
+			$query = $query->newModelQuery();
+		}
+
+		$field->where($query->getQuery(), $operator, $field->getOwner()->dryFieldAttribute($field, $value), $boolean);
+
+		return $query;
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param IsALaramoreModel     $model
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function relateFieldAttribute(BaseField $field, IsProxied $model)
+    {
+		return $field->relate($model);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param IsALaramoreModel     $model
+     * @param mixed     $value
+     * @return mixed
+     */
+    public function resetFieldAttribute(BaseField $field, IsALaramoreModel $model)
     {
         return $model->setRawAttribute($field->attname, $field->getOwner()->defaultFieldAttribute($field));
     }
@@ -119,6 +202,6 @@ trait HasFields
 
     public function callFieldAttributeMethod(BaseField $field, string $methodName, array $args)
     {
-        return call_user_func([$field, $methodName], ...$args);
+        return \call_user_func([$field, $methodName], ...$args);
     }
 }

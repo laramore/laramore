@@ -20,7 +20,9 @@ use Laramore\Traits\Field\HasRules;
 use Laramore\Proxies\FieldProxy;
 use Laramore\Meta;
 use Laramore\Exceptions\FieldValidationException;
-use Laramore\Validations\ValidationErrorBag;
+use Laramore\Validations\{
+    Typed, NotNullable, ValidationErrorBag
+};
 use Closure;
 
 abstract class BaseField implements IsAField
@@ -178,18 +180,52 @@ abstract class BaseField implements IsAField
 
         $this->setMeta($owner);
     }
+
     protected function locking()
     {
+        $this->checkRules();
         $this->setValidations();
         $this->setProxies();
     }
 
-    abstract protected function setValidations();
+    /**
+     * Check all properties and rules before locking the field.
+     *
+     * @return void
+     */
+    protected function checkRules()
+    {
+        if ($this->hasProperty('default')) {
+            if (\is_null($this->default)) {
+                if ($this->hasRule(self::NOT_NULLABLE)) {
+                    throw new \LogicException("This field cannot be null and defined as null by default");
+                } else if (!$this->hasRule(self::NULLABLE) && !$this->hasRule(self::REQUIRED)) {
+                    throw new \LogicException("This field cannot be null, defined as null by default and not required");
+                }
+            }
+        }
+
+        if ($this->hasRule(self::NOT_NULLABLE)) {
+            if ($this->hasRule(self::NULLABLE)) {
+                throw new \LogicException("This field cannot be nullable and not nullable or strict on the same time");
+            }
+        }
+    }
+
+    protected function setValidations()
+    {
+        // $this->setValidation(Typed::class)->type($this->getType());
+
+        if ($this->hasRule(self::NOT_NULLABLE)) {
+            $this->setValidation(NotNullable::class);
+        }
+    }
 
     protected function setProxies()
     {
         $this->setProxy('getErrors', [], ['model'], $this->generateProxyMethodName('get', 'errors'));
         $this->setProxy('isValid', [], ['model'], $this->generateProxyMethodName('is', 'valid'));
+        $this->setProxy('relate', ['instance'], ['model', 'builder'], Str::camel($this->name));
         $this->setProxy('where', ['instance'], ['builder']);
     }
 
@@ -253,7 +289,7 @@ abstract class BaseField implements IsAField
 
     protected function generateProxyMethodName(string $firstPart, string $secondPart='')
     {
-        return $firstPart.\ucfirst(Str::camel($this->attname)).\ucfirst($secondPart);
+        return $firstPart.\ucfirst(Str::camel($this->name)).\ucfirst($secondPart);
     }
 
     public function getErrors($value): ValidationErrorBag

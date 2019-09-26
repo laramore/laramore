@@ -11,7 +11,6 @@
 namespace Laramore;
 
 use Illuminate\Support\Str;
-use Illuminate\Database\Eloquent\Model;
 use Laramore\Exceptions\{
 	MultipleExceptionsException, RequiredFieldException
 };
@@ -22,7 +21,7 @@ use Laramore\Fields\{
 	BaseField, Field, CompositeField, Link\LinkField, Timestamp
 };
 use Laramore\Interfaces\{
-	IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied
+	IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied, IsALaramoreModel
 };
 use Laramore\Traits\IsLocked;
 use Laramore\Traits\Meta\HasFields;
@@ -138,7 +137,7 @@ class Meta implements IsAFieldOwner
     {
         ModelEventManager::createHandler($this->modelClass);
 
-        $this->getModelEventHandler()->add(new ModelEvent('autofill_default', function (Model $model) {
+        $this->getModelEventHandler()->add(new ModelEvent('autofill_default', function (IsALaramoreModel $model) {
             $attributes = $model->getAttributes();
 
             foreach ($this->getFields() as $field) {
@@ -150,11 +149,11 @@ class Meta implements IsAFieldOwner
             }
         }, ModelEvent::HIGH_PRIORITY, 'saving'));
 
-        $this->getModelEventHandler()->add(new ModelEvent('check_required_fields', function (Model $model) {
+        $this->getModelEventHandler()->add(new ModelEvent('check_required_fields', function (IsALaramoreModel $model) {
             $missingFields = \array_diff($this->getRequiredFieldNames(), \array_keys($model->getAttributes()));
 
-            foreach ($missingFields as $key => $field) {
-                if ($this->getField($field)->nullable) {
+            foreach ($missingFields as $key => $name) {
+                if (!$this->hasField($name) || $this->getField($name)->nullable) {
                      unset($missingFields[$key]);
                 }
             }
@@ -566,7 +565,7 @@ class Meta implements IsAFieldOwner
     {
         $fields = [];
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->allFields() as $field) {
             if ($field->$option) {
                 $fields[] = $field->name;
             }
@@ -677,9 +676,9 @@ class Meta implements IsAFieldOwner
                 $field->lock();
             }
 
-            $this->setFieldAttributeProxy('get', $field, ['instance']);
-            $this->setFieldAttributeProxy('set', $field, ['instance']);
-            $this->setFieldAttributeProxy('reset', $field, ['instance']);
+            $this->setFieldAttributeProxy('get', $field, ['instance'], ['model'], 'attribute');
+            $this->setFieldAttributeProxy('set', $field, ['instance'], ['model'], 'attribute');
+            $this->setFieldAttributeProxy('reset', $field, ['instance'], ['model'], 'attribute');
             $this->setFieldAttributeProxy('transform', $field);
             $this->setFieldAttributeProxy('check', $field);
             $this->setFieldAttributeProxy('dry', $field);
@@ -688,9 +687,9 @@ class Meta implements IsAFieldOwner
         }
     }
 
-    protected function setFieldAttributeProxy(string $methodName, BaseField $field, array $injections=[], array $on=['model'])
+    protected function setFieldAttributeProxy(string $methodName, BaseField $field, array $injections=[], array $on=['model'], string $secondPart='')
     {
-        return $this->setProxy("${methodName}FieldAttribute", $this->generateProxyMethodName($field, $methodName, 'attribute'), $field, array_merge(['field'], $injections), $on);
+        return $this->setProxy("${methodName}FieldAttribute", $this->generateProxyMethodName($field, $methodName, $secondPart), $field, array_merge(['field'], $injections), $on);
     }
 
     protected function setProxy(string $methodName, string $proxyName, BaseField $field, array $injections=[], array $on=['model'])
@@ -704,7 +703,7 @@ class Meta implements IsAFieldOwner
 
     protected function generateProxyMethodName(BaseField $field, string $firstPart, string $secondPart='')
     {
-        return $firstPart.\ucfirst(Str::camel($field->attname)).\ucfirst($secondPart);
+        return $firstPart.\ucfirst(Str::camel($field->name)).\ucfirst($secondPart);
     }
 
     /**
@@ -837,7 +836,7 @@ class Meta implements IsAFieldOwner
      * @param BaseField $value
      * @return self
      */
-    public function __set(string $name, BaseField $value)
+    public function __set(string $name, BaseField $value=null)
     {
         return $this->set($name, $value);
     }
@@ -870,7 +869,7 @@ class Meta implements IsAFieldOwner
             	break;
 
             case 'value':
-                return $proxiedInstance->getAttribute($field->attname);
+                return $proxiedInstance->getAttribute($proxy->getField()->attname);
             	break;
 
             default:

@@ -10,7 +10,12 @@
 
 namespace Laramore\Fields;
 
-use Illuminate\Support\Str;
+use Illuminate\Support\{
+    Str, Collection
+};
+use Laramore\Interfaces\{
+    IsALaramoreModel, IsProxied
+};
 
 class Foreign extends CompositeField
 {
@@ -74,10 +79,9 @@ class Foreign extends CompositeField
             $this->on($this->getMeta()->getModelClass());
         }
 
-        $this->defineProperty('off', $this->getLink('reversed')->on = $this->getMeta()->getModelClass());
-
         parent::owned();
 
+        $this->defineProperty('off', $this->getLink('reversed')->on = $this->getMeta()->getModelClass());
         $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
     }
 
@@ -97,69 +101,84 @@ class Foreign extends CompositeField
         return $this->on === $this->getMeta()->getModelClass();
     }
 
-    public function cast($model, $value)
+    public function cast($value)
     {
-        if (is_null($value) || $value instanceof $this->on) {
-            return $value;
-        } else {
-            $model = new $this->on;
-            $model->setAttribute($this->to, $value, true);
+        return $this->transform($value);
+    }
 
-            return $model;
+    public function dry($value)
+    {
+        $value = $this->transform($value);
+
+        if ($value instanceof Collection) {
+            $value = $value->toArray();
         }
+
+        if (\is_array($value)) {
+            $value = \array_map(function ($value) {
+                return isset($value[$this->to]) ? $value[$this->to] : $value;
+            }, $value);
+
+            return (\count($value) > 1) ? $value : ($value[0] ?? null);
+        }
+
+        return isset($value[$this->to]) ? $value[$this->to] : $value;
     }
 
-    public function getRawAttributeFieldValue($model)
+    public function transform($value)
     {
-        return $this->getRelationFieldValue($model)->first();
+        if (\is_null($value) || $value instanceof $this->on || \is_array($value) || $value instanceof Collection) {
+            return $value;
+        }
+
+        $model = new $this->on;
+        $model->setRawAttribute($this->to, $value);
+
+        return $model;
     }
 
-    public function setValue($model, $value)
+    public function retrieve(IsALaramoreModel $model)
     {
-        $value = $this->castValue($model, $value);
-        $model->setAttribute($this->getField('id')->name, $value->{$this->to}, true);
-        $this->setRelationValue($model, $value);
+        return $this->getOwner()->relateFieldAttribute($this, $model)->getResults();
+    }
+
+    public function consume(IsALaramoreModel $model, $value)
+    {
+        $field = $this->getField('id');
+        $field->getOwner()->setFieldAttribute($field, $model, $value[$this->to]);
 
         return $value;
     }
 
-    protected function setRelationFieldValue($model, $value)
-    {
-        return $model->setRelation($this->name, $value);
-    }
-
-    public function getRelationFieldValue($model)
+    /**
+     * Return the query with this field as condition.
+     *
+     * @param  Builder $query
+     * @param  mixed   ...$args
+     * @return Builder
+     */
+    public function relate(IsProxied $model)
     {
         return $model->belongsTo($this->on, $this->from, $this->to);
     }
 
-    public function whereFieldValue($query, ...$args)
+    public function whereIn($query, $value=null, $boolean='and')
     {
-        if (count($args) > 1) {
-            [$operator, $value] = $args;
-        } else {
-            $operator = '=';
-            $value = $args[0] ?? null;
-        }
-
-        if (is_object($value)) {
-            $value = $value->{$this->on};
-        } else if (!is_null($value)) {
-            $value = (integer) $value;
-        }
-
-        return $query->where($this->getField('id')->attname, $operator, $value);
+        return $query->whereIn($this->getField('id')->attname, $value, $boolean);
     }
 
-    public function setFieldValue($model, $field, $value)
+    public function where($query, $operator=null, $value=null, $boolean='and')
     {
-        $value = $field->setValue($model, $value);
+        if (\is_array($value) || $value instanceof Collection) {
+            return $query->whereIn($this->getField('id')->attname, $value, $boolean);
+        }
 
-        return $this->setRelationFieldValue($model, $this->castFieldValue($model, $value));
+        return $query->where($this->getField('id')->attname, $operator, $value, $boolean);
     }
 
-    public function getFieldValue($model, $field, $value)
-    {
-        return $field->getValue($model, $value);
+    protected function setCompositeAttributes(IsALaramoreModel $model, $value) {
+        $model->setRelation($this->name, $value);
+
+        return parent::setCompositeAttributes($model, $value);
     }
 }

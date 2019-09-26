@@ -10,6 +10,11 @@
 
 namespace Laramore\Fields\Link;
 
+use Illuminate\Support\Collection;
+use Laramore\Interfaces\{
+    IsProxied, IsALaramoreModel
+};
+
 class HasMany extends LinkField
 {
     protected $off;
@@ -17,34 +22,77 @@ class HasMany extends LinkField
     protected $on;
     protected $to;
 
-    public function getValue($model, $value)
+	public function cast($value)
+	{
+		return $this->transform($value);
+	}
+
+	public function dry($value)
+	{
+		$value = $this->transform($value);
+
+		if ($value instanceof Collection) {
+			$value = $value->toArray();
+		}
+
+		if (\is_array($value)) {
+			return \array_map(function ($value) {
+				return isset($value[$this->to]) ? $value[$this->to] : $value;
+			}, $value);
+		}
+
+		return [isset($value[$this->to]) ? $value[$this->to] : $value];
+	}
+
+	public function transform($value)
+	{
+		if (\is_null($value) || \is_array($value) || $value instanceof Collection) {
+			return $value;
+		}
+
+		if (!($value instanceof $this->on)) {
+			return collect($value);
+		}
+
+		$model = new $this->on;
+		$model->setRawAttribute($this->to, $value);
+
+		return collect($model);
+	}
+
+    public function where($query, $operator=null, $value=null, $boolean='and')
     {
-        return $this->getRelationValue($model)->get();
+		if (!\is_null($value) && !\is_array($value)) {
+			$value = [$value];
+		}
+
+		if ($operator === 'one') {
+			return $query->whereNested(function ($query) use ($value) {
+				foreach ($value as $possibleValue) {
+					$query->orWhere($this->from, '=', $possibleValue);
+				}
+			}, $boolean);
+		}
+
+		return $query->whereIn($this->from, $value, $boolean);
+
     }
 
-    protected function owned()
+    public function retrieve(IsALaramoreModel $model)
     {
-        parent::owned();
-
-        if (is_null($this->off)) {
-            throw new \Exception('You need to specify `off`');
-        }
-
-        $this->off::getMeta()->set($this->name, $this);
+        return $this->getOwner()->relateFieldAttribute($this, $model)->getResults();
     }
 
-    public function setValue($model, $value)
+    public function consume(IsALaramoreModel $model, $value)
     {
-        return $this->getRelationValue($model)->sync($value);
+        $field = $this->getField('id');
+        $field->getOwner()->setFieldAttribute($field, $model, $value[$this->to]);
+
+        return $value;
     }
 
-    public function getRelationValue($model)
+    public function relate($model)
     {
-        return $model->hasMany($this->on, $this->to);
-    }
-
-    public function whereValue($model, ...$args)
-    {
-        return $model->where($this->name, ...$args);
+        return $model->hasMany($this->on, $this->to, $this->from);
     }
 }

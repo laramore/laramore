@@ -30,17 +30,17 @@ class Boolean extends Field
     {
         parent::setProxies();
 
-        $this->setProxy('is', ['value']);
+        $this->setProxy('is', ['value'], ['model'], $this->generateProxyMethodName('is', 'correct'));
     }
 
     public function dry($value)
     {
-        return is_null($value) ? $value : (boolean) $value;
+        return $this->getOwner()->transformFieldAttribute($this, $value);
     }
 
     public function cast($value)
     {
-        return is_null($value) ? $value : (boolean) $value;
+        return $this->getOwner()->transformFieldAttribute($this, $value);
     }
 
     public function transform($value)
@@ -49,22 +49,7 @@ class Boolean extends Field
             return $value;
         }
 
-        if ($this->hasRule(self::UNSIGNED)) {
-            $newValue = abs($value);
-
-            if ($this->hasRule(self::NEGATIVITY)) {
-                $newValue = - $newValue;
-            }
-
-            // TODO
-            if ($newValue !== $value && $this->hasRule(self::CORRECT_SIGN)) {
-                throw new \Exception('The value must be '.($this->hasRule(self::NEGATIVITY) ? 'negative' : 'positive').' for the field `'.$this->name.'`');
-            }
-
-            $value = $newValue;
-        }
-
-        return $value;
+        return (boolean) $value;
     }
 
     /**

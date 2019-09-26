@@ -11,8 +11,8 @@
 namespace Laramore\Interfaces;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder;
 use Laramore\Interfaces\IsProxied;
-use Laramore\Builder;
 
 interface IsAField
 {
@@ -155,9 +155,9 @@ interface IsAField
     /**
      * Add a where condition from this field.
      *
-     * @param  IsProxied $query
+     * @param  Builder $query
      * @param  mixed     ...$args
      * @return Builder|null
      */
-    public function where(IsProxied $query, ...$args);
+    public function where(Builder $query, $operator=null, $value=null, $boolean='and');
 }

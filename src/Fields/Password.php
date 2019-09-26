@@ -25,22 +25,19 @@ class Password extends Pattern
     public const REGEX_AT_LEAST_ONE_SPECIAL = '(?=\S*[\W])';
 
     // Need one lowercase caracter at least.
-    public const NEED_ONE_LOWERCASE = 65536;
+    public const NEED_ONE_LOWERCASE = 32768;
 
     // Need one uppercase caracter at least.
-    public const NEED_ONE_UPPERCASE = 131072;
+    public const NEED_ONE_UPPERCASE = 65536;
 
     // Need one number caracter at least.
-    public const NEED_ONE_NUMBER = 262144;
+    public const NEED_ONE_NUMBER = 131072;
 
     // Need one special caracter at least.
-    public const NEED_ONE_SPECIAL = 524288;
-
-    // The password length must be at least of the defined length.
-    public const MIN_LENGTH = 1048576;
+    public const NEED_ONE_SPECIAL = 262144;
 
     // Default rules
-    public const DEFAULT_PASSWORD = (self::NEED_ONE_LOWERCASE | self::NEED_ONE_UPPERCASE | self::NEED_ONE_NUMBER | self::MIN_LENGTH | self::DEFAULT_PATTERN ^ self::VISIBLE);
+    public const DEFAULT_PASSWORD = (self::NEED_ONE_LOWERCASE | self::NEED_ONE_UPPERCASE | self::NEED_ONE_NUMBER | self::DEFAULT_PATTERN ^ self::VISIBLE);
 
     protected static $defaultRules = self::DEFAULT_PASSWORD;
 
@@ -79,7 +76,7 @@ class Password extends Pattern
     {
         $rules = [];
 
-        if ($this->hasRule(self::MIN_LENGTH) || $this->hasRule(self::MAX_LENGTH)) {
+        if (!\is_null($this->minLength) || !\is_null($this->maxLength)) {
             $lengths = [$this->minLength ?: '', $this->maxLength ?: ''];
             $rules[] = str_replace(['$min', '$max'], $lengths, static::REGEX_MIN_MAX_CARACTER);
         }
