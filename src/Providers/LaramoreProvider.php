@@ -18,7 +18,10 @@ use Laramore\Models\ModelEventManager;
 use Laramore\Validations\ValidationManager;
 use Laramore\Proxies\ProxyManager;
 use Laramore\{
-    TypeManager, Meta, MetaManager
+    Meta, MetaManager
+};
+use Laramore\Elements\{
+    TypeManager, OperatorManager
 };
 use ReflectionNamespace;
 
@@ -79,6 +82,55 @@ class LaramoreProvider extends ServiceProvider
     ];
 
     /**
+     * Default types to create.
+     *
+     * @var array
+     */
+    protected $defaultOperators = [
+        'null' => ['null', 'null'],
+        'isNull' => ['null', 'null'],
+        'notNull' => ['notNull', 'null'],
+        'isNotNull' => ['notNull', 'null'],
+        'doesntExist' => ['null', 'null'],
+        'dontExist' => ['null', 'null'],
+        'exist' => ['notNull', 'null'],
+        'exists' => ['notNull', 'null'],
+        'equal' => '=',
+        'inf' => '<',
+        'sup' => '>',
+        'infOrEq' => '<=',
+        'supOrEq' => '>=',
+        'safeNotEqual' => '<>',
+        'notEqual' => '!=',
+        'safeEqual' => '<=>',
+        'like' => 'like',
+        'likeBinary' => 'like binary',
+        'notLike' => 'not like',
+        'ilike' => 'ilike',
+        'notIlike' => 'not ilike',
+        'rlike', 'rlike',
+        'regexp' => 'regexp',
+        'notRegexp' => 'not regexp',
+        'similarTo' => 'similar to',
+        'notSimilarTo' => 'not similar to',
+        'bitand' => ['&', 'binary'],
+        'bitor' => ['|', 'binary'],
+        'bitxor' => ['^', 'binary'],
+        'bitleft' => ['<<', 'binary'],
+        'bitright' => ['>>', 'binary'],
+        'match' => '~',
+        'imatch' => '~*',
+        'notMatch' => '!~',
+        'notImatch' => '!~*',
+        'same' => '~~',
+        'isame' => '~~*',
+        'notSame' => '!~~',
+        'notIsame' => '!~~*',
+        'in' => ['in', 'collection'],
+        'notIn' => ['not in', 'collection'],
+    ];
+
+    /**
      * Prepare all singletons and add booting and booted \Closures.
      *
      * @return void
@@ -115,6 +167,10 @@ class LaramoreProvider extends ServiceProvider
             return $this->typeManager;
         });
 
+        $this->app->singleton('OperatorManager', function() {
+            return $this->operatorManager;
+        });
+
         $this->app->singleton('ValidationManager', function() {
             return $this->validationManager;
         });
@@ -135,6 +191,7 @@ class LaramoreProvider extends ServiceProvider
         $this->modelEventManager = new ModelEventManager;
         $this->proxyManager = new ProxyManager;
         $this->typeManager = new TypeManager($this->defaultTypes);
+        $this->operatorManager = new OperatorManager($this->defaultOperators);
         $this->validationManager = new ValidationManager;
         $this->metaManager = new MetaManager;
     }
@@ -187,6 +244,7 @@ class LaramoreProvider extends ServiceProvider
     {
         $this->metaManager->lock();
         $this->typeManager->lock();
+        $this->operatorManager->lock();
         $this->modelEventManager->lock();
         $this->proxyManager->lock();
         $this->grammarTypeManager->lock();
