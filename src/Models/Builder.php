@@ -11,9 +11,10 @@
 namespace Laramore\Models;
 
 use Illuminate\Database\Eloquent\Builder as BuilderBase;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Str;
-use Laramore\Facades\MetaManager;
 use Laramore\Interfaces\IsProxied;
+use MetaManager, Op;
 
 class Builder extends BuilderBase implements IsProxied
 {
@@ -32,6 +33,12 @@ class Builder extends BuilderBase implements IsProxied
             $column($query = $this->model->newModelQuery());
 
             $this->query->addNestedWhereQuery($query->getQuery(), 'and');
+
+            return $this;
+        }
+
+        if ($column instanceof Expression) {
+            $this->forwardCallTo($this->getQuery(), 'where', \func_get_args());
 
             return $this;
         }
@@ -60,7 +67,7 @@ class Builder extends BuilderBase implements IsProxied
         $args = \func_get_args();
         \array_shift($args);
 
-        return \call_user_func([$this, 'where'.\ucfirst(Str::camel($column))], $args);
+        return \call_user_func([$this, 'where'.\ucfirst(Str::camel($column))], ...$args);
     }
 
     public function insert($values)
@@ -92,6 +99,78 @@ class Builder extends BuilderBase implements IsProxied
         }
 
         return $this->getModel()::dry($attname, $value);
+    }
+
+    /**
+     * Handles dynamic "where" clauses to the query.
+     *
+     * @param  string $method
+     * @param  string $parameters
+     * @return $this
+     */
+    public function dynamicWhere($where, $parameters)
+    {
+        $proxyHandler = $this->getModel()::getProxyHandler();
+        $connector = 'and';
+
+        if (Str::startsWith($where, 'orWhere')) {
+            $finder = \substr($where, 7);
+            $connector = 'or';
+        } else if (Str::startsWith($where, 'andWhere')) {
+            $finder = \substr($where, 8);
+        } else {
+            $finder = \substr($where, 5);
+        }
+
+        $index = 0;
+        $methodParts = [];
+        $operatorParts = [];
+        $segments = \explode('_', Str::title(Str::snake($finder)));
+
+        foreach ($segments as $i => $segment) {
+            if ($segment === 'And' || $segment === 'Or' || $i === (count($segments) - 1)) {
+                if ($i === (count($segments) - 1)) {
+                    $methodParts[] = $segment;
+                }
+
+                do {
+                    $method = 'where'.\implode('', $methodParts);
+
+                    if ($proxyHandler->has($method, $proxyHandler::BUILDER_TYPE)) {
+                        if (count($operatorParts)) {
+                            $operator = Op::get(Str::camel(\implode('', \array_reverse($operatorParts))));
+                        } else {
+                            $operator = Op::equal();
+                        }
+
+                        if ($operator->needs === 'null') {
+                            $value = null;
+                        } else {
+                            $value = $parameters[$index++];
+                        }
+
+                        $params = [$operator, $value, $connector];
+
+                        $this->getModel()::getMeta()->proxyCall($proxyHandler->get($method, $proxyHandler::BUILDER_TYPE), $this, $params);
+
+                        break;
+                    }
+                } while ($operatorParts[] = \array_pop($methodParts));
+
+                if (count($methodParts)) {
+                    $methodParts = [];
+                    $operatorParts = [];
+
+                    $connector = \strtolower($segment);
+                } else {
+                    throw new \Exception("Where method [$where] is invalid.");
+                }
+            } else {
+                $methodParts[] = $segment;
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -137,7 +216,11 @@ class Builder extends BuilderBase implements IsProxied
             return $this->getModel()::getMeta()->proxyCall($proxyHandler->get($method, $proxyHandler::BUILDER_TYPE), $this, $parameters);
         }
 
-        $this->forwardCallTo($this->query, $method, $parameters);
+        if (Str::startsWith($method, ['where', 'orWhere', 'andWhere']) && !\method_exists($this->getQuery(), $method)) {
+            return $this->dynamicWhere($method, $parameters);
+        }
+
+        $this->forwardCallTo($this->getQuery(), $method, $parameters);
 
         return $this;
     }

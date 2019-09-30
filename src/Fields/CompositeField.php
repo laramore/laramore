@@ -326,13 +326,13 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     abstract public function consume(IsALaramoreModel $model, $value);
 
     /**
-      * Return the get value for a specific field.
-      *
-      * @param BaseField $field
-      * @param IsALaramoreModel     $model
-      * @param mixed     $value
-      * @return mixed
-      */
+     * Return the get value for a specific field.
+     *
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
+     * @return mixed
+     */
     public function getFieldAttribute(BaseField $field, IsALaramoreModel $model)
     {
         return $this->getOwner()->getFieldAttribute($field, $model);
@@ -341,9 +341,9 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField $field
-     * @param IsALaramoreModel     $model
-     * @param mixed     $value
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
      * @return mixed
      */
     public function setFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
@@ -354,30 +354,26 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField $field
-     * @param IsALaramoreModel     $model
-     * @param mixed     $value
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
      * @return mixed
      */
-    public function whereFieldAttribute(BaseField $field, IsProxied $model, $operator=null, $value=null, $boolean='and')
+    public function whereFieldAttribute(BaseField $field, IsProxied $model, $operator=null, $value=null, ...$args)
     {
-        if (func_num_args() === 2) {
-            throw new \BadMethodCallException('Missing params');
+        if (func_num_args() === 3) {
+            return $this->getOwner()->whereFieldAttribute($field, $model, $operator);
         }
 
-		if (func_num_args() === 3) {
-            return $this->getOwner()->whereFieldAttribute($field, $model, '=', $operator);
-		}
-
-        return $this->getOwner()->whereFieldAttribute($field, $model, $operator, $value, $boolean);
+        return $this->getOwner()->whereFieldAttribute($field, $model, $operator, $value, ...$args);
     }
 
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField $field
-     * @param IsALaramoreModel     $model
-     * @param mixed     $value
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
      * @return mixed
      */
     public function relateFieldAttribute(BaseField $field, IsALaramoreModel $model)
@@ -388,9 +384,9 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField $field
-     * @param IsALaramoreModel     $model
-     * @param mixed     $value
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
      * @return mixed
      */
     public function resetFieldAttribute(BaseField $field, IsALaramoreModel $model)

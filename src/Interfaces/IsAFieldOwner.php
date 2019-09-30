@@ -21,9 +21,9 @@ interface IsAFieldOwner
     /**
      * Return the get value for a specific field.
      *
-     * @param BaseField $field
-     * @param IsALaramoreModel     $model
-     * @param mixed     $value
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
      * @return mixed
      */
     public function getFieldAttribute(BaseField $field, IsALaramoreModel $model);
@@ -31,9 +31,9 @@ interface IsAFieldOwner
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField $field
-     * @param IsALaramoreModel     $model
-     * @param mixed     $value
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
      * @return mixed
      */
     public function setFieldAttribute(BaseField $field, IsALaramoreModel $model, $value);
@@ -41,9 +41,9 @@ interface IsAFieldOwner
     /**
      * Return the set value for a specific field.
      *
-     * @param IsALaramoreModel     $model
-     * @param BaseField $field
-     * @param mixed     $value
+     * @param IsALaramoreModel $model
+     * @param BaseField        $field
+     * @param mixed            $value
      * @return mixed
      */
     public function resetFieldAttribute(BaseField $field, IsALaramoreModel $model);

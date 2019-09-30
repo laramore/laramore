@@ -11,9 +11,12 @@
 namespace Laramore\Fields\Link;
 
 use Illuminate\Support\Collection;
+use Laramore\Elements\Operator;
+use Laramore\Models\Builder;
 use Laramore\Interfaces\{
     IsProxied, IsALaramoreModel
 };
+use Op;
 
 class HasMany extends LinkField
 {
@@ -22,60 +25,73 @@ class HasMany extends LinkField
     protected $on;
     protected $to;
 
-	public function cast($value)
-	{
-		return $this->transform($value);
-	}
-
-	public function dry($value)
-	{
-		$value = $this->transform($value);
-
-		if ($value instanceof Collection) {
-			$value = $value->toArray();
-		}
-
-		if (\is_array($value)) {
-			return \array_map(function ($value) {
-				return isset($value[$this->to]) ? $value[$this->to] : $value;
-			}, $value);
-		}
-
-		return [isset($value[$this->to]) ? $value[$this->to] : $value];
-	}
-
-	public function transform($value)
-	{
-		if (\is_null($value) || \is_array($value) || $value instanceof Collection) {
-			return $value;
-		}
-
-		if (!($value instanceof $this->on)) {
-			return collect($value);
-		}
-
-		$model = new $this->on;
-		$model->setRawAttribute($this->to, $value);
-
-		return collect($model);
-	}
-
-    public function where($query, $operator=null, $value=null, $boolean='and')
+    public function cast($value)
     {
-		if (!\is_null($value) && !\is_array($value)) {
-			$value = [$value];
-		}
+        return $this->transform($value);
+    }
 
-		if ($operator === 'one') {
-			return $query->whereNested(function ($query) use ($value) {
-				foreach ($value as $possibleValue) {
-					$query->orWhere($this->from, '=', $possibleValue);
-				}
-			}, $boolean);
-		}
+    public function dry($value)
+    {
+        return $this->transform($value)->map(function ($value) {
+            return $value[$this->from];
+        });
+    }
 
-		return $query->whereIn($this->from, $value, $boolean);
+    public function transform($value)
+    {
+        if ($value instanceof Collection) {
+            return $value;
+        }
 
+        if (\is_null($value) || \is_array($value)) {
+            return collect($value);
+        }
+
+        if (!($value instanceof $this->on)) {
+            return collect($value);
+        }
+
+        $model = new $this->on;
+        $model->setRawAttribute($model->getKeyName(), $value);
+
+        return collect($model);
+    }
+
+    public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false, \Closure $callback=null)
+    {
+        if ($not) {
+            return $this->whereNotNull($builder, $value, $boolean, null, null, $callback);
+        }
+
+        return $builder->doesntHave($this->name, $boolean, $callback);
+    }
+
+    public function whereNotNull(Builder $builder, $value=null, $boolean='and', $operator=null, int $count=null, \Closure $callback=null)
+    {
+        return $builder->has($this->name, (string) ($operator ?? Op::supOrEq()), ($count ?? 1), $boolean, $callback);
+    }
+
+    public function whereIn(Builder $builder, Collection $value=null, $boolean='and', $not=false)
+    {
+        $attname = $this->on::getMeta()->getPrimary()->attname;
+
+        return $this->whereNull($builder, $value, $boolean, $not, function ($query) use ($attname, $value) {
+            return $query->whereIn($attname, $value);
+        });
+    }
+
+    public function whereNotIn(Builder $builder, Collection $value=null, $boolean='and')
+    {
+        return $this->whereIn($builder, $value, $boolean, true);
+    }
+
+    public function where(Builder $builder, Operator $operator, $value=null, $boolean='and', int $count=null)
+    {
+        $attname = $this->on::getMeta()->getPrimary()->attname;
+
+        return $this->whereNotNull($builder, $value, $boolean, $operator, ($count ?? count($value)), function ($query) use ($attname, $value) {
+            return $query->whereIn($attname, $value);
+        });
     }
 
     public function retrieve(IsALaramoreModel $model)

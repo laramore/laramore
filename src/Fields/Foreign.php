@@ -13,6 +13,8 @@ namespace Laramore\Fields;
 use Illuminate\Support\{
     Str, Collection
 };
+use Laramore\Elements\Operator;
+use Laramore\Models\Builder;
 use Laramore\Interfaces\{
     IsALaramoreModel, IsProxied
 };
@@ -110,18 +112,6 @@ class Foreign extends CompositeField
     {
         $value = $this->transform($value);
 
-        if ($value instanceof Collection) {
-            $value = $value->toArray();
-        }
-
-        if (\is_array($value)) {
-            $value = \array_map(function ($value) {
-                return isset($value[$this->to]) ? $value[$this->to] : $value;
-            }, $value);
-
-            return (\count($value) > 1) ? $value : ($value[0] ?? null);
-        }
-
         return isset($value[$this->to]) ? $value[$this->to] : $value;
     }
 
@@ -162,21 +152,37 @@ class Foreign extends CompositeField
         return $model->belongsTo($this->on, $this->from, $this->to);
     }
 
-    public function whereIn($query, $value=null, $boolean='and')
+    public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false)
     {
-        return $query->whereIn($this->getField('id')->attname, $value, $boolean);
+        $builder->getQuery()->whereNull($this->attname, $boolean, $not);
     }
 
-    public function where($query, $operator=null, $value=null, $boolean='and')
+    public function whereNotNull(Builder $builder, $value=null, $boolean='and')
     {
-        if (\is_array($value) || $value instanceof Collection) {
-            return $query->whereIn($this->getField('id')->attname, $value, $boolean);
+        return $this->whereNull($builder, $value, $boolean, true);
+    }
+
+    public function whereIn(Builder $builder, Collection $value=null, $boolean='and', $not=false)
+    {
+        $builder->getQuery()->whereIn($this->getField('id')->attname, $value, $boolean, $not);
+    }
+
+    public function whereNotIn(Builder $builder, Collection $value=null, $boolean='and')
+    {
+        return $this->whereIn($builder, $value, $boolean, true);
+    }
+
+    public function where(Builder $builder, Operator $operator=null, $value=null, $boolean='and')
+    {
+        if ($operator->needs === 'collection') {
+            return $this->whereIn($builder, $value, $boolean, ($operator === Op::notIn()));
         }
 
-        return $query->where($this->getField('id')->attname, $operator, $value, $boolean);
+        $builder->getQuery()->where($this->getField('id')->attname, $operator, $value, $boolean);
     }
 
-    protected function setCompositeAttributes(IsALaramoreModel $model, $value) {
+    protected function setCompositeAttributes(IsALaramoreModel $model, $value)
+    {
         $model->setRelation($this->name, $value);
 
         return parent::setCompositeAttributes($model, $value);

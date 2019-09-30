@@ -14,9 +14,6 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\{
     Builder, MassAssignmentException
 };
-use Laramore\Facades\{
-    TypeManager, MetaManager, ProxyManager
-};
 use Laramore\Fields\{
     Field, CompositeField, LinkField
 };
@@ -27,6 +24,7 @@ use Laramore\{
 use Laramore\Proxies\{
     BaseProxy, MultiProxy, ProxyHandler
 };
+use Type, MetaManager, ProxyManager;
 
 trait HasLaramore
 {
@@ -59,7 +57,7 @@ trait HasLaramore
         // Define all model metas.
         if ($primary = $meta->getPrimary()) {
             $this->setKeyName($primary->attname);
-            $this->setIncrementing($primary->type === TypeManager::getType('increment'));
+            $this->setIncrementing($primary->type === Type::increment());
         }
 
         $this->setTable($meta->getTableName());
@@ -83,7 +81,7 @@ trait HasLaramore
     protected static function prepareMeta()
     {
         // Generate all meta data defined by the user in the current pivot.
-        MetaManager::addMeta($meta = new static::$metaClass(static::class));
+        MetaManager::add($meta = new static::$metaClass(static::class));
 
         static::__meta($meta);
 
@@ -107,11 +105,11 @@ trait HasLaramore
      */
     public static function getMeta()
     {
-        if (!MetaManager::hasMeta(static::class)) {
+        if (!MetaManager::has(static::class)) {
             return static::prepareMeta();
         }
 
-        return MetaManager::getMeta(static::class);
+        return MetaManager::get(static::class);
     }
 
     /**
@@ -222,7 +220,7 @@ trait HasLaramore
     /**
      * Get an attribute from the model.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return mixed
      */
     public function getAttribute($key)
@@ -344,7 +342,7 @@ trait HasLaramore
     /**
      * Get a relationship value from a method.
      *
-     * @param  string  $method
+     * @param  string $method
      * @return mixed
      *
      * @throws \LogicException
@@ -367,7 +365,7 @@ trait HasLaramore
     /**
      * Set the given relationship on the model.
      *
-     * @param  string  $key
+     * @param  string $key
      * @param  mixed  $value
      * @return $this
      */
@@ -383,7 +381,7 @@ trait HasLaramore
     /**
      * Set the given relationship on the model.
      *
-     * @param  string  $key
+     * @param  string $key
      * @param  mixed  $value
      * @return $this
      */

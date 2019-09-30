@@ -10,9 +10,12 @@
 
 namespace Laramore\Interfaces;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Support\Collection;
+use Laramore\Models\{
+    Model, Builder
+};
 use Laramore\Interfaces\IsProxied;
+use Laramore\Elements\Operator;
 
 interface IsAField
 {
@@ -155,9 +158,45 @@ interface IsAField
     /**
      * Add a where condition from this field.
      *
-     * @param  Builder $query
-     * @param  mixed     ...$args
+     * @param  Builder $builder
+     * @param  mixed   ...$args
      * @return Builder|null
      */
-    public function where(Builder $query, $operator=null, $value=null, $boolean='and');
+    public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false);
+
+    /**
+     * Add a where condition from this field.
+     *
+     * @param  Builder $builder
+     * @param  mixed   ...$args
+     * @return Builder|null
+     */
+    public function whereNotNull(Builder $builder, $value=null, $boolean='and');
+
+    /**
+     * Add a where condition from this field.
+     *
+     * @param  Builder $builder
+     * @param  mixed   ...$args
+     * @return Builder|null
+     */
+    public function whereIn(Builder $builder, Collection $value=null, $boolean='and', $notIn=false);
+
+    /**
+     * Add a where condition from this field.
+     *
+     * @param  Builder $builder
+     * @param  mixed   ...$args
+     * @return Builder|null
+     */
+    public function whereNotIn(Builder $builder, Collection $value=null, $boolean='and');
+
+    /**
+     * Add a where condition from this field.
+     *
+     * @param  Builder $builder
+     * @param  mixed   ...$args
+     * @return Builder|null
+     */
+    public function where(Builder $builder, Operator $operator, $value=null, $boolean='and');
 }

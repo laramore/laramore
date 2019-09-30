@@ -29,7 +29,7 @@ class MetaManager
      * @param  string $tableName
      * @return boolean
      */
-    public function hasMetaForTableName(string $tableName): bool
+    public function hasForTableName(string $tableName): bool
     {
         foreach ($this->getMetas() as $meta) {
             if ($meta->getTableName() === $tableName) {
@@ -47,9 +47,9 @@ class MetaManager
      * @return Meta
      * @throws \ErrorException If no meta with the given table name exists.
      */
-    public function getMetaForTableName(string $tableName): Meta
+    public function getForTableName(string $tableName): Meta
     {
-        foreach ($this->getMetas() as $meta) {
+        foreach ($this->all() as $meta) {
             if ($meta->getTableName() === $tableName) {
                 return $meta;
             }
@@ -64,7 +64,7 @@ class MetaManager
      * @param  string $modelClass
      * @return boolean
      */
-    public function hasMeta(string $modelClass): bool
+    public function has(string $modelClass): bool
     {
         return isset($this->metas[$modelClass]);
     }
@@ -75,7 +75,7 @@ class MetaManager
      * @param  string $modelClass
      * @return boolean
      */
-    public function getMeta(string $modelClass): Meta
+    public function get(string $modelClass): Meta
     {
         return $this->metas[$modelClass];
     }
@@ -86,7 +86,7 @@ class MetaManager
      * @param  string $modelClass
      * @return boolean
      */
-    public function getMetas(): array
+    public function all(): array
     {
         return $this->metas;
     }
@@ -96,11 +96,11 @@ class MetaManager
      *
      * @return array
      */
-    public function getMetasWithTableNames(): array
+    public function allWithTableNames(): array
     {
         $metas = [];
 
-        foreach ($this->getMetas() as $meta) {
+        foreach ($this->all() as $meta) {
             $metas[$meta->getTableName()] = $meta;
         }
 
@@ -114,13 +114,13 @@ class MetaManager
      * @return self
      * @throws \LogicException If the meta already exists or one already exists for a the same table name.
      */
-    public function addMeta(Meta $meta)
+    public function add(Meta $meta)
     {
         $this->needsToBeUnlocked();
 
         $tableName = $meta->getTableName();
 
-        foreach ($this->getMetas() as $modelClass => $inMeta) {
+        foreach ($this->all() as $modelClass => $inMeta) {
             if ($meta === $inMeta) {
                 throw new \LogicException('This meta is already added');
             } else if ($inMeta->getTableName() === $tableName) {
@@ -143,11 +143,11 @@ class MetaManager
      */
     public function locking()
     {
-        foreach ($this->getMetas() as $meta) {
+        foreach ($this->all() as $meta) {
             $meta->lock();
         }
 
-        foreach ($this->getMetas() as $meta) {
+        foreach ($this->all() as $meta) {
             if (!$meta->isLocked()) {
                 throw new \LogicException('All metas are not locked properly');
             }

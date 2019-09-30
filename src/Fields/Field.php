@@ -10,15 +10,17 @@
 
 namespace Laramore\Fields;
 
-use Illuminate\Support\Str;
-use Illuminate\Database\Query\Builder as QueryBuilder;
+use Illuminate\Support\{
+    Str, Collection
+};
 use Laramore\Models\{
     Builder, Model
 };
-use Laramore\{
-    Meta, Type
-};
+use Laramore\Meta;
 use Laramore\Interfaces\IsProxied;
+use Laramore\Elements\{
+    Type, Operator
+};
 
 abstract class Field extends BaseField
 {
@@ -125,13 +127,61 @@ abstract class Field extends BaseField
     /**
      * Return the query with this field as condition.
      *
-     * @param  QueryBuilder $query
+     * @param  Builder $builder
      * @param  mixed   ...$args
-     * @return QueryBuilder
+     * @return Builder
      */
-    public function where(QueryBuilder $query, $operator=null, $value=null, $boolean='and')
+    public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false)
     {
-        return $query->where($this->attname, $operator, $value, $boolean);
+        $builder->getQuery()->whereNull($this->attname, $boolean, $not);
+    }
+
+    /**
+     * Return the query with this field as condition.
+     *
+     * @param  Builder $builder
+     * @param  mixed   ...$args
+     * @return Builder
+     */
+    public function whereNotNull(Builder $builder, $value=null, $boolean='and')
+    {
+        return $this->whereNull($builder, $value, $boolean, true);
+    }
+
+    /**
+     * Return the query with this field as condition.
+     *
+     * @param  Builder $builder
+     * @param  mixed   ...$args
+     * @return Builder
+     */
+    public function whereIn(Builder $builder, Collection $value=null, $boolean='and', $notIn=false)
+    {
+        $builder->whereIn($this->attname, $value, $boolean, $notIn);
+    }
+
+    /**
+     * Return the query with this field as condition.
+     *
+     * @param  Builder $builder
+     * @param  mixed   ...$args
+     * @return Builder
+     */
+    public function whereNotIn(Builder $builder, Collection $value=null, $boolean='and')
+    {
+        return $this->whereIn($builder, $value, $boolean, true);
+    }
+
+    /**
+     * Return the query with this field as condition.
+     *
+     * @param  Builder $query
+     * @param  mixed   ...$args
+     * @return Builder
+     */
+    public function where(Builder $builder, Operator $operator, $value=null, $boolean='and')
+    {
+        $builder->getQuery()->where($this->attname, $operator, $value, $boolean);
     }
 
     /**
