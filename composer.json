@@ -36,7 +36,16 @@
         "laravel": {
             "providers": [
                 "Laramore\\Providers\\LaramoreProvider"
-            ]
+            ],
+            "aliases": {
+                "MetaManager": "Laramore\\Facades\\MetaManager",
+                "GrammarTypeManager": "Laramore\\Facades\\GrammarTypeManager",
+                "ModelEventManager": "Laramore\\Facades\\ModelEventManager",
+                "ProxyManager": "Laramore\\Facades\\ProxyManager",
+                "ValidationManager": "Laramore\\Facades\\ValidationManager",
+                "Type": "Laramore\\Facades\\TypeManager",
+                "Op": "Laramore\\Facades\\OperatorManager",
+            }
         }
     }
 }
