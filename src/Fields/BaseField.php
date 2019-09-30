@@ -31,6 +31,7 @@ abstract class BaseField implements IsAField
         setProperty as protected forceProperty;
     }
 
+    protected $meta;
     protected $rules;
 
     protected $default;
@@ -109,7 +110,11 @@ abstract class BaseField implements IsAField
         }
 
         if ($fail) {
-            throw new \ErrorException("The property $key does not exist");
+            try {
+                throw new \ErrorException("The property $key does not exist");
+            } catch (\ErrorException $e) {
+                dd($e);
+            }
         }
     }
 
@@ -168,11 +173,11 @@ abstract class BaseField implements IsAField
 
     protected function owned()
     {
-        if (!($this->getOwner() instanceof Meta) && !($this->getOwner() instanceof CompositeField)) {
+        $owner = $this->getOwner();
+
+        if (!($owner instanceof Meta) && !($owner instanceof CompositeField)) {
             throw new \LogicException('A field should be owned by a Meta or a CompositeField');
         }
-
-        $owner = $this->getOwner();
 
         while (!($owner instanceof Meta)) {
             $owner = $owner->getOwner();
@@ -215,7 +220,6 @@ abstract class BaseField implements IsAField
     protected function setValidations()
     {
         // $this->setValidation(Typed::class)->type($this->getType());
-
         if ($this->hasRule(self::NOT_NULLABLE)) {
             $this->setValidation(NotNullable::class);
         }
@@ -239,11 +243,11 @@ abstract class BaseField implements IsAField
     {
         $this->needsToBeUnlocked();
 
-        if (!is_null($this->meta)) {
+        if ($this->hasProperty('meta')) {
             throw new \LogicException('The meta cannot be defined multiple times');
         }
 
-        $this->meta = $meta;
+        $this->defineProperty('meta', $meta);
 
         return $this;
     }
