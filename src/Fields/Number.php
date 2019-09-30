@@ -10,10 +10,11 @@
 
 namespace Laramore\Fields;
 
-use Laramore\Facades\TypeManager;
+use TypeManager;
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Validations\NotZero;
-use Laramore\Type;
+use Laramore\Elements\Type as ReturnedType;
+use Type;
 
 class Number extends Field
 {
@@ -39,13 +40,13 @@ class Number extends Field
     // Except if the value is 0
     public const NOT_ZERO = 4096;
 
-    public function getType(): Type
+    public function getType(): ReturnedType
     {
         if ($this->hasRule(self::UNSIGNED)) {
-            return TypeManager::unsignedInteger();
+            return Type::unsignedInteger();
         }
 
-        return TypeManager::integer();
+        return Type::integer();
     }
 
     protected function addRule(int $rule)

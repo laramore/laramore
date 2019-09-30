@@ -11,11 +11,11 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
-use Laramore\Facades\MetaManager;
 use Laramore\Traits\Field\ManyToManyRelation;
 use Laramore\{
     Meta, FakePivot
 };
+use MetaManager;
 
 class ManyToMany extends CompositeField
 {

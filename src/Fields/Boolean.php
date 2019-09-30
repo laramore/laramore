@@ -10,9 +10,9 @@
 
 namespace Laramore\Fields;
 
-use Laramore\Facades\TypeManager;
 use Illuminate\Database\Eloquent\Model;
-use Laramore\Type;
+use Laramore\Elements\Type as ReturnedType;
+use Type;
 
 class Boolean extends Field
 {
@@ -21,9 +21,9 @@ class Boolean extends Field
      *
      * @return Type
      */
-    public function getType(): Type
+    public function getType(): ReturnedType
     {
-        return TypeManager::boolean();
+        return Type::boolean();
     }
 
     protected function setProxies()

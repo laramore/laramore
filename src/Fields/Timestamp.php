@@ -12,16 +12,16 @@ namespace Laramore\Fields;
 
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
-use Laramore\Facades\TypeManager;
-use Laramore\Type;
+use Laramore\Elements\Type as ReturnedType;
+use Type;
 
 class Timestamp extends Field
 {
     protected $useCurrent;
 
-    public function getType(): Type
+    public function getType(): ReturnedType
     {
-        return TypeManager::timestamp();
+        return Type::timestamp();
     }
 
     public function getPropertyKeys(): array

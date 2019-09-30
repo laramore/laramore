@@ -14,9 +14,6 @@ use Illuminate\Support\Str;
 use Laramore\Exceptions\{
 	MultipleExceptionsException, RequiredFieldException
 };
-use Laramore\Facades\{
-	ModelEventManager, ValidationManager, ProxyManager
-};
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, Link\LinkField, Timestamp
 };
@@ -34,6 +31,7 @@ use Laramore\Proxies\{
 	BaseProxy, MetaProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
+use ModelEventManager, ValidationManager, ProxyManager;
 
 class Meta implements IsAFieldOwner
 {

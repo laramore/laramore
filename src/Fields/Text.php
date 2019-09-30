@@ -11,9 +11,9 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Schema;
-use Laramore\Facades\TypeManager;
 use Laramore\Validations\NotBlank;
-use Laramore\Type;
+use Laramore\Elements\Type as ReturnedType;
+use Type;
 
 class Text extends Field
 {
@@ -32,9 +32,9 @@ class Text extends Field
 
     protected static $defaultRules = self::DEFAULT_TEXT;
 
-    public function getType(): Type
+    public function getType(): ReturnedType
     {
-        return TypeManager::text();
+        return Type::text();
     }
 
     protected function setValidations()
