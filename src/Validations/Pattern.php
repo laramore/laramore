@@ -18,7 +18,7 @@ class Pattern extends Validation
 
     public function isValueValid($value): bool
     {
-        return \preg_match($this->pattern, $value, $attValue, $this->flags);
+        return \preg_match($this->pattern, $value, $_, $this->flags) === 1;
     }
 
     public function getMessage()

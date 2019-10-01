@@ -51,9 +51,8 @@ trait HasFields
             return $model->setRelationValue($field->name, $value);
         }
 
-        $owner = $field->getOwner();
+        $owner = $field->getOwner()->checkFieldAttribute($field, $value);
         $value = $owner->transformFieldAttribute($field, $value);
-        $owner->checkFieldAttribute($field, $value);
 
         return $model->setRawAttribute($field->attname, $value);
     }
