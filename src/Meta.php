@@ -23,7 +23,7 @@ use Laramore\Interfaces\{
 use Laramore\Traits\IsLocked;
 use Laramore\Traits\Meta\HasFields;
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Models\{
+use Laramore\Eloquent\{
 	ModelEvent, ModelEventHandler
 };
 use Laramore\Validations\ValidationHandler;

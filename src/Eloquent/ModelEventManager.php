@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Models;
+namespace Laramore\Eloquent;
 
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Observers\BaseManager;

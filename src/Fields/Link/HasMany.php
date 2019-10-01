@@ -12,7 +12,7 @@ namespace Laramore\Fields\Link;
 
 use Illuminate\Support\Collection;
 use Laramore\Elements\Operator;
-use Laramore\Models\Builder;
+use Laramore\Eloquent\Builder;
 use Laramore\Interfaces\{
     IsProxied, IsALaramoreModel
 };

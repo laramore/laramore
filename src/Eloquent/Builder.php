@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Models;
+namespace Laramore\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as BuilderBase;
 use Illuminate\Database\Query\Expression;
@@ -25,7 +25,7 @@ class Builder extends BuilderBase implements IsProxied
      * @param  mixed                 $operator
      * @param  mixed                 $value
      * @param  string                $boolean
-     * @return $this
+     * @return self
      */
     public function where($column, $operator=null, $value=null, $boolean='and')
     {
@@ -70,6 +70,12 @@ class Builder extends BuilderBase implements IsProxied
         return \call_user_func([$this, 'where'.\ucfirst(Str::camel($column))], ...$args);
     }
 
+    /**
+     * Insert a new record into the database.
+     *
+     * @param  array $values
+     * @return boolean
+     */
     public function insert($values)
     {
         foreach ($values as $attname => $value) {
@@ -79,6 +85,13 @@ class Builder extends BuilderBase implements IsProxied
         return $this->toBase()->insert($values);
     }
 
+    /**
+     * Insert a new record and get the value of the primary key.
+     *
+     * @param  array       $values
+     * @param  string|null $sequence
+     * @return integer
+     */
     public function insertGetId($values)
     {
         foreach ($values as $attname => $value) {
@@ -88,7 +101,14 @@ class Builder extends BuilderBase implements IsProxied
         return $this->toBase()->insertGetId($values);
     }
 
-    protected function dry($attname, $value)
+    /**
+     * Dry value with the field.
+     *
+     * @param  string $attname
+     * @param  mixed  $value
+     * @return mixed
+     */
+    protected function dry(string $attname, $value)
     {
         $parts = explode('.', $attname);
 
@@ -105,10 +125,10 @@ class Builder extends BuilderBase implements IsProxied
      * Handles dynamic "where" clauses to the query.
      *
      * @param  string $method
-     * @param  string $parameters
-     * @return $this
+     * @param  array  $parameters
+     * @return self
      */
-    public function dynamicWhere($where, $parameters)
+    public function dynamicWhere(string $where, array $parameters)
     {
         $proxyHandler = $this->getModel()::getProxyHandler();
         $connector = 'and';
@@ -128,6 +148,10 @@ class Builder extends BuilderBase implements IsProxied
         $segments = \explode('_', Str::title(Str::snake($finder)));
 
         foreach ($segments as $i => $segment) {
+            // We will stack every segment until we think that we got all of them to understand:
+            // - the where part,
+            // - the attribute name part,
+            // - the operator part (if existant).
             if ($segment === 'And' || $segment === 'Or' || $i === (count($segments) - 1)) {
                 if ($i === (count($segments) - 1)) {
                     $methodParts[] = $segment;
@@ -136,6 +160,8 @@ class Builder extends BuilderBase implements IsProxied
                 do {
                     $method = 'where'.\implode('', $methodParts);
 
+                    // Detect via proxies a whereFieldName method.
+                    // By doing that, we can extract the possible operator, which is by default '='.
                     if ($proxyHandler->has($method, $proxyHandler::BUILDER_TYPE)) {
                         if (count($operatorParts)) {
                             $operator = Op::get(Str::camel(\implode('', \array_reverse($operatorParts))));
@@ -146,6 +172,7 @@ class Builder extends BuilderBase implements IsProxied
                         if ($operator->needs === 'null') {
                             $value = null;
                         } else {
+                            // Only one parameter used.
                             $value = $parameters[$index++];
                         }
 

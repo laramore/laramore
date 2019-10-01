@@ -14,7 +14,7 @@ use Illuminate\Support\ServiceProvider;
 use Laramore\Interfaces\IsALaramoreModel;
 use Laramore\Observers\BaseManager;
 use Laramore\Grammars\GrammarTypeManager;
-use Laramore\Models\ModelEventManager;
+use Laramore\Eloquent\ModelEventManager;
 use Laramore\Validations\ValidationManager;
 use Laramore\Proxies\ProxyManager;
 use Laramore\{

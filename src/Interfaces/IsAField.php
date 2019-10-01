@@ -11,7 +11,7 @@
 namespace Laramore\Interfaces;
 
 use Illuminate\Support\Collection;
-use Laramore\Models\{
+use Laramore\Eloquent\{
     Model, Builder
 };
 use Laramore\Interfaces\IsProxied;

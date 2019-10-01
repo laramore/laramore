@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Models;
+namespace Laramore\Eloquent;
 
 use Laramore\Traits\IsLocked;
 use Laramore\Observers\BaseObserver;

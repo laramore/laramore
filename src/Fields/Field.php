@@ -13,7 +13,7 @@ namespace Laramore\Fields;
 use Illuminate\Support\{
     Str, Collection
 };
-use Laramore\Models\{
+use Laramore\Eloquent\{
     Builder, Model
 };
 use Laramore\Meta;

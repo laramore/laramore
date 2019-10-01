@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\{
 use Laramore\Fields\{
     Field, CompositeField, LinkField
 };
-use Laramore\Models\Builder as LaramoreBuilder;
+use Laramore\Eloquent\Builder as LaramoreBuilder;
 use Laramore\{
     Meta, FieldManager
 };
