@@ -21,6 +21,7 @@ use Laramore\Interfaces\IsProxied;
 use Laramore\Elements\{
     Type, Operator
 };
+use Laramore\Validations\Typed;
 
 abstract class Field extends BaseField
 {
@@ -122,6 +123,13 @@ abstract class Field extends BaseField
         $this->defineProperty('default', $value);
 
         return $this;
+    }
+
+    protected function setValidations()
+    {
+        parent::setValidations();
+
+        $this->setValidation(Typed::class)->type($this->getType());
     }
 
     /**

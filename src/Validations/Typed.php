@@ -25,16 +25,4 @@ class Typed extends Validation
     {
         return "This field must be a valid {$this->getType()->native}.";
     }
-
-    public function setType(Type $type)
-    {
-        $this->type = $type;
-
-        return $this;
-    }
-
-    public function getType(): Type
-    {
-        return $this->type;
-    }
 }

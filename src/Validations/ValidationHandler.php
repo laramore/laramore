@@ -35,7 +35,7 @@ class ValidationHandler extends BaseHandler
      */
     protected function push(BaseObserver $observer, array &$observers)
     {
-        if (!isset($observers[$name = $observer->getField()->attname])) {
+        if (!isset($observers[$name = $observer->getField()->name])) {
             $observers[$name] = [];
         }
 

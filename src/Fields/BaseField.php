@@ -21,7 +21,7 @@ use Laramore\Proxies\FieldProxy;
 use Laramore\Meta;
 use Laramore\Exceptions\FieldValidationException;
 use Laramore\Validations\{
-    Typed, NotNullable, ValidationErrorBag
+    NotNullable, ValidationErrorBag
 };
 use Closure;
 
@@ -110,11 +110,7 @@ abstract class BaseField implements IsAField
         }
 
         if ($fail) {
-            try {
-                throw new \ErrorException("The property $key does not exist");
-            } catch (\ErrorException $e) {
-                dd($e);
-            }
+            throw new \ErrorException("The property $key does not exist");
         }
     }
 
@@ -219,7 +215,6 @@ abstract class BaseField implements IsAField
 
     protected function setValidations()
     {
-        // $this->setValidation(Typed::class)->type($this->getType());
         if ($this->hasRule(self::NOT_NULLABLE)) {
             $this->setValidation(NotNullable::class);
         }

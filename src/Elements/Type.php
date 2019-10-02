@@ -20,7 +20,7 @@ class Type extends BaseElement
      */
     public function isType($value): bool
     {
-        $native = $this->getValue('native');
+        $native = $this->get('native');
 
         if ($native instanceof \Closure) {
             return $native($value);
