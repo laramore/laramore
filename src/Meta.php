@@ -893,7 +893,7 @@ class Meta implements IsAFieldOwner
         }
 
         if (\method_exists($owner = $field->getOwner(), $methodOwnerName = "${methodName}FieldAttribute")) {
-            return $owner->$methodOwnerName($field, ...$args);
+            return \call_user_func([$owner, $methodOwnerName], $field, ...$args);
         }
 
         return $owner->callFieldAttributeMethod($field, $methodName, $args);

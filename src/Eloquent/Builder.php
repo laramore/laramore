@@ -67,7 +67,7 @@ class Builder extends BuilderBase implements IsProxied
         $args = \func_get_args();
         \array_shift($args);
 
-        return \call_user_func([$this, 'where'.\ucfirst(Str::camel($column))], ...$args);
+        return \call_user_func([$this, 'where'.Str::studly($column)], ...$args);
     }
 
     /**
