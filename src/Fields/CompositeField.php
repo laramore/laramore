@@ -323,8 +323,6 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
         return $this->unique;
     }
 
-    abstract public function consume(IsALaramoreModel $model, $value);
-
     /**
      * Return the get value for a specific field.
      *
@@ -371,12 +369,12 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField        $field
-     * @param IsALaramoreModel $model
-     * @param mixed            $value
+     * @param BaseField $field
+     * @param IsProxied $model
+     * @param mixed     $value
      * @return mixed
      */
-    public function relateFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    public function relateFieldAttribute(BaseField $field, IsProxied $model)
     {
         return $this->getOwner()->relateFieldAttribute($field, $model);
     }
@@ -449,7 +447,7 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
      * @param mixed     $value
      * @return mixed
      */
-    public function getRelationFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    public function getRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model)
     {
         return $this->getOwner()->getRelationFieldAttribute($field, $model);
     }
@@ -457,11 +455,11 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField $field
-     * @param mixed     $value
+     * @param IsARelationField $field
+     * @param mixed            $value
      * @return mixed
      */
-    public function setRelationFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
+    public function setRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model, $value)
     {
         return $this->getOwner()->setRelationFieldAttribute($field, $model, $value);
     }
