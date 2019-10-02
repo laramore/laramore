@@ -17,7 +17,9 @@ use Illuminate\Database\Eloquent\{
 use Laramore\Fields\{
     Field, CompositeField, LinkField
 };
-use Laramore\Eloquent\Builder as LaramoreBuilder;
+use Laramore\Eloquent\{
+    Builder as LaramoreBuilder, Relations\BaseCollection as RelationCollection
+};
 use Laramore\{
     Meta, FieldManager
 };
@@ -481,6 +483,29 @@ trait HasLaramore
     public function getRawAttribute(string $key)
     {
         return $this->attributes[$key] ?? null;
+    }
+
+    protected function finishSave(array $options=[])
+    {
+        if ($options['relate'] ?? true) {
+            $this->saveRelations();
+        }
+
+        return parent::finishSave($options);
+    }
+
+    public function saveRelations()
+    {
+        $status = true;
+        $meta = static::getMeta();
+
+        foreach ($this->relations as $key => $relation) {
+            $field = $meta->get($key);
+
+            $status = $status && $field->getOwner()->reverbateRelationFieldAttribute($field, $this, $relation);
+        }
+
+        return $status;
     }
 
     /**

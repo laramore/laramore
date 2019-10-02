@@ -152,6 +152,13 @@ class Foreign extends CompositeField
         return $model->belongsTo($this->on, $this->from, $this->to);
     }
 
+    public function reverbate(IsALaramoreModel $model, $value): bool
+    {
+        $value->setAttribute($this->getField('id')->attname, $model[$model->getKeyName()]);
+
+        return $value->save();
+    }
+
     public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false)
     {
         $builder->getQuery()->whereNull($this->attname, $boolean, $not);
@@ -179,12 +186,5 @@ class Foreign extends CompositeField
         }
 
         $builder->getQuery()->where($this->getField('id')->attname, $operator, $value, $boolean);
-    }
-
-    protected function setCompositeAttributes(IsALaramoreModel $model, $value)
-    {
-        $model->setRelation($this->name, $value);
-
-        return parent::setCompositeAttributes($model, $value);
     }
 }

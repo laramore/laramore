@@ -37,6 +37,18 @@ class HasMany extends LinkField
         });
     }
 
+    public function transformToModel($value)
+    {
+        if ($value instanceof $this->on) {
+            return $value;
+        }
+
+        $model = new $this->on;
+        $model->setRawAttribute($model->getKeyName(), $value);
+
+        return $model;
+    }
+
     public function transform($value)
     {
         if ($value instanceof Collection) {
@@ -47,14 +59,7 @@ class HasMany extends LinkField
             return collect($value);
         }
 
-        if (!($value instanceof $this->on)) {
-            return collect($value);
-        }
-
-        $model = new $this->on;
-        $model->setRawAttribute($model->getKeyName(), $value);
-
-        return collect($model);
+        return collect($this->transformToModel($value));
     }
 
     public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false, \Closure $callback=null)
@@ -101,14 +106,39 @@ class HasMany extends LinkField
 
     public function consume(IsALaramoreModel $model, $value)
     {
-        $field = $this->getField('id');
-        $field->getOwner()->setFieldAttribute($field, $model, $value[$this->to]);
+        $field = $this->on::getField($this->getOwner()->name);
+        $collections = collect();
 
-        return $value;
+        foreach ($value as $element) {
+            if ($element instanceof $this->on) {
+                $collections->add($element);
+
+                $field->getOwner()->setRelationFieldAttribute($field, $element, $model);
+            } else {
+                $collections->add($element = $this->transformToModel($element));
+                $field->getOwner()->setRelationFieldAttribute($field, $element, $model);
+            }
+        }
+
+        return $collections;
     }
 
-    public function relate($model)
+    public function relate(IsProxied $model)
     {
         return $model->hasMany($this->on, $this->to, $this->from);
+    }
+
+    public function reverbate(IsALaramoreModel $model, $value): bool
+    {
+        $attname = $this->on::getMeta()->getPrimary()->attname;
+        $id = $model[$model->getKeyName()];
+        $ids = $value->map(function ($element) use ($attname) {
+            return $element[$attname];
+        });
+
+        $this->on::where($this->to, $id)->whereNotIn($attname, $ids)->update([$this->to => null]);
+        $this->on::whereIn($attname, $ids)->update([$this->to => $id]);
+
+        return true;
     }
 }

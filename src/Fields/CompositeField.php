@@ -465,6 +465,19 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     }
 
     /**
+     * Reverbate a saved relation value for a specific field.
+     *
+     * @param IsARelationField $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
+     * @return boolean
+     */
+    public function reverbateRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model, $value): bool
+    {
+        return $this->getOwner()->reverbateRelationFieldAttribute($field, $model, $value);
+    }
+
+    /**
      * Return the set value for a specific field.
      *
      * @param BaseField $field

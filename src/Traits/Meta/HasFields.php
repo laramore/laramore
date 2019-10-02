@@ -51,10 +51,13 @@ trait HasFields
             return $model->setRelationValue($field->name, $value);
         }
 
-        $owner = $field->getOwner()->checkFieldAttribute($field, $value);
+        $owner = $field->getOwner();
+        $owner->checkFieldAttribute($field, $value);
         $value = $owner->transformFieldAttribute($field, $value);
 
-        return $model->setRawAttribute($field->attname, $value);
+        $model->setRawAttribute($field->attname, $value);
+
+        return $value;
     }
 
     /**
@@ -84,9 +87,25 @@ trait HasFields
         $value = $owner->transformFieldAttribute($field, $value);
         $owner->checkFieldAttribute($field, $value);
 
-        $model->setRawRelationValue($field->name, $field->consume($model, $value));
+        $value = $field->consume($model, $value);
+        $model->setRawRelationValue($field->name, $value);
 
-        return $model;
+        return $value;
+    }
+
+    /**
+     * Reverbate a saved relation value for a specific field.
+     *
+     * @param IsARelationField $field
+     * @param IsALaramoreModel $model
+     * @param mixed            $value
+     * @return boolean
+     */
+    public function reverbateRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model, $value): bool
+    {
+        $owner = $field->getOwner();
+
+        return $field->reverbate($model, $value);
     }
 
     /**
