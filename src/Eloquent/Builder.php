@@ -190,6 +190,16 @@ class Builder extends BuilderBase implements IsProxied
 
                     $connector = \strtolower($segment);
                 } else {
+                    if (count($operatorParts)) {
+                        $operatorName = Str::camel(\implode('', \array_reverse($operatorParts)));
+
+                        if (Op::has($operatorName)) {
+                            $this->where($parameters[$index++], Op::get($operatorName), $parameters[$index++] ?? null);
+
+                            return $this;
+                        }
+                    }
+
                     throw new \Exception("Where method [$where] is invalid.");
                 }
             } else {
