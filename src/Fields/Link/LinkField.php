@@ -19,13 +19,24 @@ use Laramore\Fields\{
 abstract class LinkField extends BaseField implements IsARelationField
 {
     protected function owned()
+
+    protected function setOwner($owner)
     {
         if (is_null($this->off)) {
             throw new \Exception('You need to specify `off`');
         }
 
         $this->setMeta($this->off::getMeta());
+
+        parent::setOwner($owner);
+    }
+
+    protected function owned()
+    {
+        parent::owned();
+
         $this->getMeta()->set($this->name, $this);
+
     }
 
     protected function checkRules()

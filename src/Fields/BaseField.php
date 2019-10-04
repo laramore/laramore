@@ -28,6 +28,7 @@ use Closure;
 abstract class BaseField implements IsAField
 {
     use IsOwnedAndLocked, HasProperties, HasRules {
+        setOwner as protected setOwnerFromTrait;
         setProperty as protected forceProperty;
     }
 
@@ -167,6 +168,20 @@ abstract class BaseField implements IsAField
         return $this->visible(!$hidden);
     }
 
+
+    protected function setOwner($owner)
+    {
+        $this->setOwnerFromTrait($owner);
+
+        if (!$this->hasProperty('meta')) {
+            while (!($owner instanceof Meta)) {
+                $owner = $owner->getOwner();
+            }
+
+            $this->setMeta($owner);
+        }
+    }
+
     protected function owned()
     {
         $owner = $this->getOwner();
@@ -174,12 +189,6 @@ abstract class BaseField implements IsAField
         if (!($owner instanceof Meta) && !($owner instanceof CompositeField)) {
             throw new \LogicException('A field should be owned by a Meta or a CompositeField');
         }
-
-        while (!($owner instanceof Meta)) {
-            $owner = $owner->getOwner();
-        }
-
-        $this->setMeta($owner);
     }
 
     protected function locking()

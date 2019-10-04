@@ -52,6 +52,15 @@ trait IsOwnedAndLocked
         return "The instance {$this->name} needs to be owned";
     }
 
+    protected function setOwner($owner)
+    {
+        if ($this->isOwned()) {
+            throw new \Exception('An owner has already been set');
+        }
+
+        $this->owner = $owner;
+    }
+
     /**
      * Assign a unique owner to this instance.
      *
@@ -61,11 +70,7 @@ trait IsOwnedAndLocked
      */
     public function own(object $owner, string $name)
     {
-        if ($this->isOwned()) {
-            throw new \Exception('An owner has already been set');
-        }
-
-        $this->owner = $owner;
+        $this->setOwner($owner);
         $this->name($name);
 
         $this->owned();
