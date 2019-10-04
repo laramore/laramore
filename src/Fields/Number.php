@@ -49,28 +49,6 @@ class Number extends Field
         return Type::integer();
     }
 
-    protected function addRule(int $rule)
-    {
-        $this->needsToBeUnlocked();
-
-        if ($this->rulesContain($rule, self::UNSIGNED)) {
-            $this->defineProperty('unsigned', true);
-        }
-
-        return parent::addRule($rule);
-    }
-
-    protected function removeRule(int $rule)
-    {
-        $this->needsToBeUnlocked();
-
-        if ($this->rulesContain($rule, self::UNSIGNED)) {
-            $this->defineProperty('unsigned', false);
-        }
-
-        return parent::removeRule($rule);
-    }
-
     public function unsigned(bool $unsigned=true, bool $positive=true)
     {
         $this->needsToBeUnlocked();
