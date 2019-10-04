@@ -562,8 +562,8 @@ class Meta implements IsAFieldOwner
     public function getFieldNamesWithOption(string $option): array
     {
         return \array_map(function ($field) {
-			return $field->name;
-		}, $this->getFieldWithOption($option));
+            return $field->name;
+        }, $this->getFieldWithOption($option));
     }
 
     /**
@@ -651,7 +651,7 @@ class Meta implements IsAFieldOwner
      *
      * @return Field
      */
-    public function getPrimary(): ?Field
+    public function getPrimary(): IsAPrimaryField
     {
         return $this->primary;
     }
@@ -663,7 +663,11 @@ class Meta implements IsAFieldOwner
      */
     protected function locking()
     {
-        foreach ($this->allFields() as $field) {
+        if (\is_null($this->primary)) {
+            throw new MetaException($this, 'A meta needs a primary key.');
+        }
+
+        foreach ($this->all() as $field) {
             if ($field->getOwner() === $this) {
                 $field->lock();
             }
@@ -704,10 +708,10 @@ class Meta implements IsAFieldOwner
      * @param  Field $field
      * @return self
      */
-    public function primary(Field $field)
+    public function primary(IsAPrimaryField $field)
     {
         if ($this->primary) {
-            throw new \Exception('A primary field is already set');
+            throw new LaramoreException('A primary field is already set');
         }
 
         $this->primary = $field;
