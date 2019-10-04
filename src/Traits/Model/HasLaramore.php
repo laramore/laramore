@@ -487,19 +487,25 @@ trait HasLaramore
 
     protected function finishSave(array $options=[])
     {
-        if ($options['relate'] ?? true) {
+        if ($options['relate'] ?? false) {
             $this->saveRelations();
         }
 
         return parent::finishSave($options);
     }
 
-    public function saveRelations()
+    public function saveRelations(array $relations=null)
     {
         $status = true;
         $meta = static::getMeta();
 
-        foreach ($this->relations as $key => $relation) {
+        if (\is_null($relations)) {
+            $relationsToSave = $this->relations;
+        } else {
+            $relationsToSave = \array_intersect_key($this->relations, \array_flip($relations));
+        }
+
+        foreach ($relationsToSave as $key => $relation) {
             $field = $meta->get($key);
 
             $status = $status && $field->getOwner()->reverbateRelationFieldAttribute($field, $this, $relation);
