@@ -12,7 +12,7 @@ namespace Laramore;
 
 use Illuminate\Support\Str;
 use Laramore\Exceptions\{
-	MultipleExceptionsException, RequiredFieldException
+	MetaException, MultipleExceptionsException, RequiredFieldException
 };
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, Link\LinkField, Timestamp
@@ -482,7 +482,7 @@ class Meta implements IsAFieldOwner
      */
     public function has(string $name): bool
     {
-        return isset($this->allFields()[$name]);
+        return isset($this->all()[$name]);
     }
 
     /**
@@ -494,7 +494,7 @@ class Meta implements IsAFieldOwner
     public function get(string $name): BaseField
     {
         if ($this->has($name)) {
-            return $this->allFields()[$name];
+            return $this->all()[$name];
         } else {
             throw new \Exception($name.' field does not exist');
         }
@@ -525,7 +525,7 @@ class Meta implements IsAFieldOwner
      *
      * @return array
      */
-    public function allFields(): array
+    public function all(): array
     {
         return array_merge(
 	        $this->fields,
@@ -544,7 +544,7 @@ class Meta implements IsAFieldOwner
     {
         $fields = [];
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->all() as $field) {
             if ($field->$option) {
                 $fields[] = $field;
             }
@@ -561,15 +561,9 @@ class Meta implements IsAFieldOwner
      */
     public function getFieldNamesWithOption(string $option): array
     {
-        $fields = [];
-
-        foreach ($this->allFields() as $field) {
-            if ($field->$option) {
-                $fields[] = $field->name;
-            }
-        }
-
-        return $fields;
+        return \array_map(function ($field) {
+			return $field->name;
+		}, $this->getFieldWithOption($option));
     }
 
     /**

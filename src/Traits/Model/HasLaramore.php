@@ -147,7 +147,7 @@ trait HasLaramore
      */
     public static function getFields()
     {
-        return static::getMeta()->allFields();
+        return static::getMeta()->all();
     }
 
     /**

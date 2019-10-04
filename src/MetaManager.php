@@ -152,7 +152,7 @@ class MetaManager
                 throw new \LogicException('All metas are not locked properly');
             }
 
-            foreach ($meta->allFields() as $field) {
+            foreach ($meta->all() as $field) {
                 if (!$field->isLocked()) {
                     throw new \LogicException('All fields are not locked by their owner');
                 }

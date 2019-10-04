@@ -186,19 +186,19 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
 
     public function has(string $name)
     {
-        return isset($this->allFields()[$name]);
+        return isset($this->all()[$name]);
     }
 
     public function get(string $name)
     {
         if ($this->has($name)) {
-            return $this->allFields()[$name];
+            return $this->all()[$name];
         } else {
             throw new \Exception($name.' real or link field does not exist');
         }
     }
 
-    public function allFields()
+    public function all()
     {
         return array_merge(
 	        $this->fields,
