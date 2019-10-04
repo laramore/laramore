@@ -100,27 +100,8 @@ abstract class Field extends BaseField
 
         // The attribute name is by default the same as the field name.
         if (is_null($this->attname)) {
-            $this->attname = $name;
+            $this->attname = Str::snake($name);
         }
-
-        return $this;
-    }
-
-    /**
-     * Define a default value for this field.
-     *
-     * @param  mixed $value
-     * @return self
-     */
-    public function default($value=null)
-    {
-        $this->needsToBeUnlocked();
-
-        if (is_null($value)) {
-            $this->nullable();
-        }
-
-        $this->defineProperty('default', $value);
 
         return $this;
     }

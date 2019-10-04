@@ -63,7 +63,7 @@ abstract class BaseField implements IsAField
     // Indicate if it is required by default.
     public const REQUIRED = 16;
 
-    // Default rules for this type of field.
+    // Default rules for any type of field.
     public const DEFAULT_FIELD = (self::VISIBLE | self::FILLABLE | self::REQUIRED);
 
     protected static $defaultRules = self::DEFAULT_FIELD;
@@ -168,6 +168,26 @@ abstract class BaseField implements IsAField
         return $this->visible(!$hidden);
     }
 
+    /**
+     * Define a default value for this field.
+     *
+     * @param  mixed $value
+     * @return self
+     */
+    public function default($value=null)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->removeRule(static::REQUIRED);
+
+        if (\is_null($value)) {
+            $this->nullable();
+        }
+
+        $this->defineProperty('default', $value);
+
+        return $this;
+    }
 
     protected function setOwner($owner)
     {
@@ -212,6 +232,8 @@ abstract class BaseField implements IsAField
                 } else if (!$this->hasRule(self::NULLABLE) && !$this->hasRule(self::REQUIRED)) {
                     throw new \LogicException("This field cannot be null, defined as null by default and not required");
                 }
+            } else if ($this->hasRule(self::REQUIRED)) {
+                throw new \LogicException("This field cannot have a default value and be required");
             }
         }
 
