@@ -18,7 +18,10 @@ use Laramore\Fields\{
 
 abstract class LinkField extends BaseField implements IsARelationField
 {
-    protected function owned()
+    // Default rules for this type of field.
+    public const DEFAULT_LINK = (self::DEFAULT_FIELD ^ self::REQUIRED);
+
+    protected static $defaultRules = self::DEFAULT_LINK;
 
     protected function setOwner($owner)
     {

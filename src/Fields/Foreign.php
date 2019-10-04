@@ -28,7 +28,7 @@ class Foreign extends CompositeField
     protected $reversedName;
 
     protected static $defaultFields = [
-        'id' => [Number::class, (Increment::DEFAULT_INCREMENT | Number::FILLABLE)],
+        'id' => [Number::class, (Increment::DEFAULT_INCREMENT | Number::DEFAULT_FIELD)],
     ];
     protected static $defaultLinks = [
         'reversed' => Link\HasMany::class,
@@ -154,8 +154,6 @@ class Foreign extends CompositeField
 
     public function reverbate(IsALaramoreModel $model, $value): bool
     {
-        $value->setAttribute($this->getField('id')->attname, $model[$model->getKeyName()]);
-
         return $value->save();
     }
 

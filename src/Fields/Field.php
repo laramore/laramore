@@ -110,7 +110,7 @@ abstract class Field extends BaseField
     {
         parent::setValidations();
 
-        $this->setValidation(Typed::class)->type($this->getType());
+        // $this->setValidation(Typed::class)->type($this->getType());
     }
 
     /**

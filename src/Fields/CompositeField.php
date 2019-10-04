@@ -30,6 +30,11 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     protected static $defaultFieldNameTemplate = '${name}_${fieldname}';
     protected static $defaultLinkNameTemplate = '*{modelname}';
 
+    // Default rules for this type of field.
+    public const DEFAULT_COMPOSITE = (self::DEFAULT_FIELD ^ self::REQUIRED);
+
+    protected static $defaultRules = self::DEFAULT_COMPOSITE;
+
     protected function __construct($rules=null, array $fields=null, array $links=null)
     {
         parent::__construct($rules);
@@ -206,35 +211,47 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
         );
     }
 
-    public function getPropagatedPropertyKeys(): array
-    {
-        return [
-            'nullable'
-        ];
-    }
-
-    protected function defineProperty(string $key, $value)
-    {
-        if (in_array($key, $this->getPropagatedPropertyKeys())) {
-            foreach ($this->getFields() as $field) {
-                $field->setProperty($key, $value);
-            }
-        }
-
-        return parent::defineProperty($key, $value);
-    }
-
     public function replaceInTemplate(string $template, array $keyValues)
     {
         foreach ($keyValues as $varName => $value) {
-            $template = str_replace('*{'.$varName.'}', Str::plural($value),
-                str_replace('^{'.$varName.'}', \ucwords($value),
-                    str_replace('${'.$varName.'}', $value, $template)
+            $template = \str_replace('*{'.$varName.'}', Str::plural($value),
+                \str_replace('^{'.$varName.'}', \ucwords($value),
+                    \str_replace('${'.$varName.'}', $value, $template)
                 )
             );
         }
 
         return $template;
+    }
+
+    /**
+     * Add a rule to the resource.
+     *
+     * @param integer $rule
+     * @return self
+     */
+    protected function addRule(int $rule)
+    {
+        foreach ($this->all() as $field) {
+            $field->addRule($rule);
+        }
+
+        return parent::addRule($rule);
+    }
+
+    /**
+     * Remove a rule from the resource.
+     *
+     * @param  integer $rule
+     * @return self
+     */
+    protected function removeRule(int $rule)
+    {
+        foreach ($this->all() as $field) {
+            $field->removeRule($rule);
+        }
+
+        return parent::removeRule($rule);
     }
 
     public function unique()
@@ -506,6 +523,6 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
             return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
         }
 
-        parent::__call($method, $args);
+        return parent::__call($method, $args);
     }
 }
