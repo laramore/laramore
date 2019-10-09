@@ -615,7 +615,13 @@ trait HasLaramore
      */
     public function __get($action)
     {
-        return call_user_func([$this, 'get'.ucfirst(Str::camel($action)).'Attribute']);
+        $name = Str::snake($action);
+
+        if (static::hasField($name)) {
+            return call_user_func([$this, 'get'.Str::studly($action).'Attribute']);
+        }
+
+        return parent::__get($action);
     }
 
     /**
@@ -627,7 +633,13 @@ trait HasLaramore
      */
     public function __set($action, $value)
     {
-        return call_user_func([$this, 'set'.ucfirst(Str::camel($action)).'Attribute'], $value);
+        $name = Str::snake($action);
+
+        if (static::hasField($name)) {
+            return call_user_func([$this, 'set'.Str::studly($action).'Attribute'], $value);
+        }
+
+        return parent::__set($action);
     }
 
     /**
