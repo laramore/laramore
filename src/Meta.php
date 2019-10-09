@@ -564,7 +564,7 @@ class Meta implements IsAFieldOwner
         return \array_map(function ($field) {
             return $field->name;
         }, $this->getFieldsWithOption
-		($option));
+        ($option));
     }
 
     /**
@@ -786,16 +786,16 @@ class Meta implements IsAFieldOwner
      */
     public function useTimestamps($autoUpdated=false)
     {
-		$createdName = ($this->modelClass::CREATED_AT ?? 'created_at');
-		$updatedField = ($this->modelClass::UPDATED_AT ?? 'updated_at');
+        $createdName = ($this->modelClass::CREATED_AT ?? 'created_at');
+        $updatedField = ($this->modelClass::UPDATED_AT ?? 'updated_at');
 
-		if ($this->has($createdName)) {
-			throw new MetaException($this, "The field [$createdName] already exists and can't be set as a timestamp.");
-		}
+        if ($this->has($createdName)) {
+            throw new MetaException($this, "The field [$createdName] already exists and can't be set as a timestamp.");
+        }
 
-		if ($this->has($updatedField)) {
-			throw new MetaException($this, "The field [$updatedField] already exists and can't be set as a timestamp.");
-		}
+        if ($this->has($updatedField)) {
+            throw new MetaException($this, "The field [$updatedField] already exists and can't be set as a timestamp.");
+        }
 
         $this->set(
             $createdName,
@@ -807,9 +807,9 @@ class Meta implements IsAFieldOwner
         	$updatedField = Timestamp::field(($autoUpdated ? Field::NOT_NULLABLE : Field::NULLABLE) | Field::VISIBLE)
         );
 
-		if ($autoUpdated) {
-			$updatedField->useCurrent();
-		}
+        if ($autoUpdated) {
+            $updatedField->useCurrent();
+        }
 
         $this->hasTimestamps = true;
 
