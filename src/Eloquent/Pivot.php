@@ -8,23 +8,13 @@
  * @license MIT
  */
 
-namespace Laramore\Model;
+namespace Laramore\Eloquent;
 
-use Laramore\Traits\Model\HasLaramore;
 use Illuminate\Database\Eloquent\Relations\Pivot as BasePivot;
-use Laramore\PivotMeta;
+use Laramore\Interfaces\IsALaramoreModel;
+use Laramore\Traits\Pivot\HasLaramore;
 
-abstract class Pivot extends BasePivot
+abstract class Pivot extends BasePivot implements IsALaramoreModel
 {
     use HasLaramore;
-
-    /**
-     * Return the meta class to use.
-     *
-     * @return string
-     */
-    public static function getMetaClass(): string
-    {
-        return PivotMeta::class;
-    }
 }

@@ -30,9 +30,6 @@ use Type, MetaManager, ProxyManager;
 
 trait HasLaramore
 {
-    protected static $metaClass = Meta::class;
-    protected static $builderClass = LaramoreBuilder::class;
-
     protected $required = [];
 
     /**
@@ -83,7 +80,8 @@ trait HasLaramore
     protected static function prepareMeta()
     {
         // Generate all meta data defined by the user in the current pivot.
-        MetaManager::add($meta = new static::$metaClass(static::class));
+        $class = static::getMetaClass();
+        MetaManager::add($meta = new $class(static::class));
 
         static::__meta($meta);
 
@@ -165,7 +163,7 @@ trait HasLaramore
 
         // Only update the updated field if the model already exists or the field cannot be null.
         if (!\is_null(static::UPDATED_AT) && !$this->isDirty(static::UPDATED_AT) && (
-            $this->exists || !$this->getField(static::UPDATED_AT)->nullable
+            $this->exists || !static::getField(static::UPDATED_AT)->nullable
         )) {
             $this->setUpdatedAt($time);
         }
@@ -246,7 +244,7 @@ trait HasLaramore
             return;
         }
 
-        return $this->getRelation($key);
+        return $this->getRelationValue($key);
     }
 
     /**
@@ -475,7 +473,7 @@ trait HasLaramore
 
     public function setRawAttribute(string $key, $value)
     {
-        $this->attributes[$key] = static::cast($key, $value);
+        $this->attributes[$key] = static::hasField($key) ? static::cast($key, $value) : $value;
 
         return $this;
     }
@@ -575,7 +573,7 @@ trait HasLaramore
 
     public static function getEloquentBuilderClass()
     {
-        return static::$builderClass;
+        return LaramoreBuilder::class;
     }
 
     /**
