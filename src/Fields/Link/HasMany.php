@@ -13,6 +13,7 @@ namespace Laramore\Fields\Link;
 use Illuminate\Support\Collection;
 use Laramore\Elements\Operator;
 use Laramore\Eloquent\Builder;
+use Laramore\Fields\CompositeField;
 use Laramore\Interfaces\{
     IsProxied, IsALaramoreModel
 };
@@ -24,6 +25,11 @@ class HasMany extends LinkField
     protected $from;
     protected $on;
     protected $to;
+
+    public function getReversed(): CompositeField
+    {
+        return $this->getOwner();
+    }
 
     public function cast($value)
     {
@@ -101,23 +107,22 @@ class HasMany extends LinkField
 
     public function retrieve(IsALaramoreModel $model)
     {
-        return $this->getOwner()->relateFieldAttribute($this, $model)->getResults();
+        return $this->relate($model)->getResults();
     }
 
     public function consume(IsALaramoreModel $model, $value)
     {
-        $field = $this->on::getField($this->getOwner()->name);
+        $relationName = $this->getReversed()->name;
         $collections = collect();
 
         foreach ($value as $element) {
             if ($element instanceof $this->on) {
                 $collections->add($element);
-
-                $field->getOwner()->setRelationFieldAttribute($field, $element, $model);
             } else {
                 $collections->add($element = $this->transformToModel($element));
-                $field->getOwner()->setRelationFieldAttribute($field, $element, $model);
             }
+
+            $element->setAttribute($relationName, $model);
         }
 
         return $collections;
@@ -131,7 +136,7 @@ class HasMany extends LinkField
     public function reverbate(IsALaramoreModel $model, $value): bool
     {
         $attname = $this->on::getMeta()->getPrimary()->attname;
-        $id = $model[$model->getKeyName()];
+        $id = $model->getKey();
         $ids = $value->map(function ($element) use ($attname) {
             return $element[$attname];
         });

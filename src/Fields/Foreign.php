@@ -15,6 +15,7 @@ use Illuminate\Support\{
 };
 use Laramore\Elements\Operator;
 use Laramore\Eloquent\Builder;
+use Laramore\Fields\Link\LinkField;
 use Laramore\Interfaces\{
     IsALaramoreModel, IsProxied
 };
@@ -34,6 +35,11 @@ class Foreign extends CompositeField
         'reversed' => Link\HasMany::class,
     ];
 
+    public function getReversed(): LinkField
+    {
+        return $this->getLink('reversed');
+    }
+
     public function on(string $model, string $reversedName=null)
     {
         $this->needsToBeUnlocked();
@@ -41,8 +47,8 @@ class Foreign extends CompositeField
         if ($model === 'self') {
             $this->defineProperty('on', $model);
         } else {
-            $this->defineProperty('on', $this->getLink('reversed')->off = $model);
-            $this->to($this->getLink('reversed')->off::getMeta()->getPrimary()->attname);
+            $this->defineProperty('on', $this->getReversed()->off = $model);
+            $this->to($this->getReversed()->off::getMeta()->getPrimary()->attname);
         }
 
         if ($reversedName) {
@@ -61,7 +67,7 @@ class Foreign extends CompositeField
     {
         $this->needsToBeUnlocked();
 
-        $this->defineProperty('to', $this->getLink('reversed')->from = $name);
+        $this->defineProperty('to', $this->getReversed()->from = $name);
 
         return $this;
     }
@@ -83,8 +89,8 @@ class Foreign extends CompositeField
 
         parent::owned();
 
-        $this->defineProperty('off', $this->getLink('reversed')->on = $this->getMeta()->getModelClass());
-        $this->defineProperty('from', $this->getLink('reversed')->to = $this->getField('id')->attname);
+        $this->defineProperty('off', $this->getReversed()->on = $this->getMeta()->getModelClass());
+        $this->defineProperty('from', $this->getReversed()->to = $this->getField('id')->attname);
     }
 
     protected function checkRules()
@@ -93,7 +99,7 @@ class Foreign extends CompositeField
             throw new \Exception('Related model settings needed. Set it by calling `on` method');
         }
 
-        $this->defineProperty('reversedName', $this->getLink('reversed')->name);
+        $this->defineProperty('reversedName', $this->getReversed()->name);
 
         parent::checkRules();
     }
@@ -129,13 +135,12 @@ class Foreign extends CompositeField
 
     public function retrieve(IsALaramoreModel $model)
     {
-        return $this->getOwner()->relateFieldAttribute($this, $model)->getResults();
+        return $this->relate($model)->getResults();
     }
 
     public function consume(IsALaramoreModel $model, $value)
     {
-        $field = $this->getField('id');
-        $field->getOwner()->setFieldAttribute($field, $model, $value[$this->to]);
+        $model->setAttribute($this->getField('id')->attname, $value[$this->to]);
 
         return $value;
     }
@@ -160,16 +165,22 @@ class Foreign extends CompositeField
     public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false)
     {
         $builder->getQuery()->whereNull($this->attname, $boolean, $not);
+
+        return $builder;
     }
 
     public function whereNotNull(Builder $builder, $value=null, $boolean='and')
     {
         return $this->whereNull($builder, $value, $boolean, true);
+
+        return $builder;
     }
 
     public function whereIn(Builder $builder, Collection $value=null, $boolean='and', $not=false)
     {
         $builder->getQuery()->whereIn($this->getField('id')->attname, $value, $boolean, $not);
+
+        return $builder;
     }
 
     public function whereNotIn(Builder $builder, Collection $value=null, $boolean='and')
@@ -184,5 +195,7 @@ class Foreign extends CompositeField
         }
 
         $builder->getQuery()->where($this->getField('id')->attname, $operator, $value, $boolean);
+
+        return $builder;
     }
 }
