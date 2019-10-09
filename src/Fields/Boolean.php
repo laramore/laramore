@@ -30,17 +30,18 @@ class Boolean extends Field
     {
         parent::setProxies();
 
-        $this->setProxy('is', ['value'], ['model'], $this->generateProxyMethodName('is', 'correct'));
+        $this->setProxy('is', ['value']);
+        $this->setProxy('isNot', ['value']);
     }
 
     public function dry($value)
     {
-        return $this->getOwner()->transformFieldAttribute($this, $value);
+        return $this->transform($value);
     }
 
     public function cast($value)
     {
-        return $this->getOwner()->transformFieldAttribute($this, $value);
+        return $this->transform($value);
     }
 
     public function transform($value)
@@ -62,5 +63,16 @@ class Boolean extends Field
     public function is(?bool $value, bool $expected=true): bool
     {
         return $value === $expected;
+    }
+
+    /**
+     * Return if the value is false.
+     *
+     * @param  mixed   $value
+     * @return boolean
+     */
+    public function isNot(?bool $value): bool
+    {
+        return $this->is($value, false);
     }
 }
