@@ -10,6 +10,17 @@
 
 namespace Laramore\Traits\Field;
 
+use Illuminate\Support\{
+    Collection, Str
+};
+use Laramore\Elements\Operator;
+use Laramore\Eloquent\Builder;
+use Laramore\Fields\Field;
+use Laramore\Interfaces\{
+    IsALaramoreModel, IsProxied
+};
+use Op;
+
 trait ManyToManyRelation
 {
     protected $on;
@@ -20,89 +31,169 @@ trait ManyToManyRelation
     protected $pivotTo;
     protected $pivotFrom;
 
-    public function castFieldValue($model, $value)
+    protected function setProxies()
     {
-        if (is_null($value) || $value instanceof $this->on) {
+        parent::setProxies();
+
+        $this->setProxy('attach', ['model']);
+        $this->setProxy('detach', ['model']);
+        $this->setProxy('sync', ['model']);
+        $this->setProxy('toggle', ['model']);
+        $this->setProxy('syncWithoutDetaching', ['model']);
+        $this->setProxy('updateExistingPivot', ['model']);
+    }
+
+    public function cast($value)
+    {
+        return $this->transform($value);
+    }
+
+    public function dry($value)
+    {
+        return $this->transform($value)->map(function ($value) {
+            return $value[$this->from];
+        });
+    }
+
+    public function transformToModel($value)
+    {
+        if ($value instanceof $this->on) {
             return $value;
-        } else {
-            $model = new $this->on;
-            $model->setAttribute($this->to, $value, true);
-
-            return $model;
-        }
-    }
-
-    public function getValue($model, $value)
-    {
-        return $this->getRelationValue($model)->get();
-    }
-
-    public function setValue($model, $value)
-    {
-        return $this->sync($model, $value);
-    }
-
-    public function getRelationValue($model)
-    {
-        return $model->belongsToMany($this->on, $this->pivotMeta->getTableName(), $this->pivotTo->from, $this->pivotFrom->from);
-    }
-
-    public function whereValue($query, ...$args)
-    {
-        if (count($args) > 1) {
-            [$operator, $value] = $args;
-        } else {
-            $operator = '=';
-            $value = $args[0] ?? null;
         }
 
-        dump($query, $args);
-        if (is_object($value)) {
-            $value = $value->{$this->on};
-        } else if (!is_null($value)) {
-            $value = (integer) $value;
+        $model = new $this->on;
+        $model->setRawAttribute($model->getKeyName(), $value);
+
+        return $model;
+    }
+
+    public function transform($value)
+    {
+        if ($value instanceof Collection) {
+            return $value;
         }
 
-        return $query->where($this->from, $operator, $value);
+        if (\is_null($value) || \is_array($value)) {
+            return collect($value);
+        }
+
+        return collect($this->transformToModel($value));
     }
 
-    public function setFieldValue($model, $field, $value)
+    public function retrieve(IsALaramoreModel $model)
     {
-        return $field->setValue($model, $value);
+        return $this->relate($model)->getResults();
     }
 
-    public function getFieldValue($model, $field, $value)
+    public function relate(IsProxied $model)
     {
-        return $field->getValue($model, $value);
+        return $model->belongsToMany($this->on, $this->pivotMeta->getTableName(), $this->pivotTo->from, $this->pivotFrom->from, $this->to, $this->from, $this->name)
+            ->withPivot(...\array_map(function (Field $field) {
+                return $field->attname;
+            }, \array_values($this->pivotMeta->getFields())));
     }
 
-    public function attachValue($model, $current, ...$args)
+    public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false, \Closure $callback=null)
     {
-        return ($this->getRelationValue($model)->attach(...$args) ?? $model);
+        if ($not) {
+            return $this->whereNotNull($builder, $value, $boolean, null, null, $callback);
+        }
+
+        return $builder->doesntHave($this->name, $boolean, $callback);
     }
 
-    public function detachValue($model, $current, ...$args)
+    public function whereNotNull(Builder $builder, $value=null, $boolean='and', $operator=null, int $count=null, \Closure $callback=null)
     {
-        return ($this->getRelationValue($model)->detach(...$args) ?? $model);
+        return $builder->has($this->name, (string) ($operator ?? Op::supOrEq()), ($count ?? 1), $boolean, $callback);
     }
 
-    public function syncValue($model, $current, ...$args)
+    public function whereIn(Builder $builder, Collection $value=null, $boolean='and', $not=false)
     {
-        return ($this->getRelationValue($model)->sync(...$args) ?? $model);
+        $attname = $this->on::getMeta()->getPrimary()->attname;
+
+        return $this->whereNull($builder, $value, $boolean, $not, function ($query) use ($attname, $value) {
+            return $query->whereIn($attname, $value);
+        });
     }
 
-    public function toggleValue($model, $current, ...$args)
+    public function whereNotIn(Builder $builder, Collection $value=null, $boolean='and')
     {
-        return ($this->getRelationValue($model)->toggle(...$args) ?? $model);
+        return $this->whereIn($builder, $value, $boolean, true);
     }
 
-    public function syncWithoutDetachingValue($model, $current, ...$args)
+    public function where(Builder $builder, Operator $operator, $value=null, $boolean='and', int $count=null)
     {
-        return ($this->getRelationValue($model)->syncWithoutDetaching(...$args) ?? $model);
+        $attname = $this->on::getMeta()->getPrimary()->attname;
+
+        return $this->whereNotNull($builder, $value, $boolean, $operator, ($count ?? count($value)), function ($query) use ($attname, $value) {
+            return $query->whereIn($attname, $value);
+        });
     }
 
-    public function updateExistingPivotValue($model, $current, ...$args)
+    public function consume(IsALaramoreModel $model, $value)
     {
-        return ($this->getRelationValue($model)->updateExistingPivotValue(...$args) ?? $model);
+        $relationName = $this->getReversed()->name;
+        $collections = collect();
+
+        foreach ($value as $element) {
+            if ($element instanceof $this->on) {
+                $collections->add($element);
+            } else {
+                $collections->add($element = $this->transformToModel($element));
+            }
+
+            $element->setAttribute($relationName, $model);
+        }
+
+        return $collections;
+    }
+
+    public function reverbate(IsALaramoreModel $model, $value): bool
+    {
+        $this->sync($model, $value);
+
+        return true;
+    }
+
+    public function attach(IsALaramoreModel $model, $value)
+    {
+        \call_user_func([$model, $this->name])->attach($value);
+
+        return $model;
+    }
+
+    public function detach(IsALaramoreModel $model, $value)
+    {
+        \call_user_func([$model, $this->name])->detach($value);
+
+        return $model;
+    }
+
+    public function sync(IsALaramoreModel $model, $value)
+    {
+        \call_user_func([$model, $this->name])->sync($value);
+
+        return $model;
+    }
+
+    public function toggle(IsALaramoreModel $model, $value)
+    {
+        \call_user_func([$model, $this->name])->toggle($value);
+
+        return $model;
+    }
+
+    public function syncWithoutDetaching(IsALaramoreModel $model, $value)
+    {
+        \call_user_func([$model, $this->name])->syncWithoutDetaching($value);
+
+        return $model;
+    }
+
+    public function updateExistingPivot(IsALaramoreModel $model, $value)
+    {
+        \call_user_func([$model, $this->name])->updateExistingPivot($value);
+
+        return $model;
     }
 }
