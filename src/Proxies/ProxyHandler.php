@@ -81,7 +81,6 @@ class ProxyHandler extends BaseHandler
         $proxy = parent::get($name);
 
         if (!\is_null($instanceType) && !$proxy->has($instanceType)) {
-            dump($proxy);
             throw new \Exception("The proxy [$name] does not manage the instance type [$instanceType]");
         }
 

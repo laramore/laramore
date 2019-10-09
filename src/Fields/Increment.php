@@ -47,7 +47,7 @@ class Increment extends Number
 
     public function increment(IsALaramoreModel $model, int $value, int $increment=1)
     {
-        return $model->setAttribute($this->attname, $value + $increment);
+        return $model->setAttribute($this->attname, ($value + $increment));
     }
 
     public function decrement(IsALaramoreModel $model, int $value, int $decrement=1)

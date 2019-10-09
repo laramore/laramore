@@ -12,9 +12,9 @@ namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
 use Laramore\Traits\Field\ManyToManyRelation;
-use Laramore\{
-    Meta, FakePivot
-};
+use Laramore\Fields\Link\LinkField;
+use Laramore\Eloquent\FakePivot;
+use Laramore\Meta;
 use MetaManager;
 
 class ManyToMany extends CompositeField
@@ -24,12 +24,16 @@ class ManyToMany extends CompositeField
     protected $reversedName;
     protected $usePivot;
     protected $pivotClass;
-    protected $unique;
 
     protected static $defaultFields = [];
     protected static $defaultLinks = [
         'reversed' => Link\BelongsToMany::class,
     ];
+
+    public function getReversed(): LinkField
+    {
+        return $this->getLink('reversed');
+    }
 
     public function on(string $model, string $reversedName=null)
     {
@@ -82,15 +86,6 @@ class ManyToMany extends CompositeField
         return $this;
     }
 
-    public function unique(bool $unique=true)
-    {
-        $this->needsToBeUnlocked();
-
-        $this->defineProperty('unique', $unique);
-
-        return $this;
-    }
-
     protected function loadPivotMeta()
     {
         $offMeta = $this->getMeta();
@@ -112,7 +107,7 @@ class ManyToMany extends CompositeField
             $this->setProperty('pivotMeta', $pivotClass::getMeta());
         } else {
             // Create dynamically the pivot class (only and first time I use eval, really).
-            eval("namespace $namespaceName; class $pivotClassName extends \Laramore\FakePivot {}");
+            eval("namespace $namespaceName; class $pivotClassName extends \Laramore\Eloquent\FakePivot {}");
             $this->setProperty('pivotMeta', $pivotClass::getMeta());
 
             $this->pivotMeta->set(

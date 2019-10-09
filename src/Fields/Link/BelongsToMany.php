@@ -11,10 +11,16 @@
 namespace Laramore\Fields\Link;
 
 use Laramore\Traits\Field\ManyToManyRelation;
+use Laramore\Fields\CompositeField;
 
 class BelongsToMany extends LinkField
 {
     use ManyToManyRelation;
+
+    public function getReversed(): CompositeField
+    {
+        return $this->getOwner();
+    }
 
     protected function owned()
     {

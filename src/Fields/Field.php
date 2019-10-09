@@ -123,6 +123,8 @@ abstract class Field extends BaseField
     public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false)
     {
         $builder->getQuery()->whereNull($this->attname, $boolean, $not);
+
+        return $builder;
     }
 
     /**
@@ -159,6 +161,8 @@ abstract class Field extends BaseField
     public function whereNotIn(Builder $builder, Collection $value=null, $boolean='and')
     {
         return $this->whereIn($builder, $value, $boolean, true);
+
+        return $builder;
     }
 
     /**
@@ -171,6 +175,8 @@ abstract class Field extends BaseField
     public function where(Builder $builder, Operator $operator, $value=null, $boolean='and')
     {
         $builder->getQuery()->where($this->attname, $operator, $value, $boolean);
+
+        return $builder;
     }
 
     /**
@@ -183,11 +189,11 @@ abstract class Field extends BaseField
     public function relate(IsProxied $instance)
     {
         if ($instance instanceof Model) {
-            return $this->getOwner()->whereFieldAttribute($this, $instance, $instance->getAttribute($this->attname));
+            return $this->where($instance, Op::equal(), $instance->getAttribute($this->attname));
         }
 
         if ($instance instanceof Builder) {
-            return $this->getOwner()->whereFieldAttribute($this, $instance, $instance->getModel()->getAttribute($this->attname));
+            return $this->where($instance, Op::equal(), $instance->getModel()->getAttribute($this->attname));
         }
     }
 }

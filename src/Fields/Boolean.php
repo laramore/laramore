@@ -68,7 +68,7 @@ class Boolean extends Field
     /**
      * Return if the value is false.
      *
-     * @param  mixed   $value
+     * @param  mixed $value
      * @return boolean
      */
     public function isNot(?bool $value): bool
