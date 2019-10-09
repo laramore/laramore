@@ -257,6 +257,8 @@ abstract class BaseField implements IsAField
         $this->setProxy('isValid', [], ['model'], $this->generateProxyMethodName('is', 'valid'));
         $this->setProxy('relate', ['instance'], ['model', 'builder'], Str::camel($this->name));
         $this->setProxy('where', ['instance'], ['builder']);
+        $this->setProxy('whereNull', ['instance'], ['builder'], $this->generateProxyMethodName('doesntHave'));
+        $this->setProxy('whereNotNull', ['instance'], ['builder'], $this->generateProxyMethodName('has'));
     }
 
     /**
