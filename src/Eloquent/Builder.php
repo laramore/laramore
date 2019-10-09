@@ -47,9 +47,17 @@ class Builder extends BuilderBase implements IsProxied
 
         if (count($parts) === 2) {
             [$table, $column] = $parts;
+            $originalTable = $this->getModel()->getTable();
 
-            if ($table !== $this->getModel()->getTable()) {
-                throw new \Exception('A gérer bae');
+            if ($table !== $originalTable) {
+                $modelClass = MetaManager::getForTableName($table)->getModelClass();
+                $model = new $modelClass;
+                $builder = $model->newEloquentBuilder($this->getQuery())->setModel($model);
+                $builder->getQuery()->from($originalTable);
+
+                $this->forwardCallTo($model->registerGlobalScopes($builder), 'where', \func_get_args());
+
+                return $this;
             }
         }
 
