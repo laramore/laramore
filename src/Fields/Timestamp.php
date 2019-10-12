@@ -27,7 +27,7 @@ class Timestamp extends Field
     public function getPropertyKeys(): array
     {
         return array_merge(parent::getPropertyKeys(), [
-            'useCurrent'
+            'useCurrent',
         ]);
     }
 
@@ -53,5 +53,10 @@ class Timestamp extends Field
     public function transform($value)
     {
         return $value;
+    }
+
+    public function serialize($value)
+    {
+        return $this->dry($value);
     }
 }

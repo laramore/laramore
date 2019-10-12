@@ -133,6 +133,11 @@ class Foreign extends CompositeField
         return $model;
     }
 
+    public function serialize($value)
+    {
+        return $value;
+    }
+
     public function retrieve(IsALaramoreModel $model)
     {
         return $this->relate($model)->getResults();

@@ -53,6 +53,11 @@ class Boolean extends Field
         return (boolean) $value;
     }
 
+    public function serialize($value)
+    {
+        return $value;
+    }
+
     /**
      * Return if the value is true or false as expected.
      *

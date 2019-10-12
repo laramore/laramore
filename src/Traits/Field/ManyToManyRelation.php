@@ -80,6 +80,11 @@ trait ManyToManyRelation
         return collect($this->transformToModel($value));
     }
 
+    public function serialize($value)
+    {
+        return $value;
+    }
+
     public function retrieve(IsALaramoreModel $model)
     {
         return $this->relate($model)->getResults();

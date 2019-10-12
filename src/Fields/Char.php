@@ -133,4 +133,9 @@ class Char extends Text
 
         return implode($delimiter, $valides).$toAdd;
     }
+
+    public function serialize($value)
+    {
+        return $value;
+    }
 }

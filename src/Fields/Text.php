@@ -48,15 +48,20 @@ class Text extends Field
 
     public function dry($value)
     {
-        return is_null($value) ? $value : (string) $value;
+        return $this->transform($value);
     }
 
     public function cast($value)
     {
-        return is_null($value) ? $value : (string) $value;
+        return $this->transform($value);
     }
 
     public function transform($value)
+    {
+        return is_null($value) ? $value : (string) $value;
+    }
+
+    public function serialize($value)
     {
         return $value;
     }

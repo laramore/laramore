@@ -100,7 +100,7 @@ class Number extends Field
 
     public function cast($value)
     {
-        return is_null($value) ? $value : (int) $value;
+        return $this->transform($this->dry($value));
     }
 
     public function transform($value)
@@ -124,6 +124,11 @@ class Number extends Field
             $value = $newValue;
         }
 
+        return $value;
+    }
+
+    public function serialize($value)
+    {
         return $value;
     }
 }

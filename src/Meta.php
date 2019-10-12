@@ -677,6 +677,7 @@ class Meta implements IsAFieldOwner
             $this->setFieldAttributeProxy('set', $field, ['instance'], ['model'], 'attribute');
             $this->setFieldAttributeProxy('reset', $field, ['instance'], ['model'], 'attribute');
             $this->setFieldAttributeProxy('transform', $field);
+            $this->setFieldAttributeProxy('serialize', $field);
             $this->setFieldAttributeProxy('check', $field);
             $this->setFieldAttributeProxy('dry', $field);
             $this->setFieldAttributeProxy('cast', $field);

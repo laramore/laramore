@@ -30,7 +30,7 @@ class Increment extends Number
     {
         $keys = parent::getPropertyKeys();
 
-        if (!is_null($index = array_search('unsigned', $keys))) {
+        if (!\is_null($index = \array_search('unsigned', $keys))) {
             unset($keys[$index]);
         }
 

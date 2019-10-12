@@ -68,6 +68,11 @@ class HasMany extends LinkField
         return collect($this->transformToModel($value));
     }
 
+    public function serialize($value)
+    {
+        return $value;
+    }
+
     public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false, \Closure $callback=null)
     {
         if ($not) {

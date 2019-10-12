@@ -148,6 +148,14 @@ interface IsAField
     public function transform($value);
 
     /**
+     * Serialize the value in the correct format.
+     *
+     * @param  mixed $attvalue
+     * @return mixed
+     */
+    public function serialize($value);
+
+    /**
      * Cast the value in the correct format.
      *
      * @param  mixed $attvalue

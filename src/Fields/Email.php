@@ -89,6 +89,11 @@ class Email extends Pattern
         return $value;
     }
 
+    public function serialize($value)
+    {
+        return $value;
+    }
+
     public function fix(string $value)
     {
         if ($this->hasRule(self::ACCEPT_USERNAME)) {
