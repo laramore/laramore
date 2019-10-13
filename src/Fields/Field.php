@@ -80,6 +80,8 @@ abstract class Field extends BaseField
                 if ($this->hasRule(\constant($const))) {
                     $properties[$name] = true;
                 }
+            } else if (\method_exists($this, $method = 'get'.\ucfirst($key))) {
+                $properties[$name] = \call_user_func([$this, $method]);
             } else if (!is_null($value = $this->$key)) {
                 $properties[$name] = $value;
             }

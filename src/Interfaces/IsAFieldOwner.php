@@ -114,6 +114,15 @@ interface IsAFieldOwner
      * @param mixed     $value
      * @return mixed
      */
+    public function serializeFieldAttribute(BaseField $field, $value);
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
     public function checkFieldAttribute(BaseField $field, $value);
 
     /**

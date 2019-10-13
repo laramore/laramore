@@ -215,6 +215,18 @@ trait HasFields
      * @param mixed     $value
      * @return mixed
      */
+    public function serializeFieldAttribute(BaseField $field, $value)
+    {
+        return $field->serialize($value);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
     public function checkFieldAttribute(BaseField $field, $value)
     {
         return $field->check($value);

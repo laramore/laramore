@@ -428,6 +428,18 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
      * @param mixed     $value
      * @return mixed
      */
+    public function serializeFieldAttribute(BaseField $field, $value)
+    {
+        return $this->getOwner()->serializeFieldAttribute($field, $value);
+    }
+
+    /**
+     * Return the set value for a specific field.
+     *
+     * @param BaseField $field
+     * @param mixed     $value
+     * @return mixed
+     */
     public function checkFieldAttribute(BaseField $field, $value)
     {
         return $this->getOwner()->checkFieldAttribute($field, $value);
