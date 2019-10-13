@@ -12,7 +12,7 @@ namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
 use Laramore\Traits\Field\ManyToManyRelation;
-use Laramore\Fields\Link\LinkField;
+use Laramore\Fields\LinkField;
 use Laramore\Eloquent\FakePivot;
 use Laramore\Meta;
 use MetaManager;
@@ -27,7 +27,7 @@ class ManyToMany extends CompositeField
 
     protected static $defaultFields = [];
     protected static $defaultLinks = [
-        'reversed' => Link\BelongsToMany::class,
+        'reversed' => BelongsToMany::class,
     ];
 
     public function getReversed(): LinkField

@@ -15,7 +15,7 @@ use Laramore\Exceptions\{
 	MetaException, MultipleExceptionsException, RequiredFieldException
 };
 use Laramore\Fields\{
-	BaseField, Field, CompositeField, Link\LinkField, Timestamp
+	BaseField, Field, CompositeField, LinkField, Timestamp
 };
 use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied, IsALaramoreModel
@@ -389,8 +389,6 @@ class Meta implements IsAFieldOwner
             if ($link->name !== $name) {
                 throw new \Exception('The link field name must be the same than the given one.');
             }
-        } else {
-            throw new \Exception('The link field must be owned by a child of the oposite meta.');
         }
 
         $link = $this->manipulateField($link);

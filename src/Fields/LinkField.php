@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Fields\Link;
+namespace Laramore\Fields;
 
 use Laramore\Meta;
 use Laramore\Interfaces\IsARelationField;

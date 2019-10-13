@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Fields\Link;
+namespace Laramore\Fields;
 
 use Illuminate\Support\Collection;
 use Laramore\Elements\Operator;

@@ -15,7 +15,7 @@ use Illuminate\Support\{
 };
 use Laramore\Elements\Operator;
 use Laramore\Eloquent\Builder;
-use Laramore\Fields\Link\LinkField;
+use Laramore\Fields\LinkField;
 use Laramore\Interfaces\{
     IsALaramoreModel, IsProxied
 };
@@ -32,7 +32,7 @@ class Foreign extends CompositeField
         'id' => [Number::class, (Increment::DEFAULT_INCREMENT | Number::DEFAULT_FIELD)],
     ];
     protected static $defaultLinks = [
-        'reversed' => Link\HasMany::class,
+        'reversed' => HasMany::class,
     ];
 
     public function getReversed(): LinkField

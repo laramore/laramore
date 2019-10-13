@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Fields\Link;
+namespace Laramore\Fields;
 
 use Laramore\Traits\Field\ManyToManyRelation;
 use Laramore\Fields\CompositeField;
