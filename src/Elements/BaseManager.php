@@ -10,6 +10,7 @@
 
 namespace Laramore\Elements;
 
+use Illuminate\Support\Arr;
 use Laramore\Traits\IsLocked;
 
 abstract class BaseManager
@@ -45,8 +46,22 @@ abstract class BaseManager
      */
     public function __construct(array $defaults=[])
     {
-        foreach ($defaults as $name => $native) {
-            $this->elements[$name] = new $this->elementClass($name, $native);
+        if (Arr::isAssoc($defaults)) {
+            foreach ($defaults as $key => $value) {
+                $element = $this->create($key);
+
+                if (\is_array($value)) {
+                    foreach ($value as $keyValue => $elementValue) {
+                        $element->set($keyValue, $elementValue);
+                    }
+                } else {
+                    $element->native = $value;
+                }
+            }
+        } else {
+            foreach ($defaults as $name) {
+                $this->create($name);
+            }
         }
     }
 
@@ -100,13 +115,14 @@ abstract class BaseManager
      * Override is allowed, be carefull.
      *
      * @param string $name
+     * @param $native
      * @return BaseElement
      */
-    public function create(string $name): BaseElement
+    public function create(string $name, $native=null): BaseElement
     {
         $this->needsToBeUnlocked();
 
-        $element = new $this->elementClass($name, $name);
+        $element = new $this->elementClass($name, $native ?: $name);
         $this->set($element);
 
         return $element;
@@ -155,6 +171,16 @@ abstract class BaseManager
     public function all(): array
     {
         return $this->elements;
+    }
+
+    /**
+     * Count the number of elements.
+     *
+     * @return integer
+     */
+    public function count(): int
+    {
+        return \count($this->elements);
     }
 
     /**
