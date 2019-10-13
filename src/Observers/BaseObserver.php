@@ -260,4 +260,9 @@ abstract class BaseObserver
             throw new \LogicException('An observer needs a callback value.');
         }
     }
+
+    public function __invoke(...$args)
+    {
+        return \call_user_func($this->getCallback(), ...$args);
+    }
 }

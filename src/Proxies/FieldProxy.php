@@ -27,9 +27,10 @@ class FieldProxy extends BaseProxy
      */
     public function __construct(string $name, BaseField $field, string $methodName, array $injections=[], array $data=[])
     {
-        $this->setField($field);
-
         parent::__construct($name, $methodName, $injections, $data);
+
+        $this->setField($field);
+        $this->setCallback(Closure::fromCallable([$this, 'resolveCallback']));
     }
 
     /**
@@ -52,15 +53,22 @@ class FieldProxy extends BaseProxy
         return $this->field;
     }
 
-    /**
-     * Actions during locking.
-     *
-     * @return void
-     */
-    protected function locking()
+    public function resolveCallback(...$args)
     {
-        $this->setCallback(Closure::fromCallable([$this->getField(), $this->getMethodName()]));
+        $field = $this->getField();
+        $owner = $field->getOwner();
+        $methodName = $this->getMethodName();
 
-        parent::locking();
+        if (\method_exists($owner, $methodOwnerName = "${methodName}FieldAttribute")) {
+            $this->callback = function (...$args) use ($owner, $field, $methodOwnerName) {
+                return \call_user_func([$owner, $methodOwnerName], $field, ...$args);
+            };
+        } else {
+            $this->callback = function (...$args) use ($owner, $field, $methodName) {
+                return \call_user_func([$owner, 'callFieldAttributeMethod'], $field, $methodName, ...$args);
+            };
+        }
+
+        return \call_user_func($this->callback, ...$args);
     }
 }

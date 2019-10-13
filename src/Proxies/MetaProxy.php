@@ -29,10 +29,11 @@ class MetaProxy extends BaseProxy
      */
     public function __construct(string $name, Meta $meta, BaseField $field, string $methodName, array $injections=[], array $data=[])
     {
+        parent::__construct($name, $methodName, $injections, $data);
+
         $this->setMeta($meta);
         $this->setField($field);
-
-        parent::__construct($name, $methodName, $injections, $data);
+        $this->setCallback(Closure::fromCallable([$this->getMeta(), $this->getMethodName()]));
     }
 
     /**
@@ -73,17 +74,5 @@ class MetaProxy extends BaseProxy
     public function getField()
     {
         return $this->field;
-    }
-
-    /**
-     * Actions during locking.
-     *
-     * @return void
-     */
-    protected function locking()
-    {
-        $this->setCallback(Closure::fromCallable([$this->getMeta(), $this->getMethodName()]));
-
-        parent::locking();
     }
 }

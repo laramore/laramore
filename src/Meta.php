@@ -899,14 +899,6 @@ class Meta implements IsAFieldOwner
             \array_unshift($args, $this->getProxyInjection($proxy, $name, $proxiedInstance));
         }
 
-        if ($proxy instanceof MetaProxy) {
-            return $this->$methodName(...$args);
-        }
-
-        if (\method_exists($owner = $field->getOwner(), $methodOwnerName = "${methodName}FieldAttribute")) {
-            return \call_user_func([$owner, $methodOwnerName], $field, ...$args);
-        }
-
-        return $owner->callFieldAttributeMethod($field, $methodName, $args);
+        return $proxy(...$args);
     }
 }
