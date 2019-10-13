@@ -199,6 +199,28 @@ trait HasLaramore
      * @param  string $key Name of the field.
      * @return mixed		 The casted value.
      */
+    public static function transform(string $key, $value)
+    {
+        return ($field = static::getField($key))->getOwner()->transformFieldAttribute($field, $value);
+    }
+
+    /**
+     * Re turn the default value for a specific field.
+     *
+     * @param  string $key Name of the field.
+     * @return mixed		 The casted value.
+     */
+    public static function serialize(string $key, $value)
+    {
+        return ($field = static::getField($key))->getOwner()->serializeFieldAttribute($field, $value);
+    }
+
+    /**
+     * Re turn the default value for a specific field.
+     *
+     * @param  string $key Name of the field.
+     * @return mixed		 The casted value.
+     */
     public static function default(string $key)
     {
         return ($field = static::getField($key))->getOwner()->defaultFieldAttribute($field);
@@ -588,6 +610,42 @@ trait HasLaramore
         $class = static::getEloquentBuilderClass();
 
         return new $class($query);
+    }
+
+    /**
+     * Convert the model's attributes to an array.
+     *
+     * @return array
+     */
+    public function attributesToArray()
+    {
+        $attributes = parent::attributesToArray();
+
+        foreach ($this->getArrayableAttributes() as $key => $value) {
+            if (static::hasField($key)) {
+                $attributes[$key] = static::serialize($key, $value);
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Convert the model's attributes to an array.
+     *
+     * @return array
+     */
+    public function relationsToArray()
+    {
+        $relations = parent::relationsToArray();
+
+        foreach ($this->getArrayableRelations() as $key => $value) {
+            if (static::hasField($key)) {
+                $relations[$key] = static::serialize($key, $value);
+            }
+        }
+
+        return $relations;
     }
 
     /**
