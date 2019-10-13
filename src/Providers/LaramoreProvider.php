@@ -79,6 +79,7 @@ class LaramoreProvider extends ServiceProvider
         'char' => 'string',
         'timestamp' => 'string',
         'datetime' => 'string',
+        'enum' => 'enum',
     ];
 
     /**
