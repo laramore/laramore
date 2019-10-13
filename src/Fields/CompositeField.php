@@ -25,8 +25,6 @@ abstract class CompositeField extends BaseField implements IsAFieldOwner, IsARel
     protected $linksName = [];
     protected $uniques = [];
 
-    protected static $defaultFields = [];
-    protected static $defaultLinks = [];
     protected static $defaultFieldNameTemplate = '${name}_${fieldname}';
     protected static $defaultLinkNameTemplate = '*{modelname}';
 

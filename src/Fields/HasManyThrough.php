@@ -19,11 +19,50 @@ use Laramore\Interfaces\{
 };
 use Op;
 
-class HasMany extends HasOne
+class HasManyThrough extends LinkField
 {
+    protected $on;
+    protected $to;
+    protected $off;
+    protected $from;
+    protected $pivotMeta;
+    protected $pivotTo;
+    protected $pivotFrom;
+
+    protected function setProxies()
+    {
+        parent::setProxies();
+
+        $this->setProxy('attach', ['model']);
+        $this->setProxy('detach', ['model']);
+        $this->setProxy('sync', ['model']);
+        $this->setProxy('toggle', ['model']);
+        $this->setProxy('syncWithoutDetaching', ['model']);
+        $this->setProxy('updateExistingPivot', ['model']);
+    }
+
+    public function cast($value)
+    {
+        return $this->transform($value);
+    }
+
+    public function dry($value)
+    {
+        return $this->transform($value)->map(function ($value) {
+            return $value[$this->from];
+        });
+    }
+
     public function transformToModel($value)
     {
-        return parent::transform($value);
+        if ($value instanceof $this->on) {
+            return $value;
+        }
+
+        $model = new $this->on;
+        $model->setRawAttribute($model->getKeyName(), $value);
+
+        return $model;
     }
 
     public function transform($value)
@@ -37,6 +76,38 @@ class HasMany extends HasOne
         }
 
         return collect($this->transformToModel($value));
+    }
+
+    public function serialize($value)
+    {
+        return $value;
+    }
+
+    public function retrieve(IsALaramoreModel $model)
+    {
+        return $this->relate($model)->getResults();
+    }
+
+    public function relate(IsProxied $model)
+    {
+        return $model->belongsToMany($this->on, $this->pivotMeta->getTableName(), $this->pivotTo->from, $this->pivotFrom->from, $this->to, $this->from, $this->name)
+            ->withPivot(...\array_map(function (Field $field) {
+                return $field->attname;
+            }, \array_values($this->pivotMeta->getFields())));
+    }
+
+    public function whereNull(Builder $builder, $value=null, $boolean='and', $not=false, \Closure $callback=null)
+    {
+        if ($not) {
+            return $this->whereNotNull($builder, $value, $boolean, null, null, $callback);
+        }
+
+        return $builder->doesntHave($this->name, $boolean, $callback);
+    }
+
+    public function whereNotNull(Builder $builder, $value=null, $boolean='and', $operator=null, int $count=null, \Closure $callback=null)
+    {
+        return $builder->has($this->name, (string) ($operator ?? Op::supOrEq()), ($count ?? 1), $boolean, $callback);
     }
 
     public function whereIn(Builder $builder, Collection $value=null, $boolean='and', $not=false)
@@ -80,21 +151,9 @@ class HasMany extends HasOne
         return $collections;
     }
 
-    public function relate(IsProxied $model)
-    {
-        return $model->hasMany($this->on, $this->to, $this->from);
-    }
-
     public function reverbate(IsALaramoreModel $model, $value): bool
     {
-        $attname = $this->on::getMeta()->getPrimary()->attname;
-        $id = $model->getKey();
-        $ids = $value->map(function ($element) use ($attname) {
-            return $element[$attname];
-        });
-
-        $this->on::where($this->to, $id)->whereNotIn($attname, $ids)->update([$this->to => null]);
-        $this->on::whereIn($attname, $ids)->update([$this->to => $id]);
+        $this->sync($model, $value);
 
         return true;
     }
