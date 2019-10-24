@@ -63,6 +63,13 @@ class Meta implements IsAFieldOwner
     protected $hasTimestamps = false;
 
     /**
+     * Indicate if this meta is a pivot one.
+     *
+     * @var bool
+     */
+    protected $pivot = false;
+
+    /**
      * All indexes.
      *
      * @var array
@@ -648,9 +655,9 @@ class Meta implements IsAFieldOwner
     /**
      * Return the primary field.
      *
-     * @return Field
+     * @return Field|null
      */
-    public function getPrimary(): IsAPrimaryField
+    public function getPrimary(): ?IsAPrimaryField
     {
         return $this->primary;
     }
@@ -662,8 +669,8 @@ class Meta implements IsAFieldOwner
      */
     protected function locking()
     {
-        if (\is_null($this->primary)) {
-            throw new MetaException($this, 'A meta needs a primary key.');
+        if (\is_null($this->primary) && !$this->pivot) {
+            throw new MetaException($this, 'A meta needs a primary key or must be set as pivot.');
         }
 
         foreach ($this->all() as $field) {
@@ -722,10 +729,10 @@ class Meta implements IsAFieldOwner
     /**
      * Define a unique relation between multiple fields.
      *
-     * @param  mixed ...$fields
+     * @param  array fields
      * @return self
      */
-    public function unique(...$fields)
+    public function unique(array $fields)
     {
         $unique = [];
 
@@ -823,6 +830,28 @@ class Meta implements IsAFieldOwner
     public function hasTimestamps(): bool
     {
         return $this->hasTimestamps;
+    }
+
+    /**
+     * Indicate if the meta use default timestamps.
+     *
+     * @return self
+     */
+    public function setPivot($pivot=true)
+    {
+        $this->pivot = $pivot;
+
+		return $this;
+    }
+
+    /**
+     * Indicate if the meta use default timestamps.
+     *
+     * @return boolean
+     */
+    public function isPivot(): bool
+    {
+        return $this->pivot;
     }
 
     /**

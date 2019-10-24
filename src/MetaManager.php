@@ -31,7 +31,7 @@ class MetaManager
      */
     public function hasForTableName(string $tableName): bool
     {
-        foreach ($this->getMetas() as $meta) {
+        foreach ($this->all() as $meta) {
             if ($meta->getTableName() === $tableName) {
                 return true;
             }

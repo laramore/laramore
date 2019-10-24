@@ -10,7 +10,7 @@
 
 namespace Laramore\Eloquent;
 
-use Laramore\Exceptions\LaramoreException;
+use Laramore\Meta;
 
 class FakePivot extends Pivot
 {
@@ -22,6 +22,6 @@ class FakePivot extends Pivot
      */
     protected static function __meta(Meta $meta)
     {
-        return $meta;
+        return $meta->setPivot();
     }
 }
