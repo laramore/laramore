@@ -127,7 +127,7 @@ class ManyToMany extends CompositeField
         $this->setProperty('pivotFrom', $from);
 
         if ($this->unique) {
-            $this->pivotMeta->unique($this->pivotTo, $this->pivotFrom);
+            $this->pivotMeta->unique([$this->pivotTo, $this->pivotFrom]);
         }
     }
 

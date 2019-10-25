@@ -770,7 +770,7 @@ class Meta implements IsAFieldOwner
                     if ($this->get($field->name) !== $field) {
                         throw new \Exception('It is not allowed to use external composite fields');
                     } else {
-                        return $this->unique(...$field->getFields());
+                        return $this->unique($field->getFields());
                     }
                 } else if ($field instanceof IsAField) {
                     if ($this->get($field->name) !== $field) {
