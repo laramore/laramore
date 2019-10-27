@@ -20,13 +20,11 @@ use Laramore\Fields\{
 use Laramore\Eloquent\{
     Builder as LaramoreBuilder, Relations\BaseCollection as RelationCollection
 };
-use Laramore\{
-    Meta, FieldManager
-};
 use Laramore\Proxies\{
     BaseProxy, MultiProxy, ProxyHandler
 };
-use Type, MetaManager, ProxyManager;
+use Laramore\Meta;
+use Types, Metas, Proxies;
 
 trait HasLaramore
 {
@@ -56,7 +54,7 @@ trait HasLaramore
         // Define all model metas.
         if ($primary = $meta->getPrimary()) {
             $this->setKeyName($primary->attname);
-            $this->setIncrementing($primary->type === Type::increment());
+            $this->setIncrementing($primary->type === Types::increment());
         }
 
         $this->setTable($meta->getTableName());
@@ -81,7 +79,7 @@ trait HasLaramore
     {
         // Generate all meta data defined by the user in the current pivot.
         $class = static::getMetaClass();
-        MetaManager::add($meta = new $class(static::class));
+        Metas::add($meta = new $class(static::class));
 
         static::__meta($meta);
 
@@ -105,11 +103,11 @@ trait HasLaramore
      */
     public static function getMeta()
     {
-        if (!MetaManager::has(static::class)) {
+        if (!Metas::has(static::class)) {
             return static::prepareMeta();
         }
 
-        return MetaManager::get(static::class);
+        return Metas::get(static::class);
     }
 
     /**
@@ -662,7 +660,7 @@ trait HasLaramore
 
     public static function getProxyHandler(): ProxyHandler
     {
-        return ProxyManager::getHandler(static::class);
+        return Proxies::getHandler(static::class);
     }
 
     /**

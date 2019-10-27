@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the TypeManager.
+ * Add a facade for the Types.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class TypeManager extends Facade
+class Types extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class TypeManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'TypeManager';
+        return 'Types';
     }
 }

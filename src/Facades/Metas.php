@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the ValidationManager.
+ * Add a facade for the Meta Manager.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class ValidationManager extends Facade
+class Metas extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class ValidationManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'ValidationManager';
+        return 'Metas';
     }
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the Meta Manager.
+ * Add a facade for the Operators.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class MetaManager extends Facade
+class Operators extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class MetaManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'MetaManager';
+        return 'Operators';
     }
 }

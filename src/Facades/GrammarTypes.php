@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the ModelInterfacesManager.
+ * Add a facade for the GrammarTypes.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class ProxyManager extends Facade
+class GrammarTypes extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class ProxyManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'ProxyManager';
+        return 'GrammarTypes';
     }
 }

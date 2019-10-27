@@ -13,8 +13,8 @@ namespace Laramore\Fields;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Validations\Length;
-use Laramore\Elements\Type as ReturnedType;
-use Type;
+use Laramore\Elements\Type;
+use Types;
 
 class Char extends Text
 {
@@ -51,9 +51,9 @@ class Char extends Text
         $this->maxLength = Schema::getFacadeRoot()::$defaultStringLength;
     }
 
-    public function getType(): ReturnedType
+    public function getType(): Type
     {
-        return Type::char();
+        return Types::char();
     }
 
     public function getLength(): ?int

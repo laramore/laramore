@@ -11,8 +11,8 @@
 namespace Laramore\Fields;
 
 use Illuminate\Database\Eloquent\Model;
-use Laramore\Elements\Type as ReturnedType;
-use Type;
+use Laramore\Elements\Type as Type;
+use Types;
 
 class Boolean extends Field
 {
@@ -21,9 +21,9 @@ class Boolean extends Field
      *
      * @return Type
      */
-    public function getType(): ReturnedType
+    public function getType(): Type
     {
-        return Type::boolean();
+        return Types::boolean();
     }
 
     protected function setProxies()

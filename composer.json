@@ -38,13 +38,14 @@
                 "Laramore\\Providers\\LaramoreProvider"
             ],
             "aliases": {
-                "MetaManager": "Laramore\\Facades\\MetaManager",
-                "GrammarTypeManager": "Laramore\\Facades\\GrammarTypeManager",
-                "ModelEventManager": "Laramore\\Facades\\ModelEventManager",
-                "ProxyManager": "Laramore\\Facades\\ProxyManager",
-                "ValidationManager": "Laramore\\Facades\\ValidationManager",
-                "Type": "Laramore\\Facades\\TypeManager",
-                "Op": "Laramore\\Facades\\OperatorManager",
+                "Metas": "Laramore\\Facades\\Metas",
+                "GrammarTypes": "Laramore\\Facades\\GrammarTypes",
+                "ModelEvents": "Laramore\\Facades\\ModelEvents",
+                "Proxies": "Laramore\\Facades\\Proxies",
+                "Validations": "Laramore\\Facades\\Validations",
+                "Types": "Laramore\\Facades\\Types",
+                "Operators": "Laramore\\Facades\\Operators",
+                "Op": "Laramore\\Facades\\Operators",
             }
         }
     }

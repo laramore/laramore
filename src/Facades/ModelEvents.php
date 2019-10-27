@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the GrammarTypeManager.
+ * Add a facade for the ModelEvents.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class GrammarTypeManager extends Facade
+class ModelEvents extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class GrammarTypeManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'GrammarTypeManager';
+        return 'ModelEvents';
     }
 }

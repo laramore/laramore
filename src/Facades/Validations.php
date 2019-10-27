@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the OperatorManager.
+ * Add a facade for the Validations.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class OperatorManager extends Facade
+class Validations extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class OperatorManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'OperatorManager';
+        return 'Validations';
     }
 }

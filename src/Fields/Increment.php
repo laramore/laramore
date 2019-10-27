@@ -11,8 +11,8 @@
 namespace Laramore\Fields;
 
 use Laramore\Interfaces\IsALaramoreModel;
-use Laramore\Elements\Type as ReturnedType;
-use Type;
+use Laramore\Elements\Type;
+use Types;
 
 class Increment extends Number
 {
@@ -21,9 +21,9 @@ class Increment extends Number
 
     protected static $defaultRules = self::DEFAULT_INCREMENT;
 
-    public function getType(): ReturnedType
+    public function getType(): Type
     {
-        return Type::increment();
+        return Types::increment();
     }
 
     public function getPropertyKeys(): array

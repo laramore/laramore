@@ -17,11 +17,11 @@ use Laramore\Grammars\GrammarTypeManager;
 use Laramore\Eloquent\ModelEventManager;
 use Laramore\Validations\ValidationManager;
 use Laramore\Proxies\ProxyManager;
-use Laramore\{
-    Meta, MetaManager
-};
 use Laramore\Elements\{
     TypeManager, OperatorManager
+};
+use Laramore\{
+    Meta, MetaManager
 };
 use ReflectionNamespace;
 
@@ -32,23 +32,23 @@ class LaramoreProvider extends ServiceProvider
      *
      * @var BaseManager
      */
-    protected $grammarTypeManager;
-    protected $modelEventManager;
-    protected $proxyManager;
+    protected $grammarTypes;
+    protected $modelEvents;
+    protected $proxies;
 
     /**
      * Type manager.
      *
      * @var TypeManager
      */
-    protected $typeManager;
+    protected $types;
 
     /**
      * Meta manager.
      *
      * @var MetaManager
      */
-    protected $metaManager;
+    protected $metas;
 
     /**
      * Default grammar namespace.
@@ -152,32 +152,32 @@ class LaramoreProvider extends ServiceProvider
      */
     protected function createSigletons()
     {
-        $this->app->singleton('GrammarTypeManager', function() {
-            return $this->grammarTypeManager;
+        $this->app->singleton('GrammarTypes', function() {
+            return $this->grammarTypes;
         });
 
-        $this->app->singleton('ModelEventManager', function() {
-            return $this->modelEventManager;
+        $this->app->singleton('ModelEvents', function() {
+            return $this->modelEvents;
         });
 
-        $this->app->singleton('ProxyManager', function() {
-            return $this->proxyManager;
+        $this->app->singleton('Proxies', function() {
+            return $this->proxies;
         });
 
-        $this->app->singleton('TypeManager', function() {
-            return $this->typeManager;
+        $this->app->singleton('Types', function() {
+            return $this->types;
         });
 
-        $this->app->singleton('OperatorManager', function() {
-            return $this->operatorManager;
+        $this->app->singleton('Operators', function() {
+            return $this->operators;
         });
 
-        $this->app->singleton('ValidationManager', function() {
-            return $this->validationManager;
+        $this->app->singleton('Validations', function() {
+            return $this->validations;
         });
 
-        $this->app->singleton('MetaManager', function() {
-            return $this->metaManager;
+        $this->app->singleton('Metas', function() {
+            return $this->metas;
         });
     }
 
@@ -188,13 +188,13 @@ class LaramoreProvider extends ServiceProvider
      */
     protected function createObjects()
     {
-        $this->grammarTypeManager = new GrammarTypeManager;
-        $this->modelEventManager = new ModelEventManager;
-        $this->proxyManager = new ProxyManager;
-        $this->typeManager = new TypeManager($this->defaultTypes);
-        $this->operatorManager = new OperatorManager($this->defaultOperators);
-        $this->validationManager = new ValidationManager;
-        $this->metaManager = new MetaManager;
+        $this->grammarTypes = new GrammarTypeManager;
+        $this->modelEvents = new ModelEventManager;
+        $this->proxies = new ProxyManager;
+        $this->types = new TypeManager($this->defaultTypes);
+        $this->operators = new OperatorManager($this->defaultOperators);
+        $this->validations = new ValidationManager;
+        $this->metas = new MetaManager;
     }
 
     /**
@@ -219,8 +219,8 @@ class LaramoreProvider extends ServiceProvider
     protected function createGrammarObservers()
     {
         foreach ((new ReflectionNamespace($this->grammarNamespace))->getClassNames() as $class) {
-            if ($this->grammarTypeManager->doesManage($class)) {
-                $this->grammarTypeManager->createHandler($class);
+            if ($this->grammarTypes->doesManage($class)) {
+                $this->grammarTypes->createHandler($class);
             }
         }
     }
@@ -243,11 +243,11 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootedCallback()
     {
-        $this->metaManager->lock();
-        $this->typeManager->lock();
-        $this->operatorManager->lock();
-        $this->modelEventManager->lock();
-        $this->proxyManager->lock();
-        $this->grammarTypeManager->lock();
+        $this->metas->lock();
+        $this->types->lock();
+        $this->operators->lock();
+        $this->modelEvents->lock();
+        $this->proxies->lock();
+        $this->grammarTypes->lock();
     }
 }

@@ -31,7 +31,7 @@ use Laramore\Proxies\{
 	BaseProxy, MetaProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
-use ModelEventManager, ValidationManager, ProxyManager;
+use ModelEvents, Validations, Proxies;
 
 class Meta implements IsAFieldOwner
 {
@@ -118,7 +118,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setProxyHandlers()
     {
-        ProxyManager::createHandler($this->modelClass);
+        Proxies::createHandler($this->modelClass);
     }
 
     /**
@@ -128,7 +128,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setValidationHandler()
     {
-        ValidationManager::createHandler($this->modelClass);
+        Validations::createHandler($this->modelClass);
     }
 
     /**
@@ -140,7 +140,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setDefaultObservers()
     {
-        ModelEventManager::createHandler($this->modelClass);
+        ModelEvents::createHandler($this->modelClass);
 
         $this->getModelEventHandler()->add(new ModelEvent('autofill_default', function (IsALaramoreModel $model) {
             $attributes = $model->getAttributes();
@@ -192,23 +192,13 @@ class Meta implements IsAFieldOwner
     }
 
     /**
-     * Return the field manager for this meta.
-     *
-     * @return FieldManager
-     */
-    public function getFieldManager(): FieldManager
-    {
-        return $this->fieldManager;
-    }
-
-    /**
      * Return the model observable handler for this meta.
      *
      * @return ModelEventHandler
      */
     public function getModelEventHandler(): ModelEventHandler
     {
-        return ModelEventManager::getHandler($this->getModelClass());
+        return ModelEvents::getHandler($this->getModelClass());
     }
 
     /**
@@ -218,7 +208,7 @@ class Meta implements IsAFieldOwner
      */
     public function getValidationHandler(): ValidationHandler
     {
-        return ValidationManager::getHandler($this->getModelClass());
+        return Validations::getHandler($this->getModelClass());
     }
 
     /**
@@ -228,7 +218,7 @@ class Meta implements IsAFieldOwner
      */
     public function getProxyHandler(): ProxyHandler
     {
-        return ProxyManager::getHandler($this->getModelClass());
+        return Proxies::getHandler($this->getModelClass());
     }
 
     /**

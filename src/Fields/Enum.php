@@ -13,9 +13,9 @@ namespace Laramore\Fields;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Elements\{
-    Type as ReturnedType, Enum as Element, EnumManager
+    Type, Enum as Element, EnumManager
 };
-use Type;
+use Types;
 
 class Enum extends Field
 {
@@ -26,9 +26,9 @@ class Enum extends Field
      *
      * @return Type
      */
-    public function getType(): ReturnedType
+    public function getType(): Type
     {
-        return Type::enum();
+        return Types::enum();
     }
 
     public function getPropertyKeys(): array

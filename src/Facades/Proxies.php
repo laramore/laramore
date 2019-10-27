@@ -1,6 +1,6 @@
 <?php
 /**
- * Add a facade for the ModelEventManager.
+ * Add a facade for the Proxies.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class ModelEventManager extends Facade
+class Proxies extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class ModelEventManager extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'ModelEventManager';
+        return 'Proxies';
     }
 }
