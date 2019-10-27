@@ -141,6 +141,10 @@ class LaramoreProvider extends ServiceProvider
         $this->createSigletons();
         $this->createObjects();
 
+        $this->mergeConfigFrom(
+            __DIR__.'/../../config/models.php', 'models',
+        );
+
         $this->app->booting([$this, 'bootingCallback']);
         $this->app->booted([$this, 'bootedCallback']);
     }
@@ -175,10 +179,6 @@ class LaramoreProvider extends ServiceProvider
         $this->app->singleton('Validations', function() {
             return $this->validations;
         });
-
-        $this->app->singleton('Metas', function() {
-            return $this->metas;
-        });
     }
 
     /**
@@ -202,8 +202,12 @@ class LaramoreProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function addMetas()
+    protected function createMetas()
     {
+        $this->app->singleton('Metas', function() {
+            return $this->metas;
+        });
+
         foreach ((new ReflectionNamespace($this->modelNamespace))->getClasses() as $modelClass) {
             if ($modelClass->implementsInterface(IsALaramoreModel::class)) {
                 $modelClass->getName()::getMeta();
@@ -232,8 +236,20 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootingCallback()
     {
-        $this->addMetas();
+        $this->createMetas();
         $this->createGrammarObservers();
+    }
+
+    /**
+     * Publish config file.
+     *
+     * @return void
+     */
+    public function boot()
+    {
+        $this->publishes([
+            __DIR__.'/../../config/models.php' => config_path('models.php'),
+        ]);
     }
 
     /**
