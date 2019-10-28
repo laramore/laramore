@@ -14,7 +14,7 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Laramore\Interfaces\IsAField;
 use Laramore\Traits\{
-    IsOwnedAndLocked, HasProperties
+    IsOwned, IsLocked, HasProperties
 };
 use Laramore\Traits\Field\HasRules;
 use Laramore\Proxies\FieldProxy;
@@ -27,7 +27,7 @@ use Closure;
 
 abstract class BaseField implements IsAField
 {
-    use IsOwnedAndLocked, HasProperties, HasRules {
+    use IsOwned, IsLocked, HasProperties, HasRules {
         setOwner as protected setOwnerFromTrait;
         setProperty as protected forceProperty;
     }
@@ -144,7 +144,7 @@ abstract class BaseField implements IsAField
      * @param  string $name
      * @return self
      */
-    public function name(string $name)
+    protected function setName(string $name)
     {
         $this->needsToBeUnlocked();
 

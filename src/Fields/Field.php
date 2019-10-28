@@ -96,9 +96,9 @@ abstract class Field extends BaseField
      * @param  string $name
      * @return self
      */
-    public function name(string $name)
+    protected function setName(string $name)
     {
-        parent::name($name);
+        parent::setName($name);
 
         // The attribute name is by default the same as the field name.
         if (is_null($this->attname)) {

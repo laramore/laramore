@@ -14,48 +14,13 @@ use Illuminate\Support\Collection;
 use Laramore\Eloquent\{
     Model, Builder
 };
-use Laramore\Interfaces\IsProxied;
+use Laramore\Interfaces\{
+    IsProxied, IsLockable, IsOwnable
+};
 use Laramore\Elements\Operator;
 
-interface IsAField
+interface IsAField extends IsLockable, IsOwnable
 {
-    /**
-     * Define the owner of the field.
-     *
-     * @param  object $owner
-     * @param  string $name  Name of the field.
-     * @return static
-     */
-    public function own(object $owner, string $name);
-
-    /**
-     * Return the current owner.
-     *
-     * @return mixed
-     */
-    public function getOwner();
-
-    /**
-     * Indicate if the resource is owned.
-     *
-     * @return boolean
-     */
-    public function isOwned(): bool;
-
-    /**
-     * Lock the resource so no changes could be made.
-     *
-     * @return static
-     */
-    public function lock();
-
-    /**
-     * Indicate if the resource is locked.
-     *
-     * @return boolean
-     */
-    public function isLocked(): bool;
-
     /**
      * Indicate if a propery exists.
      *
@@ -80,14 +45,6 @@ interface IsAField
      * @return static
      */
     public function setProperty(string $key, $value);
-
-    /**
-     * Define the name of the field.
-     *
-     * @param  string $name
-     * @return static
-     */
-    public function name(string $name);
 
     /**
      * Handle all calls to define field properies.

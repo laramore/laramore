@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3a527c9a05dc44db8e0f66042e0997f7",
+    "content-hash": "7b11e070b143edf2e8b9e76c0f7445c6",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -282,6 +282,133 @@
             "description": "The Illuminate Support package.",
             "homepage": "https://laravel.com",
             "time": "2019-05-17T18:49:15+00:00"
+        },
+        {
+            "name": "laramore/base",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laramore/base.git",
+                "reference": "9ce95d53977cbf69ed143048a278a16dc747c350"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laramore/base/zipball/9ce95d53977cbf69ed143048a278a16dc747c350",
+                "reference": "9ce95d53977cbf69ed143048a278a16dc747c350",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0.0"
+            },
+            "require-dev": {
+                "phpmd/phpmd": "^2.6",
+                "phpstan/phpstan": "^0.11.7",
+                "squizlabs/php_codesniffer": "^3.3"
+            },
+            "suggest": {
+                "laramore/laramore": "Laramore/Base is made in order to work with Laramore"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Laramore\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nastuzzi Samy",
+                    "email": "samy@nastuzzi.fr"
+                }
+            ],
+            "description": "Commun base for all Laramore projects. Contains Element, Lock, Own, Observer definitions",
+            "keywords": [
+                "Laramore",
+                "element",
+                "laravel",
+                "lock",
+                "manager",
+                "observer",
+                "own",
+                "owned",
+                "unlock"
+            ],
+            "time": "2019-10-27T23:50:51+00:00"
+        },
+        {
+            "name": "laramore/types",
+            "version": "v1.0.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laramore/types.git",
+                "reference": "ae12d6509dbb0b92ff9a0c8341a21b1b029f3101"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laramore/types/zipball/ae12d6509dbb0b92ff9a0c8341a21b1b029f3101",
+                "reference": "ae12d6509dbb0b92ff9a0c8341a21b1b029f3101",
+                "shasum": ""
+            },
+            "require": {
+                "laramore/base": "^1.1",
+                "nastuzzi-samy/reflection-namespace": "^1.0",
+                "php": ">=7.0.0"
+            },
+            "require-dev": {
+                "phpmd/phpmd": "^2.6",
+                "phpstan/phpstan": "^0.11.7",
+                "squizlabs/php_codesniffer": "^3.3"
+            },
+            "suggest": {
+                "laramore/laramore": "Laramore\\Base is made in order to work with Laramore"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Laramore\\Providers\\TypesProvider",
+                        "Laramore\\Providers\\GrammarTypesProvider",
+                        "Laramore\\Providers\\OperatorsProvider"
+                    ],
+                    "aliases": {
+                        "GrammarTypes": "Laramore\\Facades\\GrammarTypes",
+                        "Types": "Laramore\\Facades\\Types",
+                        "Operators": "Laramore\\Facades\\Operators",
+                        "Op": "Laramore\\Facades\\Operators"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laramore\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nastuzzi Samy",
+                    "email": "samy@nastuzzi.fr"
+                }
+            ],
+            "description": "All default types used by Laramore",
+            "keywords": [
+                "Laramore",
+                "auto",
+                "automatic",
+                "field",
+                "fields",
+                "laravel",
+                "meta",
+                "model",
+                "types"
+            ],
+            "time": "2019-10-28T11:57:49+00:00"
         },
         {
             "name": "nastuzzi-samy/reflection-namespace",

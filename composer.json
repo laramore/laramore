@@ -8,7 +8,8 @@
         "illuminate/database": ">=5.0",
         "nesbot/carbon": ">=1.0.0",
         "symfony/http-kernel": ">=4.0.0",
-        "nastuzzi-samy/reflection-namespace": "^1.0"
+        "nastuzzi-samy/reflection-namespace": "^1.0",
+        "laramore/types": "^1.0"
     },
     "authors": [
         {
@@ -39,13 +40,9 @@
             ],
             "aliases": {
                 "Metas": "Laramore\\Facades\\Metas",
-                "GrammarTypes": "Laramore\\Facades\\GrammarTypes",
                 "ModelEvents": "Laramore\\Facades\\ModelEvents",
                 "Proxies": "Laramore\\Facades\\Proxies",
-                "Validations": "Laramore\\Facades\\Validations",
-                "Types": "Laramore\\Facades\\Types",
-                "Operators": "Laramore\\Facades\\Operators",
-                "Op": "Laramore\\Facades\\Operators",
+                "Validations": "Laramore\\Facades\\Validations"
             }
         }
     }
