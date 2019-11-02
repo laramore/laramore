@@ -32,16 +32,8 @@ class LaramoreProvider extends ServiceProvider
      *
      * @var BaseManager
      */
-    protected $grammarTypes;
     protected $modelEvents;
     protected $proxies;
-
-    /**
-     * Type manager.
-     *
-     * @var TypeManager
-     */
-    protected $types;
 
     /**
      * Meta manager.
@@ -51,85 +43,11 @@ class LaramoreProvider extends ServiceProvider
     protected $metas;
 
     /**
-     * Default grammar namespace.
-     *
-     * @var string
-     */
-    protected $grammarNamespace = 'Illuminate\\Database\\Schema\\Grammars';
-
-    /**
      * Default model namespace.
      *
      * @var string
      */
     protected $modelNamespace = 'App\\Models';
-
-    /**
-     * Default types to create.
-     *
-     * @var array
-     */
-    protected $defaultTypes = [
-        'boolean' => 'bool',
-        'integer' => 'integer',
-        'unsignedInteger' => 'integer',
-        'increment' => 'integer',
-        'string' => 'string',
-        'text' => 'string',
-        'char' => 'string',
-        'timestamp' => 'string',
-        'datetime' => 'string',
-        'enum' => 'enum',
-    ];
-
-    /**
-     * Default types to create.
-     *
-     * @var array
-     */
-    protected $defaultOperators = [
-        'null' => ['null', 'null'],
-        'isNull' => ['null', 'null'],
-        'notNull' => ['notNull', 'null'],
-        'isNotNull' => ['notNull', 'null'],
-        'doesntExist' => ['null', 'null'],
-        'dontExist' => ['null', 'null'],
-        'exist' => ['notNull', 'null'],
-        'exists' => ['notNull', 'null'],
-        'equal' => '=',
-        'inf' => '<',
-        'sup' => '>',
-        'infOrEq' => '<=',
-        'supOrEq' => '>=',
-        'safeNotEqual' => '<>',
-        'notEqual' => '!=',
-        'safeEqual' => '<=>',
-        'like' => 'like',
-        'likeBinary' => 'like binary',
-        'notLike' => 'not like',
-        'ilike' => 'ilike',
-        'notIlike' => 'not ilike',
-        'rlike', 'rlike',
-        'regexp' => 'regexp',
-        'notRegexp' => 'not regexp',
-        'similarTo' => 'similar to',
-        'notSimilarTo' => 'not similar to',
-        'bitand' => ['&', 'binary'],
-        'bitor' => ['|', 'binary'],
-        'bitxor' => ['^', 'binary'],
-        'bitleft' => ['<<', 'binary'],
-        'bitright' => ['>>', 'binary'],
-        'match' => '~',
-        'imatch' => '~*',
-        'notMatch' => '!~',
-        'notImatch' => '!~*',
-        'same' => '~~',
-        'isame' => '~~*',
-        'notSame' => '!~~',
-        'notIsame' => '!~~*',
-        'in' => ['in', 'collection'],
-        'notIn' => ['not in', 'collection'],
-    ];
 
     /**
      * Prepare all singletons and add booting and booted \Closures.
@@ -156,24 +74,12 @@ class LaramoreProvider extends ServiceProvider
      */
     protected function createSigletons()
     {
-        $this->app->singleton('GrammarTypes', function() {
-            return $this->grammarTypes;
-        });
-
         $this->app->singleton('ModelEvents', function() {
             return $this->modelEvents;
         });
 
         $this->app->singleton('Proxies', function() {
             return $this->proxies;
-        });
-
-        $this->app->singleton('Types', function() {
-            return $this->types;
-        });
-
-        $this->app->singleton('Operators', function() {
-            return $this->operators;
         });
 
         $this->app->singleton('Validations', function() {
@@ -188,11 +94,8 @@ class LaramoreProvider extends ServiceProvider
      */
     protected function createObjects()
     {
-        $this->grammarTypes = new GrammarTypeManager;
         $this->modelEvents = new ModelEventManager;
         $this->proxies = new ProxyManager;
-        $this->types = new TypeManager($this->defaultTypes);
-        $this->operators = new OperatorManager($this->defaultOperators);
         $this->validations = new ValidationManager;
         $this->metas = new MetaManager;
     }
@@ -216,20 +119,6 @@ class LaramoreProvider extends ServiceProvider
     }
 
     /**
-     * Create grammar observable handlers for each possible grammars and add them to the GrammarTypeManager.
-     *
-     * @return void
-     */
-    protected function createGrammarObservers()
-    {
-        foreach ((new ReflectionNamespace($this->grammarNamespace))->getClassNames() as $class) {
-            if ($this->grammarTypes->doesManage($class)) {
-                $this->grammarTypes->createHandler($class);
-            }
-        }
-    }
-
-    /**
      * Prepare metas and grammar observable handlers before booting.
      *
      * @return void
@@ -237,7 +126,6 @@ class LaramoreProvider extends ServiceProvider
     public function bootingCallback()
     {
         $this->createMetas();
-        $this->createGrammarObservers();
     }
 
     /**
@@ -260,10 +148,7 @@ class LaramoreProvider extends ServiceProvider
     public function bootedCallback()
     {
         $this->metas->lock();
-        $this->types->lock();
-        $this->operators->lock();
         $this->modelEvents->lock();
         $this->proxies->lock();
-        $this->grammarTypes->lock();
     }
 }

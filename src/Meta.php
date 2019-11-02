@@ -11,9 +11,7 @@
 namespace Laramore;
 
 use Illuminate\Support\Str;
-use Laramore\Exceptions\{
-	MetaException, MultipleExceptionsException, RequiredFieldException
-};
+use Laramore\Exceptions\MetaException;
 use Laramore\Fields\{
 	BaseField, Field, CompositeField, LinkField, Timestamp
 };
@@ -134,7 +132,6 @@ class Meta implements IsAFieldOwner
     /**
      * Define all default observers:
      * - Auto fill all fields with their default value.
-     * - Check that all required fields have a value.
      *
      * @return void
      */
@@ -153,22 +150,6 @@ class Meta implements IsAFieldOwner
                 }
             }
         }, ModelEvent::HIGH_PRIORITY, 'saving'));
-
-        $this->getModelEventHandler()->add(new ModelEvent('check_required_fields', function (IsALaramoreModel $model) {
-            $missingFields = \array_diff($this->getRequiredFieldNames(), \array_keys($model->getAttributes()));
-
-            foreach ($missingFields as $key => $name) {
-                if (!$this->hasField($name) || $this->getField($name)->nullable) {
-                     unset($missingFields[$key]);
-                }
-            }
-
-            if (\count($missingFields)) {
-                throw new MultipleExceptionsException($this, array_map(function ($name) {
-                    return new RequiredFieldException($this->get($name), "The field $name is required");
-                }, array_values($missingFields)));
-            }
-        }, ModelEvent::LOW_PRIORITY, 'saving'));
     }
 
     /**
