@@ -776,12 +776,12 @@ class Meta implements IsAFieldOwner
 
         $this->set(
             $createdName,
-            Timestamp::field(Field::NOT_NULLABLE | Field::VISIBLE)->useCurrent()
+            Timestamp::field(['not_nullable', 'visible', 'use_current'])
         );
 
         $this->set(
             $updatedField,
-        	$updatedField = Timestamp::field(($autoUpdated ? Field::NOT_NULLABLE : Field::NULLABLE) | Field::VISIBLE)
+        	$updatedField = Timestamp::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
         );
 
         if ($autoUpdated) {
@@ -812,7 +812,7 @@ class Meta implements IsAFieldOwner
     {
         $this->pivot = $pivot;
 
-		return $this;
+        return $this;
     }
 
     /**
