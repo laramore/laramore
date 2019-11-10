@@ -45,7 +45,7 @@ class Builder extends BuilderBase implements IsProxied
 
         $parts = explode('.', $column);
 
-        if (count($parts) === 2) {
+        if (\count($parts) === 2) {
             [$table, $column] = $parts;
             $originalTable = $this->getModel()->getTable();
 
@@ -120,7 +120,7 @@ class Builder extends BuilderBase implements IsProxied
     {
         $parts = explode('.', $attname);
 
-        if (count($parts) === 2) {
+        if (\count($parts) === 2) {
             [$table, $attname] = $parts;
 
             return MetaManager::getMetaForTableName($table)->getModelClass()::dry($attname, $value);
@@ -160,8 +160,8 @@ class Builder extends BuilderBase implements IsProxied
             // - the where part,
             // - the attribute name part,
             // - the operator part (if existant).
-            if ($segment === 'And' || $segment === 'Or' || $i === (count($segments) - 1)) {
-                if ($i === (count($segments) - 1)) {
+            if ($segment === 'And' || $segment === 'Or' || $i === (\count($segments) - 1)) {
+                if ($i === (\count($segments) - 1)) {
                     $methodParts[] = $segment;
                 }
 
@@ -171,8 +171,19 @@ class Builder extends BuilderBase implements IsProxied
                     // Detect via proxies a whereFieldName method.
                     // By doing that, we can extract the possible operator, which is by default '='.
                     if ($proxyHandler->has($method, $proxyHandler::BUILDER_TYPE)) {
-                        if (count($operatorParts)) {
-                            $operator = Op::get(Str::camel(\implode('', \array_reverse($operatorParts))));
+                        if (\count($operatorParts)) {
+                            $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
+                            try {
+                                $operator = Op::get($opName);
+                            } catch (\ErrorException $e) {
+                                if (Str::startsWith($opName, 'is_')) {
+                                    $operator = Op::get(substr($opName, 3));
+                                } else if (Str::startsWith($opName, 'are_')) {
+                                    $operator = Op::get(substr($opName, 4));
+                                } else {
+                                    throw $e;
+                                }
+                            }
                         } else {
                             $operator = Op::equal();
                         }
@@ -192,13 +203,13 @@ class Builder extends BuilderBase implements IsProxied
                     }
                 } while ($operatorParts[] = \array_pop($methodParts));
 
-                if (count($methodParts)) {
+                if (\count($methodParts)) {
                     $methodParts = [];
                     $operatorParts = [];
 
                     $connector = \strtolower($segment);
                 } else {
-                    if (count($operatorParts)) {
+                    if (\count($operatorParts)) {
                         $operatorName = Str::camel(\implode('', \array_reverse($operatorParts)));
 
                         if (Op::has($operatorName)) {
