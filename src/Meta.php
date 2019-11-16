@@ -13,13 +13,15 @@ namespace Laramore;
 use Illuminate\Support\Str;
 use Laramore\Exceptions\MetaException;
 use Laramore\Fields\{
-	BaseField, Field, CompositeField, LinkField, Timestamp
+	BaseField, Field, CompositeField, LinkField, Timestamp, Constraint\ConstraintHandler
 };
 use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied, IsALaramoreModel
 };
 use Laramore\Traits\IsLocked;
-use Laramore\Traits\Meta\HasFields;
+use Laramore\Traits\Meta\{
+	HasFields, HandlesFieldConstraints
+};
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Eloquent\{
 	ModelEvent, ModelEventHandler
@@ -29,11 +31,11 @@ use Laramore\Proxies\{
 	BaseProxy, MetaProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
-use ModelEvents, Validations, Proxies;
+use ModelEvents, Validations, Proxies, Constraints;
 
 class Meta implements IsAFieldOwner
 {
-    use IsLocked, HasFields;
+    use IsLocked, HasFields, HandlesFieldConstraints;
 
     /**
      * All data relative to the model and the table.
@@ -68,15 +70,6 @@ class Meta implements IsAFieldOwner
     protected $pivot = false;
 
     /**
-     * All indexes.
-     *
-     * @var array
-     */
-    protected $primary;
-    protected $indexes = [];
-    protected $uniques = [];
-
-    /**
      * Create a Meta for a specific model.
      *
      * @param string $modelClass
@@ -87,10 +80,7 @@ class Meta implements IsAFieldOwner
         $this->setDefaultObservers();
         $this->setValidationHandler();
         $this->setProxyHandlers();
-
-        if (config('database.table.timestamps', false)) {
-            $this->useTimestamps();
-        }
+        $this->setConstraintHandler();
     }
 
     /**
@@ -127,6 +117,16 @@ class Meta implements IsAFieldOwner
     protected function setValidationHandler()
     {
         Validations::createHandler($this->modelClass);
+    }
+
+    /**
+     * Create a Constraint handler for this meta.
+     *
+     * @return void
+     */
+    protected function setConstraintHandler()
+    {
+        Constraints::createHandler($this->modelClass);
     }
 
     /**
@@ -200,6 +200,16 @@ class Meta implements IsAFieldOwner
     public function getProxyHandler(): ProxyHandler
     {
         return Proxies::getHandler($this->getModelClass());
+    }
+
+    /**
+     * Return the relation handler for this meta.
+     *
+     * @return ConstraintHandler
+     */
+    public function getConstraintHandler(): ConstraintHandler
+    {
+        return Constraints::getHandler($this->getModelClass());
     }
 
     /**
@@ -604,43 +614,13 @@ class Meta implements IsAFieldOwner
     }
 
     /**
-     * Return all unique constraints.
-     *
-     * @return array
-     */
-    public function getUniques(): array
-    {
-        return $this->uniques;
-    }
-
-    /**
-     * Return all indexes.
-     *
-     * @return array
-     */
-    public function getIndexes(): array
-    {
-        return $this->indexes;
-    }
-
-    /**
-     * Return the primary field.
-     *
-     * @return Field|null
-     */
-    public function getPrimary(): ?IsAPrimaryField
-    {
-        return $this->primary;
-    }
-
-    /**
      * Lock all owned fields.
      *
      * @return void
      */
     protected function locking()
     {
-        if (\is_null($this->primary) && !$this->pivot) {
+        if (\is_null($this->getPrimary()) && !$this->pivot) {
             throw new MetaException($this, 'A meta needs a primary key or must be set as pivot.');
         }
 
@@ -678,82 +658,6 @@ class Meta implements IsAFieldOwner
     protected function generateProxyMethodName(BaseField $field, string $firstPart, string $secondPart='')
     {
         return $firstPart.\ucfirst(Str::camel($field->name)).\ucfirst($secondPart);
-    }
-
-    /**
-     * Define the primary field.
-     *
-     * @param  Field $field
-     * @return self
-     */
-    public function primary(IsAPrimaryField $field)
-    {
-        if ($this->primary) {
-            throw new LaramoreException('A primary field is already set');
-        }
-
-        $this->primary = $field;
-
-        return $this;
-    }
-
-    /**
-     * Define a unique relation between multiple fields.
-     *
-     * @param  array fields
-     * @return self
-     */
-    public function unique(array $fields)
-    {
-        $unique = [];
-
-        if (count($fields) > 0) {
-            if (count($fields) > 1) {
-                foreach ($fields as $field) {
-                    if (is_string($field)) {
-                        $unique[] = $this->getField($field);
-                    } else if ($field instanceof CompositeField) {
-                        if ($this->get($field->name) !== $field) {
-                               throw new \Exception('It is not allowed to use external composite fields');
-                        } else {
-                            foreach ($field->getFields() as $compositeField) {
-                                $unique[] = $compositeField;
-                            }
-                        }
-                    } else if ($field instanceof IsAField) {
-                        if ($this->get($field->name) !== $field) {
-                            throw new \Exception('It is not allowed to use external field');
-                        } else {
-                            $unique[] = $field;
-                        }
-                    } else {
-                        throw new \Exception('The field '.((string) $field).' was not recognized');
-                    }
-                }
-
-                $this->uniques[] = $unique;
-            } else {
-                $field = $fields[0];
-
-                if (is_string($field)) {
-                    $this->getField($field)->unique();
-                } else if ($field instanceof CompositeField) {
-                    if ($this->get($field->name) !== $field) {
-                        throw new \Exception('It is not allowed to use external composite fields');
-                    } else {
-                        return $this->unique($field->getFields());
-                    }
-                } else if ($field instanceof IsAField) {
-                    if ($this->get($field->name) !== $field) {
-                        throw new \Exception('It is not allowed to use external field');
-                    } else {
-                        $field->unique();
-                    }
-                }
-            }
-        }
-
-        return $this;
     }
 
     /**

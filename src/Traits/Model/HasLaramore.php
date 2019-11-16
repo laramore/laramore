@@ -75,7 +75,7 @@ trait HasLaramore
      *
      * @return void
      */
-    protected static function prepareMeta()
+    protected static function generateMeta()
     {
         // Generate all meta data defined by the user in the current pivot.
         $class = static::getMetaClass();
@@ -93,7 +93,7 @@ trait HasLaramore
      */
     public static function getMetaClass(): string
     {
-        return Meta::class;
+        return config('metas.class');
     }
 
     /**
@@ -104,7 +104,7 @@ trait HasLaramore
     public static function getMeta()
     {
         if (!Metas::has(static::class)) {
-            return static::prepareMeta();
+            return static::generateMeta();
         }
 
         return Metas::get(static::class);
