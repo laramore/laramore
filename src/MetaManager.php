@@ -11,8 +11,9 @@
 namespace Laramore;
 
 use Laramore\Traits\IsLocked;
+use Laramore\Interfaces\IsALaramoreManager;
 
-class MetaManager
+class MetaManager implements IsALaramoreManager
 {
     use IsLocked;
 

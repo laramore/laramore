@@ -36,35 +36,23 @@ class LaramoreProvider extends ServiceProvider
     protected $proxies;
 
     /**
-     * Meta manager.
-     *
-     * @var MetaManager
-     */
-    protected $metas;
-
-    /**
-     * Default model namespace.
-     *
-     * @var string
-     */
-    protected $modelNamespace = 'App\\Models';
-
-    /**
      * Prepare all singletons and add booting and booted \Closures.
      *
      * @return void
      */
     public function register()
     {
+        $this->app->register(MetasProvider::class);
+
         $this->createSigletons();
         $this->createObjects();
 
-        $this->mergeConfigFrom(
-            __DIR__.'/../../config/models.php', 'models',
-        );
-
-        $this->app->booting([$this, 'bootingCallback']);
         $this->app->booted([$this, 'bootedCallback']);
+    }
+
+    protected function getDefaults()
+    {
+        return [];
     }
 
     /**
@@ -97,47 +85,6 @@ class LaramoreProvider extends ServiceProvider
         $this->modelEvents = new ModelEventManager;
         $this->proxies = new ProxyManager;
         $this->validations = new ValidationManager;
-        $this->metas = new MetaManager;
-    }
-
-    /**
-     * Add all metas to the MetaManager from a specific namespace.
-     *
-     * @return void
-     */
-    protected function createMetas()
-    {
-        $this->app->singleton('Metas', function() {
-            return $this->metas;
-        });
-
-        foreach ((new ReflectionNamespace($this->modelNamespace))->getClasses() as $modelClass) {
-            if ($modelClass->implementsInterface(IsALaramoreModel::class)) {
-                $modelClass->getName()::getMeta();
-            }
-        }
-    }
-
-    /**
-     * Prepare metas and grammar observable handlers before booting.
-     *
-     * @return void
-     */
-    public function bootingCallback()
-    {
-        $this->createMetas();
-    }
-
-    /**
-     * Publish config file.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        $this->publishes([
-            __DIR__.'/../../config/models.php' => config_path('models.php'),
-        ]);
     }
 
     /**
@@ -147,8 +94,8 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootedCallback()
     {
-        $this->metas->lock();
         $this->modelEvents->lock();
         $this->proxies->lock();
+        $this->validations->lock();
     }
 }
