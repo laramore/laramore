@@ -33,10 +33,8 @@ trait HasLaramore
     /**
      * Prepare the model during the creation of the object.
      * Add by default fillable fields, visible fields and the primary key.
-     *
-     * @param mixed ...$args
      */
-    public function __construct(...$args)
+    public function initializeHasLaramore()
     {
         $meta = static::getMeta();
 
@@ -61,8 +59,7 @@ trait HasLaramore
         }
 
         $this->setTable($meta->getTableName());
-
-        parent::__construct(...$args);
+        $this->resetAttributes();
     }
 
     /**
@@ -235,7 +232,16 @@ trait HasLaramore
      */
     public function resetAttribute(string $key)
     {
-        ($field = static::getField($key))->getOwner()->resetModelAttribute($model, $field);
+        ($field = static::getField($key))->getOwner()->resetFieldAttribute($field, $this);
+
+        return $this;
+    }
+
+    public function resetAttributes()
+    {
+        foreach (static::getMeta()->getFields() as $field) {
+            $field->getOwner()->resetFieldAttribute($field, $this);
+        }
 
         return $this;
     }

@@ -31,7 +31,7 @@ use Laramore\Proxies\{
 	BaseProxy, MetaProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
-use ModelEvents, Validations, Proxies, Constraints;
+use Validations, Proxies, Constraints;
 
 class Meta implements IsAFieldOwner
 {
@@ -77,7 +77,6 @@ class Meta implements IsAFieldOwner
     public function __construct(string $modelClass)
     {
         $this->setModelClass($modelClass);
-        $this->setDefaultObservers();
         $this->setValidationHandler();
         $this->setProxyHandlers();
         $this->setConstraintHandler();
@@ -130,29 +129,6 @@ class Meta implements IsAFieldOwner
     }
 
     /**
-     * Define all default observers:
-     * - Auto fill all fields with their default value.
-     *
-     * @return void
-     */
-    protected function setDefaultObservers()
-    {
-        ModelEvents::createHandler($this->modelClass);
-
-        $this->getModelEventHandler()->add(new ModelEvent('autofill_default', function (IsALaramoreModel $model) {
-            $attributes = $model->getAttributes();
-
-            foreach ($this->getFields() as $field) {
-                if (!isset($attributes[$attname = $field->attname])) {
-                    if ($field->hasProperty('default')) {
-                        $model->setAttribute($attname, $field->default);
-                    }
-                }
-            }
-        }, ModelEvent::HIGH_PRIORITY, 'saving'));
-    }
-
-    /**
      * Return the model class.
      *
      * @return string
@@ -170,16 +146,6 @@ class Meta implements IsAFieldOwner
     public function getModelClassName(): ?string
     {
         return $this->modelClassName;
-    }
-
-    /**
-     * Return the model observable handler for this meta.
-     *
-     * @return ModelEventHandler
-     */
-    public function getModelEventHandler(): ModelEventHandler
-    {
-        return ModelEvents::getHandler($this->getModelClass());
     }
 
     /**

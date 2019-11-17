@@ -11,7 +11,6 @@
 namespace Laramore\Traits\Pivot;
 
 use Laramore\Traits\Model\HasLaramore as BaseHasLaramore;
-use Laramore\PivotMeta;
 
 trait HasLaramore
 {
@@ -26,6 +25,6 @@ trait HasLaramore
      */
     public static function getMetaClass(): string
     {
-        return PivotMeta::class;
+        return config('metas.pivot_class');
     }
 }
