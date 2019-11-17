@@ -14,7 +14,6 @@ use Illuminate\Support\ServiceProvider;
 use Laramore\Interfaces\IsALaramoreModel;
 use Laramore\Observers\BaseManager;
 use Laramore\Grammars\GrammarTypeManager;
-use Laramore\Eloquent\ModelEventManager;
 use Laramore\Validations\ValidationManager;
 use Laramore\Proxies\ProxyManager;
 use Laramore\Elements\{
@@ -56,16 +55,12 @@ class LaramoreProvider extends ServiceProvider
     }
 
     /**
-     * Create all singletons: GrammarTypeManager, ModelEventManager, ProxyManager, TypeManager, MetaManager.
+     * Create all singletons: GrammarTypeManager, ProxyManager, TypeManager, MetaManager.
      *
      * @return void
      */
     protected function createSigletons()
     {
-        $this->app->singleton('ModelEvents', function() {
-            return $this->modelEvents;
-        });
-
         $this->app->singleton('Proxies', function() {
             return $this->proxies;
         });
@@ -76,13 +71,12 @@ class LaramoreProvider extends ServiceProvider
     }
 
     /**
-     * Create all singleton objects: GrammarTypeManager, ModelEventManager, ProxyManager, TypeManager, MetaManager.
+     * Create all singleton objects: GrammarTypeManager, ProxyManager, TypeManager, MetaManager.
      *
      * @return void
      */
     protected function createObjects()
     {
-        $this->modelEvents = new ModelEventManager;
         $this->proxies = new ProxyManager;
         $this->validations = new ValidationManager;
     }
@@ -94,7 +88,6 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootedCallback()
     {
-        $this->modelEvents->lock();
         $this->proxies->lock();
         $this->validations->lock();
     }
