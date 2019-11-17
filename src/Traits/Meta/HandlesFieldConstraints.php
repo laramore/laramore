@@ -57,7 +57,7 @@ trait HandlesFieldConstraints
             $class = config('fields.constraints.types.primary.class');
         }
 
-        $this->getConstraintHandler()->add(new $class($fields, $name, $priority));
+        $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));
 
         return $this;
     }
@@ -81,7 +81,7 @@ trait HandlesFieldConstraints
             $class = config('fields.constraints.types.index.class');
         }
 
-        $this->getConstraintHandler()->add(new $class($fields, $name, $priority));
+        $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));
 
         return $this;
     }
@@ -105,7 +105,7 @@ trait HandlesFieldConstraints
             $class = config('fields.constraints.types.unique.class');
         }
 
-        $this->getConstraintHandler()->add(new $class($fields, $name, $priority));
+        $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));
 
         return $this;
     }
@@ -129,7 +129,7 @@ trait HandlesFieldConstraints
             $class = config('fields.constraints.types.foreign.class');
         }
 
-        $this->getConstraintHandler()->add(new $class($fields, $name, $priority));
+        $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));
 
         return $this;
     }

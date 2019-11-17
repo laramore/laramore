@@ -339,16 +339,16 @@
         },
         {
             "name": "laramore/fields",
-            "version": "v1.2.2",
+            "version": "v1.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/fields.git",
-                "reference": "cef06db79e74d28a2ac46684df2c792e3418dd07"
+                "reference": "4908bbe501043ad98a67abc5fd54da0f0d15774b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/fields/zipball/cef06db79e74d28a2ac46684df2c792e3418dd07",
-                "reference": "cef06db79e74d28a2ac46684df2c792e3418dd07",
+                "url": "https://api.github.com/repos/laramore/fields/zipball/4908bbe501043ad98a67abc5fd54da0f0d15774b",
+                "reference": "4908bbe501043ad98a67abc5fd54da0f0d15774b",
                 "shasum": ""
             },
             "require": {
@@ -404,7 +404,7 @@
                 "table",
                 "validations"
             ],
-            "time": "2019-11-16T15:22:17+00:00"
+            "time": "2019-11-17T12:03:46+00:00"
         },
         {
             "name": "laramore/types",
