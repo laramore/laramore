@@ -53,8 +53,11 @@ trait HasLaramore
 
         // Define all model metas.
         if ($primary = $meta->getPrimary()) {
-            $this->setKeyName($primary->attname);
-            $this->setIncrementing($primary->type === Types::increment());
+            $this->setKeyName($primary->isComposed() ? $primary->getAttributes() : $primary->getAttribute());
+
+            if (!$primary->isComposed()) {
+                $this->setIncrementing($primary->all()[0]->type === Types::increment());
+            }
         }
 
         $this->setTable($meta->getTableName());
