@@ -645,7 +645,7 @@ class Meta implements IsAFieldOwner
         }
 
         $this->set(
-            $createdName,
+        $createdName,
             Timestamp::field(['not_nullable', 'visible', 'use_current'])
         );
 

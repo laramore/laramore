@@ -40,7 +40,6 @@
             ],
             "aliases": {
                 "Metas": "Laramore\\Facades\\Metas",
-                "Proxies": "Laramore\\Facades\\Proxies",
                 "Validations": "Laramore\\Facades\\Validations"
             }
         }

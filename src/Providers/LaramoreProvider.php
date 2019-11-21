@@ -61,10 +61,6 @@ class LaramoreProvider extends ServiceProvider
      */
     protected function createSigletons()
     {
-        $this->app->singleton('Proxies', function() {
-            return $this->proxies;
-        });
-
         $this->app->singleton('Validations', function() {
             return $this->validations;
         });
@@ -77,7 +73,6 @@ class LaramoreProvider extends ServiceProvider
      */
     protected function createObjects()
     {
-        $this->proxies = new ProxyManager;
         $this->validations = new ValidationManager;
     }
 
@@ -88,7 +83,6 @@ class LaramoreProvider extends ServiceProvider
      */
     public function bootedCallback()
     {
-        $this->proxies->lock();
         $this->validations->lock();
     }
 }
