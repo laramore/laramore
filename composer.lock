@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "143adb91acf9ac01f0a6238fa6f6cc42",
+    "content-hash": "7c3795a02623e917a1958f9b15c7b709",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -339,16 +339,16 @@
         },
         {
             "name": "laramore/fields",
-            "version": "v1.3.1",
+            "version": "v1.3.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/fields.git",
-                "reference": "ea0cc2214ac12a2e2c5820423f3a9409c32f4aa4"
+                "reference": "6681b0bcf2c5ea9a396d8eed22106415561b2540"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/fields/zipball/ea0cc2214ac12a2e2c5820423f3a9409c32f4aa4",
-                "reference": "ea0cc2214ac12a2e2c5820423f3a9409c32f4aa4",
+                "url": "https://api.github.com/repos/laramore/fields/zipball/6681b0bcf2c5ea9a396d8eed22106415561b2540",
+                "reference": "6681b0bcf2c5ea9a396d8eed22106415561b2540",
                 "shasum": ""
             },
             "require": {
@@ -406,7 +406,7 @@
                 "table",
                 "validations"
             ],
-            "time": "2019-11-24T17:31:47+00:00"
+            "time": "2019-11-24T18:55:52+00:00"
         },
         {
             "name": "laramore/types",

@@ -56,6 +56,10 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
             __DIR__.'/../../config/metas.php' => config_path('metas.php'),
         ]);
 
+        $this->mergeConfigFrom(
+            __DIR__.'/../../config/fields.php', 'fields',
+        );
+
         $this->app->register(LastProvider::class);
     }
 
