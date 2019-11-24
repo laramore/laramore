@@ -18,7 +18,9 @@ use Laramore\Fields\{
 use Laramore\Interfaces\{
 	IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied, IsALaramoreModel
 };
-use Laramore\Traits\IsLocked;
+use Laramore\Traits\{
+	IsLocked, HasLockedMacros
+};
 use Laramore\Traits\Meta\{
 	HasFields, HandlesFieldConstraints
 };
@@ -31,11 +33,14 @@ use Laramore\Proxies\{
 	BaseProxy, MetaProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
-use Validations, Proxies, Constraints;
+use Validations, Proxies, Constraints, Event;
 
 class Meta implements IsAFieldOwner
 {
-    use IsLocked, HasFields, HandlesFieldConstraints;
+    use IsLocked, HasLockedMacros, HasFields, HandlesFieldConstraints {
+        IsLocked::lock as protected lockFromTrait;
+        HasLockedMacros::__call as protected callMacro;
+    }
 
     /**
      * All data relative to the model and the table.
@@ -76,10 +81,13 @@ class Meta implements IsAFieldOwner
      */
     public function __construct(string $modelClass)
     {
+        Event::dispatch('metas.creating', static::class, \func_get_args());
+
         $this->setModelClass($modelClass);
-        $this->setValidationHandler();
-        $this->setProxyHandlers();
+        $this->setProxyHandler();
         $this->setConstraintHandler();
+
+        Event::dispatch('metas.created', $this);
     }
 
     /**
@@ -103,19 +111,9 @@ class Meta implements IsAFieldOwner
      *
      * @return void
      */
-    protected function setProxyHandlers()
+    protected function setProxyHandler()
     {
         Proxies::createHandler($this->modelClass);
-    }
-
-    /**
-     * Create a Validation handler for this meta.
-     *
-     * @return void
-     */
-    protected function setValidationHandler()
-    {
-        Validations::createHandler($this->modelClass);
     }
 
     /**
@@ -146,16 +144,6 @@ class Meta implements IsAFieldOwner
     public function getModelClassName(): ?string
     {
         return $this->modelClassName;
-    }
-
-    /**
-     * Return the validation handler for this meta.
-     *
-     * @return ValidationHandler
-     */
-    public function getValidationHandler(): ValidationHandler
-    {
-        return Validations::getHandler($this->getModelClass());
     }
 
     /**
@@ -580,6 +568,26 @@ class Meta implements IsAFieldOwner
     }
 
     /**
+     * Disallow any modifications after locking the instance.
+     *
+     * @return self
+     */
+    public function lock()
+    {
+        $locking = Event::until('metas.locking', $this);
+
+        if ($locking === false) {
+            return $this;
+        }
+
+        $this->lockFromTrait();
+
+        Event::dispatch('metas.locked', $this);
+
+        return $this;
+    }
+
+    /**
      * Lock all owned fields.
      *
      * @return void
@@ -594,36 +602,7 @@ class Meta implements IsAFieldOwner
             if ($field->getOwner() === $this) {
                 $field->lock();
             }
-
-            $this->setFieldAttributeProxy('get', $field, ['instance'], ['model'], 'attribute');
-            $this->setFieldAttributeProxy('set', $field, ['instance'], ['model'], 'attribute');
-            $this->setFieldAttributeProxy('reset', $field, ['instance'], ['model'], 'attribute');
-            $this->setFieldAttributeProxy('transform', $field);
-            $this->setFieldAttributeProxy('serialize', $field);
-            $this->setFieldAttributeProxy('check', $field);
-            $this->setFieldAttributeProxy('dry', $field);
-            $this->setFieldAttributeProxy('cast', $field);
-            $this->setFieldAttributeProxy('default', $field);
         }
-    }
-
-    protected function setFieldAttributeProxy(string $methodName, BaseField $field, array $injections=[], array $on=['model'], string $secondPart='')
-    {
-        return $this->setProxy("${methodName}FieldAttribute", $this->generateProxyMethodName($field, $methodName, $secondPart), $field, array_merge(['field'], $injections), $on);
-    }
-
-    protected function setProxy(string $methodName, string $proxyName, BaseField $field, array $injections=[], array $on=['model'])
-    {
-        $proxy = new MetaProxy($proxyName, $this, $field, $methodName, $injections, $on);
-
-        $this->getProxyHandler()->add($proxy);
-
-        return $proxy;
-    }
-
-    protected function generateProxyMethodName(BaseField $field, string $firstPart, string $secondPart='')
-    {
-        return $firstPart.\ucfirst(Str::camel($field->name)).\ucfirst($secondPart);
     }
 
     /**
@@ -695,45 +674,6 @@ class Meta implements IsAFieldOwner
         return $this->pivot;
     }
 
-    /**
-     * Return the field with a given name.
-     *
-     * @param  string $name
-     * @return BaseField
-     */
-    public function __get(string $name): BaseField
-    {
-        return $this->get($name);
-    }
-
-    /**
-     * Set a field with a given name.
-     *
-     * @param string    $name
-     * @param BaseField $value
-     * @return self
-     */
-    public function __set(string $name, BaseField $value=null)
-    {
-        return $this->set($name, $value);
-    }
-
-    /**
-     * Set a field with a given name.
-     *
-     * @param string $method
-     * @param array  $args
-     * @return self
-     */
-    public function __call(string $method, array $args)
-    {
-        if (\preg_match('/^(.*)FieldAttribute$/', $method, $matches)) {
-            return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
-        }
-
-        throw new \Exception("The method [$method] does not exist.");
-    }
-
     protected function getProxyInjection(BaseProxy $proxy, string $argName, ?IsProxied $proxiedInstance=null)
     {
         switch ($argName) {
@@ -768,5 +708,48 @@ class Meta implements IsAFieldOwner
         }
 
         return $proxy(...$args);
+    }
+
+    /**
+     * Return the field with a given name.
+     *
+     * @param  string $name
+     * @return BaseField
+     */
+    public function __get(string $name): BaseField
+    {
+        return $this->get($name);
+    }
+
+    /**
+     * Set a field with a given name.
+     *
+     * @param string    $name
+     * @param BaseField $value
+     * @return self
+     */
+    public function __set(string $name, BaseField $value=null)
+    {
+        return $this->set($name, $value);
+    }
+
+    /**
+     * Set a field with a given name.
+     *
+     * @param string $method
+     * @param array  $args
+     * @return self
+     */
+    public function __call(string $method, array $args)
+    {
+        if (static::hasMacro($method)) {
+            return $this->callMacro($method, $args);
+        }
+
+        if (\preg_match('/^(.*)FieldAttribute$/', $method, $matches)) {
+            return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
+        }
+
+        throw new \Exception("The method [$method] does not exist.");
     }
 }
