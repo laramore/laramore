@@ -47,7 +47,6 @@ trait HasFields
         }
 
         $owner = $field->getOwner();
-        $owner->checkFieldAttribute($field, $value);
         $value = $owner->transformFieldAttribute($field, $value);
         $model->setRawAttribute($field->attname, $value);
 
@@ -78,7 +77,6 @@ trait HasFields
     {
         $owner = $field->getOwner();
         $value = $owner->transformFieldAttribute($field, $value);
-        $owner->checkFieldAttribute($field, $value);
         $value = $field->consume($model, $value);
         $model->setRawRelationValue($field->name, $value);
 
@@ -247,7 +245,7 @@ trait HasFields
     {
         return $model->setRawAttribute($field->attname, $field->getOwner()->defaultFieldAttribute($field));
     }
-    
+
     /**
      * Call a field attribute method that is not basic.
      *
