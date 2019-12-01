@@ -15,7 +15,6 @@ use Laramore\Interfaces\{
 	IsALaramoreManager, IsALaramoreProvider, IsALaramoreModel
 };
 use Laramore\Exceptions\ConfigException;
-use Laramore\Traits\Provider\MergesConfig;
 use Laramore\MetaManager;
 use ReflectionNamespace;
 

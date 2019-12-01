@@ -15,13 +15,10 @@ use Laramore\Interfaces\{
 	IsALaramoreManager, IsALaramoreProvider, IsALaramoreModel
 };
 use Laramore\Exceptions\ConfigException;
-use Laramore\Traits\Provider\MergesConfig;
 use ReflectionNamespace;
 
 class MetasProvider extends ServiceProvider implements IsALaramoreProvider
 {
-    use MergesConfig;
-
     /**
      * Meta manager.
      *
