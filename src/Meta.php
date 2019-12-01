@@ -13,24 +13,24 @@ namespace Laramore;
 use Illuminate\Support\Str;
 use Laramore\Exceptions\MetaException;
 use Laramore\Fields\{
-	BaseField, Field, CompositeField, LinkField, Timestamp, Constraint\ConstraintHandler
+    BaseField, Field, CompositeField, LinkField, Timestamp, Constraint\ConstraintHandler
 };
 use Laramore\Interfaces\{
-	IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied, IsALaramoreModel
+    IsAField, IsAPrimaryField, IsAFieldOwner, IsProxied, IsALaramoreModel
 };
 use Laramore\Traits\{
-	IsLocked, HasLockedMacros
+    IsLocked, HasLockedMacros
 };
 use Laramore\Traits\Meta\{
-	HasFields, HandlesFieldConstraints
+    HasFields, HandlesFieldConstraints
 };
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Eloquent\{
-	ModelEvent, ModelEventHandler
+    ModelEvent, ModelEventHandler
 };
 use Laramore\Validations\ValidationHandler;
 use Laramore\Proxies\{
-	BaseProxy, MetaProxy, MultiProxy, ProxyHandler
+    BaseProxy, MetaProxy, MultiProxy, ProxyHandler
 };
 use Laramore\Template;
 use Validations, Proxies, Constraints, Event;
@@ -219,17 +219,6 @@ class Meta implements IsAFieldOwner
     }
 
     /**
-     * Parse the attribute name.
-     *
-     * @param  string $name
-     * @return string
-     */
-    public function parseAttname(string $name): string
-    {
-        return Str::snake($name);
-    }
-
-    /**
      * Indicate if the meta as a field with a given name.
      *
      * @param  string $name
@@ -266,12 +255,14 @@ class Meta implements IsAFieldOwner
     {
         $this->needsToBeUnlocked();
 
+        $field = $this->manipulateField($field)->own($this, $name);
+        $name = $field->getName();
+
         if ($this->has($name)) {
             throw new \LogicException("The field $name is already defined");
         }
 
-        $field = $this->manipulateField($field)->own($this, $this->parseAttname($name));
-        $this->fields[$field->name] = $field;
+        $this->fields[$name] = $field;
 
         return $this;
     }
@@ -323,18 +314,22 @@ class Meta implements IsAFieldOwner
     {
         $this->needsToBeUnlocked();
 
+        $link = $this->manipulateField($link);
+
+        if ($link->isOwned()) {
+            if ($link->getName() !== $name) {
+                throw new \Exception('The link field name must be the same than the given one.');
+            }
+        } else {
+            $link->own($this, $name);
+            $name = $link->getName();
+        }
+
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);
         }
 
-        if ($link->isOwned()) {
-            if ($link->name !== $name) {
-                throw new \Exception('The link field name must be the same than the given one.');
-            }
-        }
-
-        $link = $this->manipulateField($link);
-        $this->links[$link->name] = $link;
+        $this->links[$name] = $link;
 
         return $this;
     }
@@ -386,19 +381,21 @@ class Meta implements IsAFieldOwner
     {
         $this->needsToBeUnlocked();
 
+        $composite = $this->manipulateField($composite)->own($this, $name);
+        $name = $composite->getName();
+
         if ($this->has($name)) {
             throw new \Exception('It is not allowed to reset the field '.$name);
         }
 
-        $composite = $this->manipulateField($composite)->own($this, $this->parseAttname($name));
-        $this->composites[$composite->name] = $composite;
+        $this->composites[$name] = $composite;
 
         foreach ($composite->getFields() as $field) {
             if (!$field->isOwned() || $field->getOwner() !== $composite) {
-                throw new \Exception("The field $name must be owned by the composed field ".$value->name);
+                throw new \Exception("The field $name must be owned by the composed field ".$field->getName());
             }
 
-            $this->fields[$field->name] = $this->manipulateField($field);
+            $this->fields[$field->getName()] = $this->manipulateField($field);
         }
 
         return $this;
@@ -468,9 +465,9 @@ class Meta implements IsAFieldOwner
     public function all(): array
     {
         return array_merge(
-	        $this->fields,
-	        $this->composites,
-	        $this->links
+            $this->fields,
+            $this->composites,
+            $this->links
         );
     }
 
@@ -630,7 +627,7 @@ class Meta implements IsAFieldOwner
 
         $this->set(
             $updatedField,
-        	$updatedField = Timestamp::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
+            $updatedField = Timestamp::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
         );
 
         if ($autoUpdated) {
@@ -679,15 +676,15 @@ class Meta implements IsAFieldOwner
         switch ($argName) {
             case 'instance':
                 return $proxiedInstance;
-            	break;
+                break;
 
             case 'field':
                 return $proxy->getField();
-            	break;
+                break;
 
             case 'value':
                 return $proxiedInstance->getAttribute($proxy->getField()->attname);
-            	break;
+                break;
 
             default:
                 throw new \Exception("The proxy arg [$argName] does not exist.");
@@ -697,7 +694,7 @@ class Meta implements IsAFieldOwner
     public function proxyCall(BaseProxy $proxy, ?IsProxied $proxiedInstance=null, array $args=[])
     {
         if ($proxy instanceof MultiProxy) {
-            $proxy = $proxy->get(\array_shift($args));
+            $proxy = $proxy->getProxy(\array_shift($args));
         }
 
         $field = $proxy->getField();

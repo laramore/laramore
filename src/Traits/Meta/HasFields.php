@@ -11,7 +11,7 @@ use Laramore\Builder;
 use Laramore\Fields\{
 	BaseField, Field
 };
-use Laramore\Facades\Operations;
+use Laramore\Facades\Operators;
 use Laramore\Interfaces\{
 	IsProxied, IsARelationField, IsALaramoreModel
 };
@@ -115,11 +115,11 @@ trait HasFields
         }
 
         if (func_num_args() === 3) {
-            [$operator, $value] = [Operations::equal(), $operator];
+            [$operator, $value] = [Operators::equal(), $operator];
         }
 
         if (!($operator instanceof Operator)) {
-            $operator = Operations::find($operator ?: null);
+            $operator = Operators::find($operator ?: null);
         }
 
         if ($builder instanceof IsALaramoreModel) {
