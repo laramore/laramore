@@ -26,6 +26,10 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
      */
     protected static $managers;
 
+    protected static $commonProxies = [
+        'cast', 'default', 'dry', 'get', 'reset', 'serialize', 'set', 'transform',
+    ];
+
     /**
      * Register our facade and create the manager.
      *
@@ -36,6 +40,12 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
         $this->mergeConfigFrom(
             __DIR__.'/../../config/metas.php', 'metas',
         );
+
+        foreach (static::$commonProxies as $proxy) {
+            $this->mergeConfigFrom(
+            __DIR__."/../../config/fields/proxies/common/$proxy.php", "fields.proxies.common.$proxy",
+            );
+        }
 
         $this->app->singleton('Metas', function() {
             return static::getManager();
@@ -49,13 +59,13 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
      */
     public function boot()
     {
-        $this->publishes([
+        $this->publishes(\array_merge([
             __DIR__.'/../../config/metas.php' => config_path('metas.php'),
-        ]);
-
-        $this->mergeConfigFrom(
-            __DIR__.'/../../config/fields.php', 'fields',
-        );
+        ], ...\array_map(function ($proxy) {
+            return [
+                __DIR__."/../../config/fields/proxies/common/$proxy.php" => config_path("fields/proxies/common/$proxy.php"),
+            ];
+        }, static::$commonProxies)));
 
         $this->app->register(LastProvider::class);
     }

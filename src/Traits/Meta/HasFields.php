@@ -29,6 +29,7 @@ trait HasFields
         if ($field instanceof IsARelationField) {
             return $model->getRelationValue($field->name);
         }
+
         return ($model->getRawAttribute($field->attname) ?? null);
     }
 
