@@ -31,6 +31,23 @@ trait HasLaramore
     protected $required = [];
 
     /**
+     * Create a new Eloquent model instance.
+     *
+     * @param  array $attributes
+     * @return void
+     */
+    public function __construct(array $attributes=[])
+    {
+        if (\version_compare(app()::VERSION, '5.7.0', '<')) {
+            $this->bootIfNotBooted();
+
+            $this->initializeHasLaramore();
+        }
+
+        parent::__construct($attributes);
+    }
+
+    /**
      * Prepare the model during the creation of the object.
      * Add by default fillable fields, visible fields and the primary key.
      */
