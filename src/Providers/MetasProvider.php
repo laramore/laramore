@@ -26,6 +26,11 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
      */
     protected static $managers;
 
+    /**
+     * Define all proxy files to merge into config.
+     *
+     * @var array
+     */
     protected static $commonProxies = [
         'cast', 'default', 'dry', 'get', 'reset', 'serialize', 'set', 'transform',
     ];
