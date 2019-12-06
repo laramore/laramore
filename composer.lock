@@ -324,16 +324,16 @@
         },
         {
             "name": "laramore/base",
-            "version": "v0.2.3",
+            "version": "v0.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/base.git",
-                "reference": "2a1187eecb923e1455a2cab515c0ede4b2171ab3"
+                "reference": "6375473d2e4d3c2e0e2c3d5b4c9d4bae08b690a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/base/zipball/2a1187eecb923e1455a2cab515c0ede4b2171ab3",
-                "reference": "2a1187eecb923e1455a2cab515c0ede4b2171ab3",
+                "url": "https://api.github.com/repos/laramore/base/zipball/6375473d2e4d3c2e0e2c3d5b4c9d4bae08b690a3",
+                "reference": "6375473d2e4d3c2e0e2c3d5b4c9d4bae08b690a3",
                 "shasum": ""
             },
             "require": {
@@ -377,26 +377,26 @@
                 "owned",
                 "unlock"
             ],
-            "time": "2019-12-03T11:35:45+00:00"
+            "time": "2019-12-05T23:35:50+00:00"
         },
         {
             "name": "laramore/fields",
-            "version": "v0.1.4",
+            "version": "v0.1.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/fields.git",
-                "reference": "2b191fb035f43d1159960223ce8ef1ffc6fb8fb3"
+                "reference": "649c0c079f70cc9a57874fbd41ed1110491e1064"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/fields/zipball/2b191fb035f43d1159960223ce8ef1ffc6fb8fb3",
-                "reference": "2b191fb035f43d1159960223ce8ef1ffc6fb8fb3",
+                "url": "https://api.github.com/repos/laramore/fields/zipball/649c0c079f70cc9a57874fbd41ed1110491e1064",
+                "reference": "649c0c079f70cc9a57874fbd41ed1110491e1064",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": ">=5.5",
                 "laramore/types": "^0.1.1",
-                "nesbot/carbon": ">=1.39",
+                "nesbot/carbon": ">=1.0",
                 "php": ">=7.0.8",
                 "symfony/http-kernel": ">=3.4"
             },
@@ -450,25 +450,24 @@
                 "table",
                 "validations"
             ],
-            "time": "2019-12-03T11:41:13+00:00"
+            "time": "2019-12-06T00:54:51+00:00"
         },
         {
             "name": "laramore/types",
-            "version": "v0.1.2",
+            "version": "v0.1.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/types.git",
-                "reference": "9521f27e8e9a3d3e632cc855f13a4b1cd6bbfc72"
+                "reference": "b8310d6b36579405c573e6a9fc51e941041f0d2a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/types/zipball/9521f27e8e9a3d3e632cc855f13a4b1cd6bbfc72",
-                "reference": "9521f27e8e9a3d3e632cc855f13a4b1cd6bbfc72",
+                "url": "https://api.github.com/repos/laramore/types/zipball/b8310d6b36579405c573e6a9fc51e941041f0d2a",
+                "reference": "b8310d6b36579405c573e6a9fc51e941041f0d2a",
                 "shasum": ""
             },
             "require": {
                 "laramore/base": "^0.2.0",
-                "nastuzzi-samy/reflection-namespace": ">=1.0",
                 "php": ">=7.0.8"
             },
             "require-dev": {
@@ -523,46 +522,7 @@
                 "model",
                 "types"
             ],
-            "time": "2019-12-03T11:38:53+00:00"
-        },
-        {
-            "name": "nastuzzi-samy/reflection-namespace",
-            "version": "v1.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/NastuzziSamy/reflection-namespace.git",
-                "reference": "f15ec5236a50919533942ccbfef5071f885571d6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/NastuzziSamy/reflection-namespace/zipball/f15ec5236a50919533942ccbfef5071f885571d6",
-                "reference": "f15ec5236a50919533942ccbfef5071f885571d6",
-                "shasum": ""
-            },
-            "require-dev": {
-                "phpmd/phpmd": "^2.6",
-                "phpstan/phpstan": "^0.10.5",
-                "phpunit/phpunit": "^7.5",
-                "squizlabs/php_codesniffer": "^3.3"
-            },
-            "type": "library",
-            "autoload": {
-                "files": [
-                    "src/ReflectionNamespace.php"
-                ]
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "NastuzziSamy",
-                    "email": "samy@nastuzzi.fr"
-                }
-            ],
-            "description": "Reflect a namespace, give its classes, its sub-namespaces and more",
-            "time": "2019-05-23T22:13:47+00:00"
+            "time": "2019-12-06T00:45:42+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -3645,16 +3605,16 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "3.5.2",
+            "version": "3.5.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/squizlabs/PHP_CodeSniffer.git",
-                "reference": "65b12cdeaaa6cd276d4c3033a95b9b88b12701e7"
+                "reference": "557a1fc7ac702c66b0bbfe16ab3d55839ef724cb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/65b12cdeaaa6cd276d4c3033a95b9b88b12701e7",
-                "reference": "65b12cdeaaa6cd276d4c3033a95b9b88b12701e7",
+                "url": "https://api.github.com/repos/squizlabs/PHP_CodeSniffer/zipball/557a1fc7ac702c66b0bbfe16ab3d55839ef724cb",
+                "reference": "557a1fc7ac702c66b0bbfe16ab3d55839ef724cb",
                 "shasum": ""
             },
             "require": {
@@ -3692,7 +3652,7 @@
                 "phpcs",
                 "standards"
             ],
-            "time": "2019-10-28T04:36:32+00:00"
+            "time": "2019-12-04T04:46:47+00:00"
         },
         {
             "name": "symfony/config",
