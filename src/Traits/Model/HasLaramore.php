@@ -695,7 +695,7 @@ trait HasLaramore
     public function __get($name)
     {
         $name = Str::snake($name);
-        $method = 'get' . Str::studly($name) . 'Attribute';
+        $method = 'get'.Str::studly($name).'Attribute';
 
         if (static::hasField($name) || \method_exists($this, $method)) {
             return \call_user_func([$this, $method]);
@@ -714,7 +714,7 @@ trait HasLaramore
     public function __set($name, $value)
     {
         $name = Str::snake($name);
-        $method = 'set' . Str::studly($name) . 'Attribute';
+        $method = 'set'.Str::studly($name).'Attribute';
 
         if (static::hasField($name) || \method_exists($this, $method)) {
             return \call_user_func([$this, $method], $value);
@@ -732,7 +732,7 @@ trait HasLaramore
     public function __unset($name)
     {
         $name = Str::snake($name);
-        $method = 'reset' . Str::studly($name) . 'Attribute';
+        $method = 'reset'.Str::studly($name).'Attribute';
 
         if (static::hasField($name) || \method_exists($this, $method)) {
             return \call_user_func([$this, $method]);
