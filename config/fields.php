@@ -18,15 +18,15 @@ return [
             'dry' => [],
             'cast' => [],
             'default' => [],
-            'get' => [
+            'getValue' => [
                 'name_template' => 'get^{fieldname}Attribute',
                 'requirements' => ['instance'],
             ],
-            'set' => [
+            'setValue' => [
                 'name_template' => 'set^{fieldname}Attribute',
                 'requirements' => ['instance'],
             ],
-            'reset' => [
+            'resetValue' => [
                 'name_template' => 'reset^{fieldname}Attribute',
                 'requirements' => ['instance'],
             ],

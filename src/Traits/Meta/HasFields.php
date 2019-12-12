@@ -7,9 +7,8 @@
  */
 namespace Laramore\Traits\Meta;
 use Illuminate\Support\Str;
-use Laramore\Builder;
 use Laramore\Fields\{
-	BaseField, Field
+	BaseField, AttributeField
 };
 use Laramore\Facades\Operators;
 use Laramore\Interfaces\{
@@ -24,7 +23,7 @@ trait HasFields
      * @param IsALaramoreModel $model
      * @return mixed
      */
-    public function getFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    public function getValueFieldAttribute(BaseField $field, IsALaramoreModel $model)
     {
         if ($field instanceof IsARelationField) {
             return $model->getRelationValue($field->name);
@@ -41,7 +40,7 @@ trait HasFields
      * @param mixed            $value
      * @return mixed
      */
-    public function setFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
+    public function setValueFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
     {
         if ($field instanceof IsARelationField) {
             return $model->setRelationValue($field->name, $value);
@@ -49,9 +48,20 @@ trait HasFields
 
         $owner = $field->getOwner();
         $value = $owner->transformFieldAttribute($field, $value);
-        $model->setRawAttribute($field->attname, $value);
 
-        return $value;
+        return $model->setRawAttribute($field->attname, $value);
+    }
+
+    /**
+     * Reset the value with the default value for a specific field.
+     *
+     * @param BaseField        $field
+     * @param IsALaramoreModel $model
+     * @return mixed
+     */
+    public function resetValueFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    {
+        return $model->setRawAttribute($field->getNative(), $field->getOwner()->defaultFieldAttribute($field));
     }
 
     /**
@@ -94,8 +104,6 @@ trait HasFields
      */
     public function reverbateRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model, $value): bool
     {
-        $owner = $field->getOwner();
-
         return $field->reverbate($model, $value);
     }
 
@@ -129,11 +137,11 @@ trait HasFields
 
         switch ($operator->needs) {
             case 'null':
-                $driedValue = null;
+                $dryValue = null;
                 break;
 
             case 'binary':
-                $driedValue = (integer) $value;
+                $dryValue = (integer) $value;
                 break;
 
             case 'collection':
@@ -143,17 +151,17 @@ trait HasFields
 
             default:
                 if ($value instanceof Collection) {
-                    $driedValue = $value->map(function ($sub) use ($field) {
+                    $dryValue = $value->map(function ($sub) use ($field) {
                         return $field->getOwner()->dryFieldAttribute($field, $sub);
                     });
                 } else {
-                    $driedValue = $field->getOwner()->dryFieldAttribute($field, $value);
+                    $dryValue = $field->getOwner()->dryFieldAttribute($field, $value);
                 }
                 break;
         }
 
         if (\method_exists($field, $method = 'where'.Str::studly($operator->name))) {
-            return \call_user_func([$field, $method], $builder, $driedValue, ...$args) ?: $builder;
+            return \call_user_func([$field, $method], $builder, $dryValue, ...$args) ?: $builder;
         }
 
         if (!\in_array($operator->native, $builder->getQuery()->operators)) {
@@ -161,7 +169,7 @@ trait HasFields
 				you need to define a where method for this operator.');
         }
 
-        return $field->where($builder, $operator, $driedValue, ...$args) ?: $builder;
+        return $field->where($builder, $operator, $dryValue, ...$args) ?: $builder;
     }
 
     /**
@@ -233,18 +241,6 @@ trait HasFields
     public function defaultFieldAttribute(BaseField $field)
     {
         return $field->getProperty('default', false);
-    }
-
-    /**
-     * Reset the value with the default value for a specific field.
-     *
-     * @param BaseField        $field
-     * @param IsALaramoreModel $model
-     * @return mixed
-     */
-    public function resetFieldAttribute(BaseField $field, IsALaramoreModel $model)
-    {
-        return $model->setRawAttribute($field->attname, $field->getOwner()->defaultFieldAttribute($field));
     }
 
     /**
