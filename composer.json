@@ -10,7 +10,8 @@
    },
     "require": {
         "php": ">=7.0.8",
-        "laramore/fields": "^0.1.0"
+        "laramore/fields": "^0.2.0",
+        "laravel/framework": "> 5.5"
     },
     "authors": [
         {
@@ -44,6 +45,9 @@
         "squizlabs/php_codesniffer": ">=3.5",
         "phpstan/phpstan": ">=0.9.2",
         "phpunit/phpunit": ">=6.5"
+    },
+    "conflict": {
+        "laravel/framework": "< 5.5"
     },
     "extra": {
         "laravel": {
