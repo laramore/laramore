@@ -11,7 +11,7 @@
 namespace Laramore\Traits\Meta;
 
 use Laramore\Fields\{
-    Field, CompositeField
+    AttributeField, CompositeField
 };
 use Laramore\Fields\Constraint\{
     Primary, Index, Unique, Foreign
@@ -24,11 +24,11 @@ trait HandlesFieldConstraints
         $fields = [];
 
         foreach ($array as $element) {
-            $field = \is_string($element) ? $this->get($element) : $element;
+            $field = \is_string($element) ? $this->getField($element) : $element;
 
             if ($field instanceof CompositeField) {
-                $fields = \array_merge($fields, $field->getFields());
-            } else if ($field instanceof Field) {
+                $fields = \array_merge($fields, $field->getAttributes());
+            } else if ($field instanceof AttributeField) {
                 $fields[] = $field;
             } else {
                 throw new \LogicException('Link fields does not have fields');

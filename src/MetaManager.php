@@ -153,7 +153,7 @@ class MetaManager implements IsALaramoreManager
                 throw new \LogicException('All metas are not locked properly');
             }
 
-            foreach ($meta->all() as $field) {
+            foreach ($meta->getFields() as $field) {
                 if (!$field->isLocked()) {
                     throw new \LogicException('All fields are not locked by their owner');
                 }

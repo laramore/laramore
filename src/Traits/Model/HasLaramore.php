@@ -14,17 +14,13 @@ use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\{
     Builder, MassAssignmentException
 };
-use Laramore\Fields\{
-    Field, CompositeField, LinkField
+use Laramore\Facades\{
+    Types, Metas, Proxies
 };
-use Laramore\Eloquent\{
-    Builder as LaramoreBuilder, Relations\BaseCollection as RelationCollection
-};
-use Laramore\Proxies\{
-    BaseProxy, MultiProxy, ProxyHandler
-};
+use Laramore\Interfaces\IsAnIncrementingField;
+use Laramore\Eloquent\Builder as LaramoreBuilder;
+use Laramore\Proxies\ProxyHandler;
 use Laramore\Meta;
-use Types, Metas, Proxies;
 
 trait HasLaramore
 {
@@ -68,10 +64,10 @@ trait HasLaramore
 
         // Define all model metas.
         if ($primary = $meta->getPrimary()) {
-            $this->setKeyName($primary->isComposed() ? $primary->getAttributes() : $primary->getAttribute());
+            $this->setKeyName($primary->isComposed() ? $primary->getAttnames() : $primary->getAttname());
 
             if (!$primary->isComposed()) {
-                $this->setIncrementing($primary->all()[0]->type === Types::increment());
+                $this->setIncrementing($primary->getAttribute() instanceof IsAnIncrementingField);
             }
         }
 
@@ -136,7 +132,7 @@ trait HasLaramore
      */
     public static function hasField(string $key)
     {
-        return static::getMeta()->has($key);
+        return static::getMeta()->hasField($key);
     }
 
     /**
@@ -150,17 +146,17 @@ trait HasLaramore
      */
     public static function getField(string $key)
     {
-        return static::getMeta()->get($key);
+        return static::getMeta()->getField($key);
     }
 
     /**
-     * Return all fields: fields, link fields and composite fields.
+     * Return all fields: AttributeFields, link fields and composite fields.
      *
      * @return array
      */
     public static function getFields()
     {
-        return static::getMeta()->all();
+        return static::getMeta()->getFields();
     }
 
     /**
@@ -172,15 +168,15 @@ trait HasLaramore
     {
         $time = $this->freshTimestamp();
 
-        if (!$this->exists && !is_null(static::CREATED_AT) && !$this->isDirty(static::CREATED_AT)) {
-            $this->setCreatedAt($time);
+        if (!$this->exists && !\is_null(static::CREATED_AT) && !$this->isDirty(static::CREATED_AT)) {
+            $this->setCreatedAtAttribute($time);
         }
 
         // Only update the updated field if the model already exists or the field cannot be null.
         if (!\is_null(static::UPDATED_AT) && !$this->isDirty(static::UPDATED_AT) && (
             $this->exists || !static::getField(static::UPDATED_AT)->nullable
         )) {
-            $this->setUpdatedAt($time);
+            $this->setUpdatedAtAttribute($time);
         }
     }
 
@@ -249,15 +245,18 @@ trait HasLaramore
      */
     public function resetAttribute(string $key)
     {
-        ($field = static::getField($key))->getOwner()->resetFieldAttribute($field, $this);
+        ($field = static::getField($key))->getOwner()->resetValueFieldAttribute($field, $this);
 
         return $this;
     }
 
     public function resetAttributes()
     {
-        foreach (static::getMeta()->getFields() as $field) {
-            $field->getOwner()->resetFieldAttribute($field, $this);
+        $this->attributes = [];
+        $this->relations = [];
+
+        foreach (static::getMeta()->getAttributes() as $field) {
+            $field->getOwner()->resetValueFieldAttribute($field, $this);
         }
 
         return $this;
@@ -314,7 +313,7 @@ trait HasLaramore
         if (static::hasField($key)) {
             $field = static::getField($key);
 
-            return $field->getOwner()->getFieldAttribute($field, $this);
+            return $field->getOwner()->getValueFieldAttribute($field, $this);
         }
 
         return $this->getRawAttribute($key);
@@ -371,8 +370,8 @@ trait HasLaramore
 
         // If the user did not set any custom methods to handle this attribute,
         // we call the field getter.
-        if (static::getMeta()->has($key)) {
-            $field = static::getMeta()->get($key);
+        if (static::hasField($key)) {
+            $field = static::getField($key);
 
             return tap($field->getOwner()->getRelationFieldAttribute($field, $this), function ($results) use ($key) {
                 $this->setRawRelationValue($key, $results);
@@ -397,8 +396,8 @@ trait HasLaramore
     {
         $relation = $this->$method();
 
-        if (! $relation instanceof Relation) {
-            throw new LogicException(sprintf(
+        if (!$relation instanceof Relation) {
+            throw new \LogicException(sprintf(
                 '%s::%s must return a relationship instance.', static::class, $method
             ));
         }
@@ -417,7 +416,7 @@ trait HasLaramore
      */
     public function setRelationValue($key, $value)
     {
-        $field = static::getMeta()->get($key);
+        $field = static::getField($key);
 
         $field->getOwner()->setRelationFieldAttribute($field, $this, $value);
 
@@ -489,7 +488,7 @@ trait HasLaramore
                 ));
             }
 
-            $field->getOwner()->setFieldAttribute($field, $this, $value);
+            $field->getOwner()->setValueFieldAttribute($field, $this, $value);
         } else {
             $this->attributes[$key] = $value;
         }
@@ -541,7 +540,6 @@ trait HasLaramore
     public function saveRelations(array $relations=null)
     {
         $status = true;
-        $meta = static::getMeta();
 
         if (\is_null($relations)) {
             $relationsToSave = $this->relations;
@@ -550,7 +548,7 @@ trait HasLaramore
         }
 
         foreach ($relationsToSave as $key => $relation) {
-            $field = $meta->get($key);
+            $field = static::getField($key);
 
             $status = $status && $field->getOwner()->reverbateRelationFieldAttribute($field, $this, $relation);
         }
@@ -644,7 +642,6 @@ trait HasLaramore
     public function attributesToArray()
     {
         $attributes = parent::attributesToArray();
-
         foreach ($this->getArrayableAttributes() as $key => $value) {
             if (static::hasField($key)) {
                 $attributes[$key] = static::serialize($key, $value);
@@ -692,71 +689,91 @@ trait HasLaramore
     /**
      * Dynamically retrieve attributes on the model.
      *
-     * @param  string $action
+     * @param  string $name
      * @return mixed
      */
-    public function __get($action)
+    public function __get($name)
     {
-        $name = Str::snake($action);
+        $name = Str::snake($name);
+        $method = 'get' . Str::studly($name) . 'Attribute';
 
-        if (static::hasField($name)) {
-            return call_user_func([$this, 'get'.Str::studly($action).'Attribute']);
+        if (static::hasField($name) || \method_exists($this, $method)) {
+            return \call_user_func([$this, $method]);
         }
 
-        return parent::__get($action);
+        return parent::__get($name);
     }
 
     /**
      * Dynamically set attributes on the model.
      *
-     * @param  string $action
+     * @param  string $name
      * @param  mixed  $value
      * @return void
      */
-    public function __set($action, $value)
+    public function __set($name, $value)
     {
-        $name = Str::snake($action);
+        $name = Str::snake($name);
+        $method = 'set' . Str::studly($name) . 'Attribute';
 
-        if (static::hasField($name)) {
-            return call_user_func([$this, 'set'.Str::studly($action).'Attribute'], $value);
+        if (static::hasField($name) || \method_exists($this, $method)) {
+            return \call_user_func([$this, $method], $value);
         }
 
-        return parent::__set($action);
+        return parent::__set($name, $value);
+    }
+
+    /**
+     * Dynamically reset attributes on the model.
+     *
+     * @param  string $name
+     * @return void
+     */
+    public function __unset($name)
+    {
+        $name = Str::snake($name);
+        $method = 'reset' . Str::studly($name) . 'Attribute';
+
+        if (static::hasField($name) || \method_exists($this, $method)) {
+            return \call_user_func([$this, $method]);
+        }
+
+        return parent::__set($name);
     }
 
     /**
      * Dynamically set attributes on the model.
      *
-     * @param  string $action
+     * @param  string $methodName
      * @param  mixed  $args
      * @return void
      */
-    public function __call($action, $args)
+    public function __call($methodName, $args)
     {
         $proxyHandler = static::getProxyHandler();
 
-        if ($proxyHandler->has($action, $proxyHandler::MODEL_TYPE)) {
-            return static::getMeta()->proxyCall($proxyHandler->get($action, $proxyHandler::MODEL_TYPE), $this, $args);
+        if ($proxyHandler->has($methodName, $proxyHandler::MODEL_TYPE)) {
+            return static::getMeta()->proxyCall($proxyHandler->get($methodName, $proxyHandler::MODEL_TYPE), $this, $args);
         }
 
-        return parent::__call($action, $args);
+        return parent::__call($methodName, $args);
     }
 
     /**
      * Dynamically set attributes on the model.
      *
-     * @param  string $action
+     * @param  string $methodName
      * @param  mixed  $args
      * @return void
      */
-    public static function __callStatic($action, $args)
+    public static function __callStatic($methodName, $args)
     {
         $proxyHandler = static::getProxyHandler();
 
-        if ($proxyHandler->has($action, $proxyHandler::MODEL_TYPE)) {
-            return static::getMeta()->proxyCall($proxyHandler->get($action, $proxyHandler::MODEL_TYPE), null, $args);
+        if ($proxyHandler->has($methodName, $proxyHandler::MODEL_TYPE)) {
+            return static::getMeta()->proxyCall($proxyHandler->get($methodName, $proxyHandler::MODEL_TYPE), null, $args);
         }
 
-        return parent::__callStatic($action, $args);
+        return parent::__callStatic($methodName, $args);
     }
 }
