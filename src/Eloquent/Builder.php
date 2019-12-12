@@ -14,7 +14,10 @@ use Illuminate\Database\Eloquent\Builder as BuilderBase;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Str;
 use Laramore\Interfaces\IsProxied;
-use MetaManager, Op;
+use Laramore\Facades\{
+    Metas, Operators
+};
+use Closure;
 
 class Builder extends BuilderBase implements IsProxied
 {
@@ -50,7 +53,7 @@ class Builder extends BuilderBase implements IsProxied
             $originalTable = $this->getModel()->getTable();
 
             if ($table !== $originalTable) {
-                $modelClass = MetaManager::getForTableName($table)->getModelClass();
+                $modelClass = Metas::getForTableName($table)->getModelClass();
                 $model = new $modelClass;
                 $builder = $model->newEloquentBuilder($this->getQuery())->setModel($model);
                 $builder->getQuery()->from($originalTable);
@@ -79,21 +82,6 @@ class Builder extends BuilderBase implements IsProxied
     }
 
     /**
-     * Insert a new record into the database.
-     *
-     * @param  array $values
-     * @return boolean
-     */
-    public function insert($values)
-    {
-        foreach ($values as $attname => $value) {
-            $values[$attname] = $this->dry($attname, $value);
-        }
-
-        return $this->toBase()->insert($values);
-    }
-
-    /**
      * Insert a new record and get the value of the primary key.
      *
      * @param  array       $values
@@ -102,31 +90,36 @@ class Builder extends BuilderBase implements IsProxied
      */
     public function insertGetId($values)
     {
-        foreach ($values as $attname => $value) {
-            $values[$attname] = $this->dry($attname, $value);
-        }
+        $this->getModel()->fill($values);
 
-        return $this->toBase()->insertGetId($values);
+        return $this->toBase()->insertGetId($this->getModel()->getDirty());
     }
 
     /**
-     * Dry value with the field.
+     * Insert a new record into the database.
      *
-     * @param  string $attname
-     * @param  mixed  $value
-     * @return mixed
+     * @param  array $values
+     * @return boolean
      */
-    protected function dry(string $attname, $value)
+    public function insert($values)
     {
-        $parts = explode('.', $attname);
+        $this->getModel()->fill($values);
 
-        if (\count($parts) === 2) {
-            [$table, $attname] = $parts;
+        return $this->toBase()->insert($this->getModel()->getDirty());
+    }
 
-            return MetaManager::getMetaForTableName($table)->getModelClass()::dry($attname, $value);
-        }
+    /**
+     * Update a record in the database.
+     *
+     * @param  array $values
+     * @return integer
+     */
+    public function update(array $values)
+    {
+        $values = $this->addUpdatedAtColumn($values);
+        $this->getModel()->fill($values);
 
-        return $this->getModel()::dry($attname, $value);
+        return $this->toBase()->update($this->getModel()->getDirty());
     }
 
     /**
@@ -159,7 +152,7 @@ class Builder extends BuilderBase implements IsProxied
             // We will stack every segment until we think that we got all of them to understand:
             // - the where part,
             // - the attribute name part,
-            // - the operator part (if existant).
+            // - the operator part (if existant else it is equal to '=').
             if ($segment === 'And' || $segment === 'Or' || $i === (\count($segments) - 1)) {
                 if ($i === (\count($segments) - 1)) {
                     $methodParts[] = $segment;
@@ -173,19 +166,20 @@ class Builder extends BuilderBase implements IsProxied
                     if ($proxyHandler->has($method, $proxyHandler::BUILDER_TYPE)) {
                         if (\count($operatorParts)) {
                             $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
+
                             try {
-                                $operator = Op::get($opName);
+                                $operator = Operators::get($opName);
                             } catch (\ErrorException $e) {
                                 if (Str::startsWith($opName, 'is_')) {
-                                    $operator = Op::get(substr($opName, 3));
+                                    $operator = Operators::get(substr($opName, 3));
                                 } else if (Str::startsWith($opName, 'are_')) {
-                                    $operator = Op::get(substr($opName, 4));
+                                    $operator = Operators::get(substr($opName, 4));
                                 } else {
                                     throw $e;
                                 }
                             }
                         } else {
-                            $operator = Op::equal();
+                            $operator = Operators::equal();
                         }
 
                         if ($operator->needs === 'null') {
@@ -212,8 +206,8 @@ class Builder extends BuilderBase implements IsProxied
                     if (\count($operatorParts)) {
                         $operatorName = Str::camel(\implode('', \array_reverse($operatorParts)));
 
-                        if (Op::has($operatorName)) {
-                            $this->where($parameters[$index++], Op::get($operatorName), $parameters[$index++] ?? null);
+                        if (Operators::has($operatorName)) {
+                            $this->where($parameters[$index++], Operators::get($operatorName), $parameters[$index++] ?? null);
 
                             return $this;
                         }
@@ -276,7 +270,11 @@ class Builder extends BuilderBase implements IsProxied
             return $this->dynamicWhere($method, $parameters);
         }
 
-        $this->forwardCallTo($this->getQuery(), $method, $parameters);
+        if (\version_compare(app()::VERSION, '5.7.0', '<')) {
+            $this->query->{$method}(...$parameters);
+        } else {
+            $this->forwardCallTo($this->getQuery(), $method, $parameters);
+        }
 
         return $this;
     }
