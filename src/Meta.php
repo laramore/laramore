@@ -96,9 +96,7 @@ class Meta implements IsAFieldOwner
     protected function setModelClass(string $modelClass)
     {
         $this->modelClass = $modelClass;
-
-        $parts = \explode('\\', $modelClass);
-        $this->modelClassName = \end($parts);
+        $this->modelClassName = class_basename($modelClass);
 
         $this->tableName = $this->getDefaultTableName();
     }
@@ -547,7 +545,13 @@ class Meta implements IsAFieldOwner
      */
     public function getVisibleFieldNames(): array
     {
-        return $this->getFieldNamesWithOption('visible');
+        $names = $this->getFieldNamesWithOption('visible');
+
+        if (!\in_array('pivot', $names)) {
+            $names[] = 'pivot';
+        }
+
+        return $names;
     }
 
     /**
@@ -748,10 +752,6 @@ class Meta implements IsAFieldOwner
             return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
         }
 
-        try {
-            throw new \Exception("The method [$method] does not exist.");
-        } catch (\Exception $e) {
-            dump($e);
-        }
+        throw new \Exception("The method [$method] does not exist.");
     }
 }
