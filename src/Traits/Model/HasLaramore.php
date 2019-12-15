@@ -642,6 +642,7 @@ trait HasLaramore
     public function attributesToArray()
     {
         $attributes = parent::attributesToArray();
+
         foreach ($this->getArrayableAttributes() as $key => $value) {
             if (static::hasField($key)) {
                 $attributes[$key] = static::serialize($key, $value);
@@ -721,24 +722,6 @@ trait HasLaramore
         }
 
         return parent::__set($name, $value);
-    }
-
-    /**
-     * Dynamically reset attributes on the model.
-     *
-     * @param  string $name
-     * @return void
-     */
-    public function __unset($name)
-    {
-        $name = Str::snake($name);
-        $method = 'reset'.Str::studly($name).'Attribute';
-
-        if (static::hasField($name) || \method_exists($this, $method)) {
-            return \call_user_func([$this, $method]);
-        }
-
-        return parent::__set($name);
     }
 
     /**
