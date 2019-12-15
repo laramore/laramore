@@ -41,7 +41,11 @@ class Builder extends BuilderBase implements IsProxied
         }
 
         if ($column instanceof Expression) {
-            $this->forwardCallTo($this->getQuery(), 'where', \func_get_args());
+            if (\version_compare(app()::VERSION, '5.7.0', '<')) {
+                $this->query->where(...\func_get_args());
+            } else {
+                $this->forwardCallTo($this->getQuery(), 'where', \func_get_args());
+            }
 
             return $this;
         }
@@ -58,7 +62,11 @@ class Builder extends BuilderBase implements IsProxied
                 $builder = $model->newEloquentBuilder($this->getQuery())->setModel($model);
                 $builder->getQuery()->from($originalTable);
 
-                $this->forwardCallTo($model->registerGlobalScopes($builder), 'where', \func_get_args());
+                if (\version_compare(app()::VERSION, '5.7.0', '<')) {
+                    $model->registerGlobalScopes($builder)->where(...\func_get_args());
+                } else {
+                    $this->forwardCallTo($model->registerGlobalScopes($builder), 'where', \func_get_args());
+                }
 
                 return $this;
             }
@@ -69,7 +77,7 @@ class Builder extends BuilderBase implements IsProxied
         // received when the method was called and pass it into the nested where.
         if (is_array($column)) {
             foreach ($column as $attname => $value) {
-                $this->where($attname, $value);
+                $this->where($attname, $this->dry($attname, $value));
             }
 
             return $this;
@@ -79,6 +87,41 @@ class Builder extends BuilderBase implements IsProxied
         \array_shift($args);
 
         return \call_user_func([$this, 'where'.Str::studly($column)], ...$args);
+    }
+
+    /**
+     * Dry values.
+     *
+     * @param  array $values
+     * @return mixed
+     */
+    public function dryValues(array $values)
+    {
+        foreach ($values as $attname => $value) {
+            $values[$attname] = $this->dry($attname, $value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Dry value with the field.
+     *
+     * @param  string $attname
+     * @param  mixed  $value
+     * @return mixed
+     */
+    public function dry(string $attname, $value)
+    {
+        $parts = explode('.', $attname);
+
+        if (\count($parts) === 2) {
+            [$table, $attname] = $parts;
+
+            return Metas::getMetaForTableName($table)->getModelClass()::dry($attname, $value);
+        }
+
+        return $this->getModel()::dry($attname, $value);
     }
 
     /**
@@ -92,7 +135,7 @@ class Builder extends BuilderBase implements IsProxied
     {
         $this->getModel()->fill($values);
 
-        return $this->toBase()->insertGetId($this->getModel()->getDirty());
+        return $this->toBase()->insertGetId($this->dryValues($this->getModel()->getAttributes()));
     }
 
     /**
@@ -105,7 +148,7 @@ class Builder extends BuilderBase implements IsProxied
     {
         $this->getModel()->fill($values);
 
-        return $this->toBase()->insert($this->getModel()->getDirty());
+        return $this->toBase()->insert($this->dryValues($this->getModel()->getAttributes()));
     }
 
     /**
@@ -119,7 +162,7 @@ class Builder extends BuilderBase implements IsProxied
         $values = $this->addUpdatedAtColumn($values);
         $this->getModel()->fill($values);
 
-        return $this->toBase()->update($this->getModel()->getDirty());
+        return $this->toBase()->update($this->dryValues($this->getModel()->getDirty()));
     }
 
     /**
