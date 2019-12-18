@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3d525b2b4014c6e3675493edf30d48a4",
+    "content-hash": "b95a597cf57ebaf13c9deb91a62ef2f7",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -823,6 +823,45 @@
                 "schedule"
             ],
             "time": "2017-01-23T04:29:33+00:00"
+        },
+        {
+            "name": "nastuzzi-samy/reflection-namespace",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/NastuzziSamy/reflection-namespace.git",
+                "reference": "f15ec5236a50919533942ccbfef5071f885571d6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/NastuzziSamy/reflection-namespace/zipball/f15ec5236a50919533942ccbfef5071f885571d6",
+                "reference": "f15ec5236a50919533942ccbfef5071f885571d6",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpmd/phpmd": "^2.6",
+                "phpstan/phpstan": "^0.10.5",
+                "phpunit/phpunit": "^7.5",
+                "squizlabs/php_codesniffer": "^3.3"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/ReflectionNamespace.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "NastuzziSamy",
+                    "email": "samy@nastuzzi.fr"
+                }
+            ],
+            "description": "Reflect a namespace, give its classes, its sub-namespaces and more",
+            "time": "2019-05-23T22:13:47+00:00"
         },
         {
             "name": "nesbot/carbon",
