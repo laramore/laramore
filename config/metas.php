@@ -36,14 +36,25 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Default Meta namespace
+    | Models namespace
     |--------------------------------------------------------------------------
     |
     | This option defines the namespace used as base for all metas.
     |
     */
 
-	'namespace' => 'App\\Models',
+    'models_namespace' => 'App\\Models',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Pivotrs namespace
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the namespace used as base for all metas.
+    |
+    */
+
+    'pivots_namespace' => 'App\\Pivots',
 
     /*
     |--------------------------------------------------------------------------

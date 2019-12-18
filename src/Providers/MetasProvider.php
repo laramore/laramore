@@ -74,7 +74,7 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
 
         switch ($classes) {
             case 'automatic':
-                $classes = (new ReflectionNamespace(config('metas.namespace')))->getClassNames();
+                $classes = (new ReflectionNamespace(config('metas.models_namespace')))->getClassNames();
                 $classes = \array_filter($classes, function ($class) {
                     return (new \ReflectionClass($class))->implementsInterface(IsALaramoreModel::class);
                 });
