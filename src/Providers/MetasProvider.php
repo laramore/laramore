@@ -15,19 +15,13 @@ use Laramore\Interfaces\{
 	IsALaramoreManager, IsALaramoreProvider, IsALaramoreModel
 };
 use Laramore\Traits\Provider\MergesConfig;
-use Laramore\Exceptions\ConfigException;
 use ReflectionNamespace;
 
 class MetasProvider extends ServiceProvider implements IsALaramoreProvider
 {
     use MergesConfig;
 
-    /**
-     * Meta manager.
-     *
-     * @var array
-     */
-    protected static $managers;
+    protected static $manager;
 
     /**
      * Register our facade and create the manager.
@@ -41,11 +35,15 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
         );
 
         $this->mergeConfigFrom(
-            __DIR__.'/../../config/fields.php', 'fields',
+            __DIR__.'/../../config/field/proxies.php', 'field.proxies',
         );
 
         $this->app->singleton('Metas', function() {
-            return static::getManager();
+            if (\is_null(static::$manager)) {
+                return static::generateManager();
+            }
+
+            return static::$manager;
         });
     }
 
@@ -96,42 +94,29 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
         }
 
         throw new ConfigException(
-            'metas.configurations', ["'automatic'", "'base'", "'disabled'", 'array of class names'], $classes
+            'metas.configurations',
+            ["'automatic'", "'base'", "'disabled'", 'array of class names'],
+            $classes
         );
     }
 
     /**
      * Generate the corresponded manager.
      *
-     * @param  string $key
      * @return IsALaramoreManager
      */
-    public static function generateManager(string $key): IsALaramoreManager
+    public static function generateManager(): IsALaramoreManager
     {
         $class = config('metas.manager');
 
-        static::$managers[$key] = $manager = new $class();
+        static::$manager = new $class();
 
         foreach (static::getDefaults() as $modelClass) {
-            $modelClass::getMeta();
+            if (!static::$manager->has($modelClass)) {
+                $modelClass::generateMeta();
+            }
         }
 
-        return $manager;
-    }
-
-    /**
-     * Return the generated manager for this provider.
-     *
-     * @return IsALaramoreManager
-     */
-    public static function getManager(): IsALaramoreManager
-    {
-        $appHash = \spl_object_hash(app());
-
-        if (!isset(static::$managers[$appHash])) {
-            return static::generateManager($appHash);
-        }
-
-        return static::$managers[$appHash];
+        return static::$manager;
     }
 }

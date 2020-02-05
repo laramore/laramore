@@ -11,12 +11,7 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laramore\Interfaces\{
-	IsALaramoreManager, IsALaramoreProvider, IsALaramoreModel
-};
-use Laramore\Exceptions\ConfigException;
-use Laramore\MetaManager;
-use ReflectionNamespace;
+use Laramore\Facades\Metas;
 
 class LastProvider extends ServiceProvider
 {
@@ -27,16 +22,6 @@ class LastProvider extends ServiceProvider
      */
     public function boot()
     {
-        static::getManager()->lock();
-    }
-
-    /**
-     * Return the meta manager.
-     *
-     * @return MetaManager
-     */
-    public static function getManager(): MetaManager
-    {
-        return MetasProvider::getManager();
+        Metas::lock();
     }
 }
