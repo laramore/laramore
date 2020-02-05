@@ -304,6 +304,7 @@ class Builder extends BuilderBase implements IsProxied
         }
 
         $proxyHandler = $this->getModel()::getProxyHandler();
+        $method = Str::camel($method);
 
         if ($proxyHandler->has($method, $proxyHandler::BUILDER_TYPE)) {
             return $this->getModel()::getMeta()->proxyCall($proxyHandler->get($method, $proxyHandler::BUILDER_TYPE), $this, $parameters);

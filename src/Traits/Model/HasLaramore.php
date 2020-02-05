@@ -12,14 +12,15 @@ namespace Laramore\Traits\Model;
 
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\{
-    Builder, MassAssignmentException
+    Builder, MassAssignmentException, Relations\Relation
 };
 use Laramore\Facades\{
-    Types, Metas, Proxies
+    Metas, FieldProxy
 };
 use Laramore\Interfaces\IsAnIncrementingField;
 use Laramore\Eloquent\Builder as LaramoreBuilder;
-use Laramore\Proxies\ProxyHandler;
+use Laramore\Exceptions\MetaException;
+use Laramore\Fields\Proxy\ProxyHandler;
 use Laramore\Meta;
 
 trait HasLaramore
@@ -88,8 +89,12 @@ trait HasLaramore
      *
      * @return void
      */
-    protected static function generateMeta()
+    public static function generateMeta()
     {
+        if (Metas::has(static::class)) {
+            throw new MetaException(Metas::get(static::class), 'The meta already exists for `'.static::class.'`');
+        }
+
         // Generate all meta data defined by the user in the current pivot.
         $class = static::getMetaClass();
         Metas::add($meta = new $class(static::class));
@@ -684,7 +689,7 @@ trait HasLaramore
 
     public static function getProxyHandler(): ProxyHandler
     {
-        return Proxies::getHandler(static::class);
+        return FieldProxy::getHandler(static::class);
     }
 
     /**
@@ -734,6 +739,7 @@ trait HasLaramore
     public function __call($methodName, $args)
     {
         $proxyHandler = static::getProxyHandler();
+        $methodName = Str::camel($methodName);
 
         if ($proxyHandler->has($methodName, $proxyHandler::MODEL_TYPE)) {
             return static::getMeta()->proxyCall($proxyHandler->get($methodName, $proxyHandler::MODEL_TYPE), $this, $args);
@@ -752,6 +758,7 @@ trait HasLaramore
     public static function __callStatic($methodName, $args)
     {
         $proxyHandler = static::getProxyHandler();
+        $methodName = Str::camel($methodName);
 
         if ($proxyHandler->has($methodName, $proxyHandler::MODEL_TYPE)) {
             return static::getMeta()->proxyCall($proxyHandler->get($methodName, $proxyHandler::MODEL_TYPE), null, $args);

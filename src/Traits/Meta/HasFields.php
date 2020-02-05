@@ -7,10 +7,8 @@
  */
 namespace Laramore\Traits\Meta;
 use Illuminate\Support\Str;
-use Laramore\Fields\{
-	BaseField, AttributeField
-};
-use Laramore\Facades\Operators;
+use Laramore\Fields\BaseField;
+use Laramore\Facades\Operator;
 use Laramore\Interfaces\{
 	IsProxied, IsARelationField, IsALaramoreModel
 };
@@ -124,11 +122,11 @@ trait HasFields
         }
 
         if (func_num_args() === 3) {
-            [$operator, $value] = [Operators::equal(), $operator];
+            [$operator, $value] = [Operator::equal(), $operator];
         }
 
         if (!($operator instanceof Operator)) {
-            $operator = Operators::find($operator ?: null);
+            $operator = Operator::find($operator ?: null);
         }
 
         if ($builder instanceof IsALaramoreModel) {

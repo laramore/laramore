@@ -15,6 +15,13 @@ use Laramore\Meta;
 class MetaException extends LaramoreException
 {
     /**
+     * Meta were occured the error.
+     *
+     * @var Meta
+     */
+    protected $meta;
+
+    /**
      * Create a new LaramoreException.
      *
      * @param Meta       $meta
@@ -24,14 +31,7 @@ class MetaException extends LaramoreException
      */
     public function __construct(Meta $meta, string $message, int $code=0, \Throwable $previous=null)
     {
-        parent::__construct($meta, $message, $code, $previous);
-    }
-
-    public function getInstanceName()
-    {
-        $instance = $this->getInstance();
-
-        return \get_class($instance).': '.$instance->getModelClass();
+        parent::__construct($message, $code, $previous);
     }
 
     /**
@@ -41,6 +41,6 @@ class MetaException extends LaramoreException
      */
     public function getMeta(): Meta
     {
-        return $this->getInstance();
+        return $this->meta;
     }
 }

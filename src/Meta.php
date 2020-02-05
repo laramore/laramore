@@ -13,7 +13,7 @@ namespace Laramore;
 use Illuminate\Support\Str;
 use Laramore\Exceptions\MetaException;
 use Laramore\Facades\{
-    Proxies, Constraints
+    FieldProxy, FieldConstraint
 };
 use Laramore\Fields\{
     BaseField, AttributeField, CompositeField, LinkField, Timestamp, Constraint\ConstraintHandler
@@ -27,7 +27,7 @@ use Laramore\Traits\{
 use Laramore\Traits\Meta\{
     HasFields, HandlesFieldConstraints
 };
-use Laramore\Proxies\{
+use Laramore\Fields\Proxy\{
     BaseProxy, MultiProxy, ProxyHandler
 };
 use Event;
@@ -108,7 +108,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setProxyHandler()
     {
-        Proxies::createHandler($this->modelClass);
+        FieldProxy::createHandler($this->getModelClass());
     }
 
     /**
@@ -118,7 +118,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setConstraintHandler()
     {
-        Constraints::createHandler($this->modelClass);
+        FieldConstraint::createHandler($this->getModelClass());
     }
 
     /**
@@ -148,7 +148,7 @@ class Meta implements IsAFieldOwner
      */
     public function getProxyHandler(): ProxyHandler
     {
-        return Proxies::getHandler($this->getModelClass());
+        return FieldProxy::getHandler($this->getModelClass());
     }
 
     /**
@@ -158,7 +158,7 @@ class Meta implements IsAFieldOwner
      */
     public function getConstraintHandler(): ConstraintHandler
     {
-        return Constraints::getHandler($this->getModelClass());
+        return FieldConstraint::getHandler($this->getModelClass());
     }
 
     /**
