@@ -54,7 +54,7 @@ trait HandlesFieldConstraints
         $fields = $this->getFieldsFromArray(\is_array($fields) ? $fields : [$fields]);
 
         if (\is_null($class)) {
-            $class = config('field.constraints.types.primary.class');
+            $class = config('field.constraints.configurations.primary.class');
         }
 
         $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));
@@ -78,7 +78,7 @@ trait HandlesFieldConstraints
         $fields = $this->getFieldsFromArray(\is_array($fields) ? $fields : [$fields]);
 
         if (\is_null($class)) {
-            $class = config('field.constraints.types.index.class');
+            $class = config('field.constraints.configurations.index.class');
         }
 
         $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));
@@ -102,7 +102,7 @@ trait HandlesFieldConstraints
         $fields = $this->getFieldsFromArray(\is_array($fields) ? $fields : [$fields]);
 
         if (\is_null($class)) {
-            $class = config('field.constraints.types.unique.class');
+            $class = config('field.constraints.configurations.unique.class');
         }
 
         $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));
@@ -126,7 +126,7 @@ trait HandlesFieldConstraints
         $fields = $this->getFieldsFromArray(\is_array($fields) ? $fields : [$fields]);
 
         if (\is_null($class)) {
-            $class = config('field.constraints.types.foreign.class');
+            $class = config('field.constraints.configurations.foreign.class');
         }
 
         $this->getConstraintHandler()->add($class::constraint($fields, $name, $priority));

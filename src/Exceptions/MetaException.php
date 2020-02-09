@@ -32,6 +32,8 @@ class MetaException extends LaramoreException
     public function __construct(Meta $meta, string $message, int $code=0, \Throwable $previous=null)
     {
         parent::__construct($message, $code, $previous);
+
+        $this->meta = $meta;
     }
 
     /**

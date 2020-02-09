@@ -6,7 +6,9 @@
  * @license MIT
  */
 namespace Laramore\Traits\Meta;
-use Illuminate\Support\Str;
+use Illuminate\Support\{
+    Str, Collection
+};
 use Laramore\Fields\BaseField;
 use Laramore\Facades\Operator;
 use Laramore\Interfaces\{
@@ -238,7 +240,7 @@ trait HasFields
      */
     public function defaultFieldAttribute(BaseField $field)
     {
-        return $field->getProperty('default', false);
+        return $field->getProperty('default');
     }
 
     /**
