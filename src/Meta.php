@@ -58,11 +58,18 @@ class Meta implements IsAFieldOwner
     protected $links = [];
 
     /**
-     * Indicate if we use default timestamps.
+     * Indicate if we use create/update timestamps.
      *
      * @var bool
      */
     protected $hasTimestamps = false;
+
+    /**
+     * Indicate if we use soft deletes.
+     *
+     * @var bool
+     */
+    protected $hasDeletedTimestamp = false;
 
     /**
      * Indicate if this meta is a pivot one.
@@ -600,6 +607,14 @@ class Meta implements IsAFieldOwner
                 $field->lock();
             }
         }
+
+        if (!$this->hasTimestamps()) {
+            $this->hasTimestamps = $this->hasAttribute($this->modelClass::CREATED_AT) && $this->hasAttribute($this->modelClass::UPDATED_AT);
+        }
+
+        if (!$this->hasDeletedTimestamp()) {
+            $this->hasDeletedTimestamp = $this->hasAttribute(\defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at');
+        }
     }
 
     /**
@@ -609,15 +624,15 @@ class Meta implements IsAFieldOwner
      */
     public function useTimestamps($autoUpdated=false)
     {
-        $createdName = ($this->modelClass::CREATED_AT ?? 'created_at');
-        $updatedField = ($this->modelClass::UPDATED_AT ?? 'updated_at');
+        $createdName = $this->modelClass::CREATED_AT;
+        $updatedField = $this->modelClass::UPDATED_AT;
 
         if ($this->hasField($createdName)) {
-            throw new MetaException($this, "The field [$createdName] already exists and can't be set as a timestamp.");
+            throw new MetaException($this, "The created field `$createdName` already exists and can't be set as a timestamp.");
         }
 
         if ($this->hasField($updatedField)) {
-            throw new MetaException($this, "The field [$updatedField] already exists and can't be set as a timestamp.");
+            throw new MetaException($this, "The updated field `$updatedField` already exists and can't be set as a timestamp.");
         }
 
         $this->setAttribute(
@@ -647,6 +662,43 @@ class Meta implements IsAFieldOwner
     public function hasTimestamps(): bool
     {
         return $this->hasTimestamps;
+    }
+
+    /**
+     * Add default soft delete field.
+     *
+     * @return self
+     */
+    public function useDeleteTimestamp($useTimestamps=false, $autoUpdated=false)
+    {
+        if ($useTimestamps) {
+            $this->useTimestamps($autoUpdated);
+        }
+
+        $deletedName = \defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at';
+
+        if ($this->hasField($deletedName)) {
+            throw new MetaException($this, "The deleted field `$deletedName` already exists and can't be set as a timestamp.");
+        }
+
+        $this->setAttribute(
+            $deletedName,
+            Timestamp::field(['nullable', 'visible'])
+        );
+
+        $this->hasDeletedTimestamp = true;
+
+        return $this;
+    }
+
+    /**
+     * Indicate if the meta use soft deletes.
+     *
+     * @return boolean
+     */
+    public function hasDeletedTimestamp(): bool
+    {
+        return $this->hasDeletedTimestamp;
     }
 
     /**
@@ -752,6 +804,6 @@ class Meta implements IsAFieldOwner
             return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
         }
 
-        throw new \Exception("The method [$method] does not exist.");
+        throw new \Exception("The method `$method` does not exist.");
     }
 }
