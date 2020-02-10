@@ -85,13 +85,13 @@ class Meta implements IsAFieldOwner
      */
     public function __construct(string $modelClass)
     {
-        Event::dispatch('metas.creating', static::class, \func_get_args());
+        Event::dispatch('meta.creating', static::class, \func_get_args());
 
         $this->setModelClass($modelClass);
         $this->setProxyHandler();
         $this->setConstraintHandler();
 
-        Event::dispatch('metas.created', $this);
+        Event::dispatch('meta.created', $this);
     }
 
     /**
@@ -578,7 +578,7 @@ class Meta implements IsAFieldOwner
      */
     public function lock()
     {
-        $locking = Event::until('metas.locking', $this);
+        $locking = Event::until('meta.locking', $this);
 
         if ($locking === false) {
             return $this;
@@ -586,7 +586,7 @@ class Meta implements IsAFieldOwner
 
         $this->lockFromTrait();
 
-        Event::dispatch('metas.locked', $this);
+        Event::dispatch('meta.locked', $this);
 
         return $this;
     }

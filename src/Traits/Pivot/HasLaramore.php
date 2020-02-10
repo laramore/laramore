@@ -25,6 +25,6 @@ trait HasLaramore
      */
     public static function getMetaClass(): string
     {
-        return config('metas.pivot_class');
+        return config('meta.pivot_class');
     }
 }

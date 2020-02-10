@@ -111,7 +111,7 @@ trait HasLaramore
      */
     public static function getMetaClass(): string
     {
-        return config('metas.class');
+        return config('meta.class');
     }
 
     /**

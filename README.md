@@ -21,6 +21,8 @@ In a regular `User` model, it is hard to detect all the fields, the relations, w
 
 ### Before
 ```php
+<?php
+
 use Illuminate\Database\Eloquent\Model;
 
 class User extends Model {
@@ -41,6 +43,8 @@ class User extends Model {
 
 ### After
 ```php
+<?php
+
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Fields\{
     PrimaryId, Text, Email, Boolean, Belongs
@@ -70,30 +74,32 @@ Here we can now know all defined fields. The `group` relation is automatically d
 ## Model interaction
 ### Before
 ```php
-	// Get the first user
-	$user = User::first();
-	// Get with id 2
-	User::where('id', 2)->first();
-	// Get the email adress
-	$user->email;
-	// Set a bad format email adress
-	$user->email = 'bad-email';
-	// Set a good format email adress
-	$user->email = 'good@email.orm';
-	// Get user group relation
-	$user->group();
-	// Get user group
-	$group = $user->group;
-	// Search one user by group
-	$user = $user->where('group_id', $group->id)->first();
-	// Search all users by group
-	$user = $user->where('group_id', $group->id)->get();
-	// Search all users with a group id greater than specific one
-	$user = $user->where('group_id', '>', $group->id)->get();
-	// Get admin boolean (with casting)
-	$user->admin; // true
-	// Get admin boolean (without casting)
-	$user->admin; // 1
+<?php
+
+// Get the first user
+$user = User::first();
+// Get with id 2
+User::where('id', 2)->first();
+// Get the email adress
+$user->email;
+// Set a bad format email adress
+$user->email = 'bad-email';
+// Set a good format email adress
+$user->email = 'good@email.orm';
+// Get user group relation
+$user->group();
+// Get user group
+$group = $user->group;
+// Search one user by group
+$user = $user->where('group_id', $group->id)->first();
+// Search all users by group
+$user = $user->where('group_id', $group->id)->get();
+// Search all users with a group id greater than specific one
+$user = $user->where('group_id', '>', $group->id)->get();
+// Get admin boolean (with casting)
+$user->admin; // true
+// Get admin boolean (without casting)
+$user->admin; // 1
 ```
 
 ### After
@@ -128,3 +134,49 @@ Here we can now know all defined fields. The `group` relation is automatically d
 	// Get admin boolean (auto casting)
 	$user->admin; // true
 ```
+
+## Interaction listing
+
+### All possible interactions for the field `id`, a binary uuid field.
+
+| User calls | Action | Meta call | Owner call | Field call |
+|-----------|--------|-------------|---------|-|
+| Attribute manipulation ||||
+| `$model->id`, `$model->getId()`, `$model->getAttribute('id')`, `$model->getAttributeValue('id')` | Get the `id` attribute value |  |
+| `$model->id = 'uuid'`, `$model->setId('uuid')`, `$model->setAttribute('id', 'uuid')` | Set the `id` attribute value |   |
+| - |||
+| `$model->rawId`, `$model->getRawId()`, `$model->getRawAttribute('id')` | Get the `id` attribute raw value | Real model method `getRawAttribute` |
+| `$model->rawId = 0x0001`, `$model->setRawId(0x0001)`, `$model->setRawAttribute('id', 0x0001)` | Set the `id` attribute raw value |   |
+| - |||
+| `$model->resetId()`, `model->reset('id')` | Set the default for value for the attribute | |
+| - |||
+| `$model->anyCustomFieldMethodId(...$args)`, `model->anyCustomFieldMethod('id', ...$args)` | Call and return the `ænyCustomFieldMethodFieldValue` or `ænyCustomFieldMethodValue` value of the field `id` | |
+
+### All possible interactions for the related field `group`, using an uuid field `group_id`.
+
+| User calls | Action | Field calls |
+|-----------|--------|-------------|
+| Attribute manipulation |||
+| `$model->group()`, `$model->getRelation('group')` | Get the `group` relation value |   |
+| - |||
+| `$model->group`, `$model->getAttribute('group')`, `$model->getRelationValue('group')` | Get the `group` relation value |   |
+| `$model->group = $group`, `$model->setAttribute('group', $group)` | Set the `group` attribute value |   |
+| - |||
+| `$model->rawId`, `$model->getRawAttribute('group')` | Get the `group` attribute raw value |   |
+| `$model->rawId = 0x0001`, `$model->setRawAttribute('group', 0x0001)` | Set the `group` attribute raw value |   |
+| - |||
+| `$model->resetId()`, `model->reset('group')` | Set the default for value for the attribute | |
+| - |||
+| `$model->anyCustomFieldMethodGroup(...$args)`, `model->anyCustomFieldMethod('group', ...$args)` | Call and return the `ænyCustomFieldMethodFieldValue` or `ænyCustomFieldMethodValue` value of the field `group` | |
+
+### All possible static interactions
+
+| User calls | Action | Field calls |
+|-----------|--------|-------------|
+| Attribute manipulation |||
+| `Model::dryId('uuid')`, `Model::dry('id', 'uuid')` | Return a raw value of 'uuid' (a binary here) |   |
+| `Model::castId(0x0001)`, `Model::cast('id', 0x0001)` | Return a normalized value of 0x0001 (a string here) |   |
+| `Model::defaultId()`, `Model::default('id')` | Return a normalized value of 0x0001 (a string here) |   |
+| Attribute querying |||
+| `Model::whereId(...$args)`, `Model::where('id', ...$args)` | Return a query builder with a condition on the field `id` |   |
+|   |   |   |
