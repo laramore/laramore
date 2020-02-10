@@ -12,7 +12,7 @@ namespace Laramore\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
-class Metas extends Facade
+class Meta extends Facade
 {
     /**
      * Give the name of the accessor.
@@ -21,6 +21,6 @@ class Metas extends Facade
      */
     protected static function getFacadeAccessor()
     {
-        return 'Metas';
+        return 'Meta';
     }
 }

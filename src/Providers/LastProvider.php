@@ -11,7 +11,7 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laramore\Facades\Metas;
+use Laramore\Facades\Meta;
 
 class LastProvider extends ServiceProvider
 {
@@ -22,6 +22,6 @@ class LastProvider extends ServiceProvider
      */
     public function boot()
     {
-        Metas::lock();
+        Meta::lock();
     }
 }

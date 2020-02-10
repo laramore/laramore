@@ -15,7 +15,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Str;
 use Laramore\Interfaces\IsProxied;
 use Laramore\Facades\{
-    Metas, Operators
+    Meta, Operator
 };
 use Closure;
 
@@ -57,7 +57,7 @@ class Builder extends BuilderBase implements IsProxied
             $originalTable = $this->getModel()->getTable();
 
             if ($table !== $originalTable) {
-                $modelClass = Metas::getForTableName($table)->getModelClass();
+                $modelClass = Meta::getForTableName($table)->getModelClass();
                 $model = new $modelClass;
                 $builder = $model->newEloquentBuilder($this->getQuery())->setModel($model);
                 $builder->getQuery()->from($originalTable);
@@ -118,7 +118,7 @@ class Builder extends BuilderBase implements IsProxied
         if (\count($parts) === 2) {
             [$table, $attname] = $parts;
 
-            return Metas::getMetaForTableName($table)->getModelClass()::dry($attname, $value);
+            return Meta::getMetaForTableName($table)->getModelClass()::dry($attname, $value);
         }
 
         return $this->getModel()::dry($attname, $value);
@@ -211,18 +211,18 @@ class Builder extends BuilderBase implements IsProxied
                             $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
 
                             try {
-                                $operator = Operators::get($opName);
+                                $operator = Operator::get($opName);
                             } catch (\ErrorException $e) {
                                 if (Str::startsWith($opName, 'is_')) {
-                                    $operator = Operators::get(substr($opName, 3));
+                                    $operator = Operator::get(substr($opName, 3));
                                 } else if (Str::startsWith($opName, 'are_')) {
-                                    $operator = Operators::get(substr($opName, 4));
+                                    $operator = Operator::get(substr($opName, 4));
                                 } else {
                                     throw $e;
                                 }
                             }
                         } else {
-                            $operator = Operators::equal();
+                            $operator = Operator::equal();
                         }
 
                         if ($operator->needs === 'null') {
@@ -249,8 +249,8 @@ class Builder extends BuilderBase implements IsProxied
                     if (\count($operatorParts)) {
                         $operatorName = Str::camel(\implode('', \array_reverse($operatorParts)));
 
-                        if (Operators::has($operatorName)) {
-                            $this->where($parameters[$index++], Operators::get($operatorName), $parameters[$index++] ?? null);
+                        if (Operator::has($operatorName)) {
+                            $this->where($parameters[$index++], Operator::get($operatorName), $parameters[$index++] ?? null);
 
                             return $this;
                         }

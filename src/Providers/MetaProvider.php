@@ -17,7 +17,7 @@ use Laramore\Interfaces\{
 use Laramore\Traits\Provider\MergesConfig;
 use ReflectionNamespace;
 
-class MetasProvider extends ServiceProvider implements IsALaramoreProvider
+class MetaProvider extends ServiceProvider implements IsALaramoreProvider
 {
     use MergesConfig;
 
@@ -31,14 +31,14 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
     public function register()
     {
         $this->mergeConfigFrom(
-            __DIR__.'/../../config/metas.php', 'metas',
+            __DIR__.'/../../config/meta.php', 'meta',
         );
 
         $this->mergeConfigFrom(
             __DIR__.'/../../config/field/proxies.php', 'field.proxies',
         );
 
-        $this->app->singleton('Metas', function() {
+        $this->app->singleton('Meta', function() {
             if (\is_null(static::$manager)) {
                 return static::generateManager();
             }
@@ -55,7 +55,7 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
     public function boot()
     {
         $this->publishes([
-            __DIR__.'/../../config/metas.php' => config_path('metas.php'),
+            __DIR__.'/../../config/meta.php' => config_path('meta.php'),
         ]);
 
         $this->app->register(LastProvider::class);
@@ -68,16 +68,16 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
      */
     public static function getDefaults(): array
     {
-        $classes = config('metas.configurations');
+        $classes = config('meta.configurations');
 
         switch ($classes) {
             case 'automatic':
-                $classes = (new ReflectionNamespace(config('metas.models_namespace')))->getClassNames();
+                $classes = (new ReflectionNamespace(config('meta.models_namespace')))->getClassNames();
                 $classes = \array_filter($classes, function ($class) {
                     return (new \ReflectionClass($class))->implementsInterface(IsALaramoreModel::class);
                 });
 
-                app('config')->set('metas.configurations', $classes);
+                app('config')->set('meta.configurations', $classes);
 
                 return $classes;
 
@@ -85,7 +85,7 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
                 return [];
 
             case 'base':
-                return config('metas.namespace');
+                return config('meta.namespace');
 
             default:
                 if (\is_array($classes)) {
@@ -94,7 +94,7 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
         }
 
         throw new ConfigException(
-            'metas.configurations',
+            'meta.configurations',
             ["'automatic'", "'base'", "'disabled'", 'array of class names'],
             $classes
         );
@@ -107,7 +107,7 @@ class MetasProvider extends ServiceProvider implements IsALaramoreProvider
      */
     public static function generateManager(): IsALaramoreManager
     {
-        $class = config('metas.manager');
+        $class = config('meta.manager');
 
         static::$manager = new $class();
 

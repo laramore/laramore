@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\{
     Builder, MassAssignmentException, Relations\Relation
 };
 use Laramore\Facades\{
-    Metas, FieldProxy
+    Meta as MetaManager, FieldProxy
 };
 use Laramore\Interfaces\IsAnIncrementingField;
 use Laramore\Eloquent\Builder as LaramoreBuilder;
@@ -91,13 +91,13 @@ trait HasLaramore
      */
     public static function generateMeta()
     {
-        if (Metas::has(static::class)) {
-            throw new MetaException(Metas::get(static::class), 'The meta already exists for `'.static::class.'`');
+        if (MetaManager::has(static::class)) {
+            throw new MetaException(MetaManager::get(static::class), 'The meta already exists for `'.static::class.'`');
         }
 
         // Generate all meta data defined by the user in the current pivot.
         $class = static::getMetaClass();
-        Metas::add($meta = new $class(static::class));
+        MetaManager::add($meta = new $class(static::class));
 
         static::__meta($meta);
 
@@ -121,11 +121,11 @@ trait HasLaramore
      */
     public static function getMeta()
     {
-        if (!Metas::has(static::class)) {
+        if (!MetaManager::has(static::class)) {
             return static::generateMeta();
         }
 
-        return Metas::get(static::class);
+        return MetaManager::get(static::class);
     }
 
     /**

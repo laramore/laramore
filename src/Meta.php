@@ -479,7 +479,7 @@ class Meta implements IsAFieldOwner
      * @param  string $option
      * @return array
      */
-    public function getFieldsWithOption(string $option): array
+    public function getFieldsWithRule(string $option): array
     {
         $fields = [];
 
@@ -498,11 +498,11 @@ class Meta implements IsAFieldOwner
      * @param  string $option
      * @return array
      */
-    public function getFieldNamesWithOption(string $option): array
+    public function getFieldNamesWithRule(string $option): array
     {
         return \array_map(function ($field) {
-            return $field->name;
-        }, $this->getFieldsWithOption($option));
+            return $field->getNative();
+        }, $this->getFieldsWithRule($option));
     }
 
     /**
@@ -512,7 +512,7 @@ class Meta implements IsAFieldOwner
      */
     public function getFillableFields(): array
     {
-        return $this->getFieldsWithOption('fillable');
+        return $this->getFieldsWithRule('fillable');
     }
 
     /**
@@ -522,7 +522,7 @@ class Meta implements IsAFieldOwner
      */
     public function getVisibleFields(): array
     {
-        return $this->getFieldsWithOption('visible');
+        return $this->getFieldsWithRule('visible');
     }
 
     /**
@@ -532,7 +532,7 @@ class Meta implements IsAFieldOwner
      */
     public function getRequiredFields(): array
     {
-        return $this->getFieldsWithOption('required');
+        return $this->getFieldsWithRule('required');
     }
 
     /**
@@ -542,7 +542,7 @@ class Meta implements IsAFieldOwner
      */
     public function getFillableFieldNames(): array
     {
-        return $this->getFieldNamesWithOption('fillable');
+        return $this->getFieldNamesWithRule('fillable');
     }
 
     /**
@@ -552,7 +552,7 @@ class Meta implements IsAFieldOwner
      */
     public function getVisibleFieldNames(): array
     {
-        $names = $this->getFieldNamesWithOption('visible');
+        $names = $this->getFieldNamesWithRule('visible');
 
         if (!\in_array('pivot', $names)) {
             $names[] = 'pivot';
@@ -568,7 +568,7 @@ class Meta implements IsAFieldOwner
      */
     public function getRequiredFieldNames(): array
     {
-        return $this->getFieldNamesWithOption('required');
+        return $this->getFieldNamesWithRule('required');
     }
 
     /**

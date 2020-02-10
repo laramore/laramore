@@ -53,10 +53,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Laramore\\Providers\\MetasProvider"
+                "Laramore\\Providers\\MetaProvider"
             ],
             "aliases": {
-                "Metas": "Laramore\\Facades\\Metas"
+                "Meta": "Laramore\\Facades\\Meta"
             }
         }
     }
