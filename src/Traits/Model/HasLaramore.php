@@ -73,6 +73,7 @@ trait HasLaramore
         }
 
         $this->setTable($meta->getTableName());
+        $this->setConnection($meta->getConnectionName());
         $this->resetAttributes();
     }
 

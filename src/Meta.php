@@ -47,6 +47,7 @@ class Meta implements IsAFieldOwner
     protected $modelClass;
     protected $modelClassName;
     protected $tableName;
+    protected $connectionName;
 
     /**
      * All fields: attributes, composites and links.
@@ -201,6 +202,31 @@ class Meta implements IsAFieldOwner
         $this->needsToBeUnlocked();
 
         $this->tableName = $tableName;
+
+        return $this;
+    }
+
+    /**
+     * Return the connection name.
+     *
+     * @return string|null
+     */
+    public function getConnectionName()
+    {
+        return $this->connectionName;
+    }
+
+    /**
+     * Define the connection name.
+     *
+     * @param string $connectionName
+     * @return self
+     */
+    public function setConnectionName(string $connectionName=null)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->connectionName = $connectionName;
 
         return $this;
     }
