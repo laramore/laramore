@@ -21,7 +21,7 @@ return [
     |
     */
 
-	'class' => Laramore\Meta::class,
+    'class' => Laramore\Meta::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -33,6 +33,17 @@ return [
     */
 
 	'pivot_class' => Laramore\PivotMeta::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default builder class
+    |--------------------------------------------------------------------------
+    |
+    | This option defines the default meta class.
+    |
+    */
+
+    'builder_class' => Laramore\Eloquent\Builder::class,
 
     /*
     |--------------------------------------------------------------------------
