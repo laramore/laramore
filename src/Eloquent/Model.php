@@ -11,10 +11,10 @@
 namespace Laramore\Eloquent;
 
 use Laramore\Traits\Model\HasLaramore;
-use Laramore\Interfaces\IsALaramoreModel;
+use Laramore\Contracts\Eloquent\LaramoreModel;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 
-abstract class Model extends BaseModel implements IsALaramoreModel
+abstract class Model extends BaseModel implements LaramoreModel
 {
     use HasLaramore;
 }

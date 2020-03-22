@@ -11,8 +11,9 @@
 namespace Laramore;
 
 use Laramore\Exceptions\LaramoreException;
+use Laramore\Contracts\Field\Field;
 use Laramore\Fields\{
-    BaseField, Foreign
+    BaseField, OneToMany
 };
 
 class PivotMeta extends Meta
@@ -39,18 +40,19 @@ class PivotMeta extends Meta
     }
 
     /**
-     * Manipulate a field as primary ones.
+     * Define a field with a given name.
      *
-     * @param  BaseField $field
-     * @return BaseField
+     * @param string $name
+     * @param Field  $field
+     * @return self
      */
-    protected function manipulateField(BaseField $field): BaseField
+    public function setField(string $name, Field $field)
     {
-        if (count($this->pivots) !== 2 && ($field instanceof Foreign)) {
+        if (count($this->pivots) !== 2 && ($field instanceof OneToMany)) {
             $this->pivots[] = $field;
         }
 
-        return parent::manipulateField($field);
+        return parent::setField($name, $field);
     }
 
     public function pivots($pivot1, $pivot2)
@@ -69,7 +71,7 @@ class PivotMeta extends Meta
             $pivot = $this->get($pivot);
         }
 
-        if (!($pivot instanceof Foreign)) {
+        if (!($pivot instanceof OneToMany)) {
             throw new LaramoreException($this, 'The pivots need to be foreign fields.');
         }
 
