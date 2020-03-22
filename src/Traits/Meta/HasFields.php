@@ -9,100 +9,150 @@ namespace Laramore\Traits\Meta;
 use Illuminate\Support\{
     Str, Collection
 };
-use Laramore\Fields\BaseField;
 use Laramore\Facades\Operator;
-use Laramore\Interfaces\{
-	IsProxied, IsARelationField, IsALaramoreModel
+use Laramore\Contracts\{
+	Proxied, Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel
 };
+use Laramore\Elements\OperatorElement;
+
 trait HasFields
 {
     /**
-     * Return the get value for a specific field.
+     * Transform a value for a specific field.
      *
-     * @param BaseField        $field
-     * @param IsALaramoreModel $model
+     * @param Field $field
+     * @param mixed $value
      * @return mixed
      */
-    public function getValueFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    public function transformFieldValue(Field $field, $value)
     {
-        if ($field instanceof IsARelationField) {
-            return $model->getRelationValue($field->name);
-        }
+        return $field->transform($value);
+    }
 
-        return ($model->getRawAttribute($field->attname) ?? null);
+    /**
+     * Serialize a value for a specific field.
+     *
+     * @param Field $field
+     * @param mixed $value
+     * @return mixed
+     */
+    public function serializeFieldValue(Field $field, $value)
+    {
+        return $field->serialize($value);
+    }
+
+    /**
+     * Dry a value for a specific field.
+     *
+     * @param Field $field
+     * @param mixed $value
+     * @return mixed
+     */
+    public function dryFieldValue(Field $field, $value)
+    {
+        return $field->dry($value);
+    }
+
+    /**
+     * Cast a value for a specific field.
+     *
+     * @param Field $field
+     * @param mixed $value
+     * @return mixed
+     */
+    public function castFieldValue(Field $field, $value)
+    {
+        return $field->cast($value);
+    }
+
+    /**
+     * Return the default value for a specific field.
+     *
+     * @param Field $field
+     * @return mixed
+     */
+    public function defaultFieldValue(Field $field)
+    {
+        return $field->getProperty('default');
+    }
+
+    /**
+     * Return the get value for a specific field.
+     *
+     * @param Field         $field
+     * @param LaramoreModel $model
+     * @return mixed
+     */
+    public function getFieldValue(Field $field, LaramoreModel $model)
+    {
+        return $field->get($model);
     }
 
     /**
      * Return the set value for a specific field.
      *
-     * @param BaseField        $field
-     * @param IsALaramoreModel $model
-     * @param mixed            $value
+     * @param Field         $field
+     * @param LaramoreModel $model
+     * @param mixed         $value
      * @return mixed
      */
-    public function setValueFieldAttribute(BaseField $field, IsALaramoreModel $model, $value)
+    public function setFieldValue(Field $field, LaramoreModel $model, $value)
     {
-        if ($field instanceof IsARelationField) {
-            return $model->setRelationValue($field->name, $value);
-        }
-
-        $owner = $field->getOwner();
-        $value = $owner->transformFieldAttribute($field, $value);
-
-        return $model->setRawAttribute($field->attname, $value);
+        // Set the value in the model
+        return $field->set($model,
+            // Apply changes by the field.
+            $this->transformFieldValue($field,
+                // The value must be of the right type.
+                $this->castFieldValue($field, $value)
+            )
+        );
     }
 
     /**
      * Reset the value with the default value for a specific field.
      *
-     * @param BaseField        $field
-     * @param IsALaramoreModel $model
+     * @param Field         $field
+     * @param LaramoreModel $model
      * @return mixed
      */
-    public function resetValueFieldAttribute(BaseField $field, IsALaramoreModel $model)
+    public function resetFieldValue(Field $field, LaramoreModel $model)
     {
-        return $model->setRawAttribute($field->getNative(), $field->getOwner()->defaultFieldAttribute($field));
+        return $field->reset($model);
     }
 
     /**
      * Return the get value for a relation field.
      *
-     * @param IsARelationField $field
-     * @param IsALaramoreModel $model
+     * @param RelationField $field
+     * @param LaramoreModel $model
      * @return mixed
      */
-    public function getRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model)
+    public function relateFieldValue(RelationField $field, LaramoreModel $model)
     {
-        return $field->retrieve($model);
+        return $field->relate($model);
     }
 
     /**
      * Return the set value for a relation field.
      *
-     * @param IsARelationField $field
-     * @param IsALaramoreModel $model
-     * @param mixed            $value
+     * @param ExtraField    $field
+     * @param LaramoreModel $model
      * @return mixed
      */
-    public function setRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model, $value)
+    public function retrieveFieldValue(ExtraField $field, LaramoreModel $model)
     {
-        $owner = $field->getOwner();
-        $value = $owner->transformFieldAttribute($field, $value);
-        $value = $field->consume($model, $value);
-        $model->setRawRelationValue($field->name, $value);
-
-        return $value;
+        return $field->retrieve($model);
     }
 
     /**
      * Reverbate a saved relation value for a specific field.
      *
-     * @param IsARelationField $field
-     * @param IsALaramoreModel $model
-     * @param mixed            $value
+     * @param RelationField $field
+     * @param LaramoreModel $model
+     * @param mixed         $value
      * @return boolean
      */
-    public function reverbateRelationFieldAttribute(IsARelationField $field, IsALaramoreModel $model, $value): bool
+    public function reverbateFieldValue(RelationField $field, LaramoreModel $model, $value): bool
     {
         return $field->reverbate($model, $value);
     }
@@ -110,14 +160,14 @@ trait HasFields
     /**
      * Return generally a Builder after adding to it a condition.
      *
-     * @param BaseField            $field
-     * @param IsProxied            $builder
+     * @param Field                $field
+     * @param Proxied              $builder
      * @param Operator|string|null $operator
      * @param mixed                $value
      * @param mixed                ...$args
      * @return mixed
      */
-    public function whereFieldAttribute(BaseField $field, IsProxied $builder, $operator=null, $value=null, ...$args)
+    public function whereFieldValue(Field $field, Proxied $builder, $operator, $value=null, ...$args)
     {
         if (func_num_args() === 2) {
             throw new \BadMethodCallException('Missing params');
@@ -127,11 +177,11 @@ trait HasFields
             [$operator, $value] = [Operator::equal(), $operator];
         }
 
-        if (!($operator instanceof Operator)) {
-            $operator = Operator::find($operator ?: null);
+        if (!($operator instanceof OperatorElement)) {
+            $operator = Operator::find($operator ?: '=');
         }
 
-        if ($builder instanceof IsALaramoreModel) {
+        if ($builder instanceof LaramoreModel) {
             $builder = $builder->newModelQuery();
         }
 
@@ -152,10 +202,10 @@ trait HasFields
             default:
                 if ($value instanceof Collection) {
                     $dryValue = $value->map(function ($sub) use ($field) {
-                        return $field->getOwner()->dryFieldAttribute($field, $sub);
+                        return $field->getOwner()->dryFieldValue($field, $sub);
                     });
                 } else {
-                    $dryValue = $field->getOwner()->dryFieldAttribute($field, $value);
+                    $dryValue = $field->getOwner()->dryFieldValue($field, $value);
                 }
                 break;
         }
@@ -173,85 +223,14 @@ trait HasFields
     }
 
     /**
-     * Return the query with this field as condition.
-     *
-     * @param BaseField $field
-     * @param IsProxied $model
-     * @return mixed
-     */
-    public function relateFieldAttribute(BaseField $field, IsProxied $model)
-    {
-        return $field->relate($model);
-    }
-
-    /**
-     * Transform a value for a specific field.
-     *
-     * @param BaseField $field
-     * @param mixed     $value
-     * @return mixed
-     */
-    public function transformFieldAttribute(BaseField $field, $value)
-    {
-        return $field->transform($value);
-    }
-
-    /**
-     * Serialize a value for a specific field.
-     *
-     * @param BaseField $field
-     * @param mixed     $value
-     * @return mixed
-     */
-    public function serializeFieldAttribute(BaseField $field, $value)
-    {
-        return $field->serialize($value);
-    }
-
-    /**
-     * Dry a value for a specific field.
-     *
-     * @param BaseField $field
-     * @param mixed     $value
-     * @return mixed
-     */
-    public function dryFieldAttribute(BaseField $field, $value)
-    {
-        return $field->dry($value);
-    }
-
-    /**
-     * Cast a value for a specific field.
-     *
-     * @param BaseField $field
-     * @param mixed     $value
-     * @return mixed
-     */
-    public function castFieldAttribute(BaseField $field, $value)
-    {
-        return $field->cast($value);
-    }
-
-    /**
-     * Return the default value for a specific field.
-     *
-     * @param BaseField $field
-     * @return mixed
-     */
-    public function defaultFieldAttribute(BaseField $field)
-    {
-        return $field->getProperty('default');
-    }
-
-    /**
      * Call a field attribute method that is not basic.
      *
-     * @param  BaseField $field
-     * @param  string    $methodName
-     * @param  array     $args
+     * @param  Field  $field
+     * @param  string $methodName
+     * @param  array  $args
      * @return mixed
      */
-    public function callFieldAttributeMethod(BaseField $field, string $methodName, array $args)
+    public function callFieldValueMethod(Field $field, string $methodName, array $args)
     {
         return \call_user_func([$field, $methodName], ...$args);
     }

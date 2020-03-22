@@ -13,28 +13,28 @@ namespace Laramore;
 use Illuminate\Support\Str;
 use Laramore\Exceptions\MetaException;
 use Laramore\Facades\{
-    FieldProxy, FieldConstraint
+    Proxy, FieldConstraint
 };
 use Laramore\Fields\{
-    BaseField, AttributeField, CompositeField, LinkField, Timestamp, Constraint\ConstraintHandler
+    Timestamp, Constraint\ConstraintHandler,
 };
-use Laramore\Interfaces\{
-    IsAPrimaryField, IsAFieldOwner, IsProxied
+use Laramore\Contracts\{
+    Eloquent\LaramoreMeta, Field\Field, Field\ComposedField, Field\LinkField, Field\ExtraField, Proxied
 };
 use Laramore\Traits\{
     IsLocked, HasLockedMacros
 };
 use Laramore\Traits\Meta\{
-    HasFields, HandlesFieldConstraints
+    HasFields, HasFieldsConstraints
 };
-use Laramore\Fields\Proxy\{
+use Laramore\Proxies\{
     BaseProxy, MultiProxy, ProxyHandler
 };
 use Event;
 
-class Meta implements IsAFieldOwner
+class Meta implements LaramoreMeta
 {
-    use IsLocked, HasLockedMacros, HasFields, HandlesFieldConstraints {
+    use IsLocked, HasLockedMacros, HasFields, HasFieldsConstraints {
         IsLocked::lock as protected lockFromTrait;
         HasLockedMacros::__call as protected callMacro;
     }
@@ -54,9 +54,7 @@ class Meta implements IsAFieldOwner
      *
      * @var array
      */
-    protected $attributes = [];
-    protected $composites = [];
-    protected $links = [];
+    protected $fields = [];
 
     /**
      * Indicate if we use create/update timestamps.
@@ -116,7 +114,7 @@ class Meta implements IsAFieldOwner
      */
     protected function setProxyHandler()
     {
-        FieldProxy::createHandler($this->getModelClass());
+        Proxy::createHandler($this->getModelClass());
     }
 
     /**
@@ -144,7 +142,7 @@ class Meta implements IsAFieldOwner
      *
      * @return string|null
      */
-    public function getModelClassName(): ?string
+    public function getModelClassName(): string
     {
         return $this->modelClassName;
     }
@@ -156,7 +154,7 @@ class Meta implements IsAFieldOwner
      */
     public function getProxyHandler(): ProxyHandler
     {
-        return FieldProxy::getHandler($this->getModelClass());
+        return Proxy::getHandler($this->getModelClass());
     }
 
     /**
@@ -167,6 +165,16 @@ class Meta implements IsAFieldOwner
     public function getConstraintHandler(): ConstraintHandler
     {
         return FieldConstraint::getHandler($this->getModelClass());
+    }
+
+    /**
+     * Return the primary constraint.
+     *
+     * @return Primary|null
+     */
+    public function getPrimary()
+    {
+        return $this->getConstraintHandler()->getPrimary();
     }
 
     /**
@@ -232,271 +240,100 @@ class Meta implements IsAFieldOwner
     }
 
     /**
-     * Manipulate a field as primary ones.
+     * Define a field with a given name.
      *
-     * @param  BaseField $field
-     * @return BaseField
-     */
-    protected function manipulateField(BaseField $field): BaseField
-    {
-        if ($field instanceof IsAPrimaryField) {
-            $this->primary($field);
-        }
-
-        return $field;
-    }
-
-    /**
-     * Indicate if the meta as an attribute field with a given name.
-     *
-     * @param  string $name
-     * @return boolean
-     */
-    public function hasAttribute(string $name): bool
-    {
-        return isset($this->getAttributes()[$name]);
-    }
-
-    /**
-     * Return the attribute field with a given name.
-     *
-     * @param  string $name
-     * @return AttributeField
-     */
-    public function getAttribute(string $name): AttributeField
-    {
-        if ($this->hasAttribute($name)) {
-            return $this->getAttributes()[$name];
-        } else {
-            throw new \ErrorException("The attribute field `$name` does not exist");
-        }
-    }
-
-    /**
-     * Define a specific attribute field with a given name.
-     *
-     * @param string         $name
-     * @param AttributeField $field
+     * @param string $name
+     * @param Field  $field
      * @return self
      */
-    public function setAttribute(string $name, AttributeField $field)
+    public function setField(string $name, Field $field)
     {
         $this->needsToBeUnlocked();
 
-        $field = $this->manipulateField($field)->own($this, $name);
+        if ($field->isOwned()) {
+            if ($field->getName() !== $name) {
+                throw new \Exception("The field name must be the same as the given one, expecting `{$field->getName()}`, got `$name`.");
+            }
+
+            if ($field->getMeta() !== $this) {
+                throw new \LogicException("The field `$name` is already owned by another meta.");
+            }
+        } else {
+            $field->own($this, $name);
+        }
+
         $name = $field->getName();
 
         if ($this->hasField($name)) {
-            throw new \LogicException("The field $name is already defined");
+            throw new \LogicException("The field `$name` is already defined.");
         }
 
-        $this->attributes[$name] = $field;
+        $this->fields[$name] = $field;
 
         return $this;
     }
 
     /**
-     * Return all fields.
-     *
-     * @return array
-     */
-    public function getAttributes(): array
-    {
-        return $this->attributes;
-    }
-
-    /**
-     * Indicate if the meta has a link field with a given name.
+     * Indicate if this composed has a field or a link.
      *
      * @param  string $name
+     * @param  string $class The field must be an instance of the class.
      * @return boolean
      */
-    public function hasLink(string $name): bool
+    public function hasField(string $name, string $class=null): bool
     {
-        return isset($this->getLinks()[$name]);
+        return isset($this->getFields()[$name]) && (\is_null($class) || ($this->getFields()[$name] instanceof $class));
     }
 
     /**
-     * Return the link field with a given name.
+     * Return the field or link with the given name.
      *
      * @param  string $name
-     * @return LinkField
+     * @param  string $class The field must be an instance of the class.
+     * @return Field
      */
-    public function getLink(string $name): LinkField
+    public function getField(string $name, string $class=null): Field
     {
-        if ($this->hasLink($name)) {
-            return $this->getLinks()[$name];
-        } else {
-            throw new \Exception("The link field $name does not exist");
-        }
-    }
-
-    /**
-     * Define a link field with a given name.
-     *
-     * @param  string    $name
-     * @param  LinkField $link
-     * @return self
-     */
-    public function setLink(string $name, LinkField $link)
-    {
-        $this->needsToBeUnlocked();
-
-        $link = $this->manipulateField($link);
-
-        if ($link->isOwned()) {
-            if ($link->getName() !== $name) {
-                throw new \Exception('The link field name must be the same than the given one.');
-            }
-        } else {
-            $link->own($this, $name);
-            $name = $link->getName();
-        }
-
-        if ($this->hasField($name)) {
-            throw new \Exception('It is not allowed to reset the field '.$name);
-        }
-
-        $this->links[$name] = $link;
-
-        return $this;
-    }
-
-    /**
-     * Return all link fields.
-     *
-     * @return array
-     */
-    public function getLinks(): array
-    {
-        return $this->links;
-    }
-
-    /**
-     * Indicate if this meta has a composite field with a given name.
-     *
-     * @param  string $name
-     * @return boolean
-     */
-    public function hasComposite(string $name)
-    {
-        return isset($this->getComposites()[$name]);
-    }
-
-    /**
-     * Return a composite field with a given name.
-     *
-     * @param  string $name
-     * @return CompositeField
-     */
-    public function getComposite(string $name): CompositeField
-    {
-        if ($this->hasComposite($name)) {
-            return $this->getComposites()[$name];
-        }
-
-        throw new \Exception($name.' composite field does not exist');
-    }
-
-    /**
-     * Define a composite field with a given name.
-     *
-     * @param string         $name
-     * @param CompositeField $composite
-     * @return self
-     */
-    public function setComposite(string $name, CompositeField $composite)
-    {
-        $this->needsToBeUnlocked();
-
-        $composite = $this->manipulateField($composite)->own($this, $name);
-        $name = $composite->getName();
-
-        if ($this->hasField($name)) {
-            throw new \Exception('It is not allowed to reset the field '.$name);
-        }
-
-        $this->composites[$name] = $composite;
-
-        foreach ($composite->getAttributes() as $field) {
-            if (!$field->isOwned() || $field->getOwner() !== $composite) {
-                throw new \Exception("The field $name must be owned by the composed field ".$field->getName());
-            }
-
-            $this->attributes[$field->getName()] = $this->manipulateField($field);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Return all composite fields.
-     *
-     * @return array
-     */
-    public function getComposites(): array
-    {
-        return $this->composites;
-    }
-
-    /**
-     * Indicate if this meta has a classic, link or composite field with a given name.
-     *
-     * @param  string $name
-     * @return boolean
-     */
-    public function hasField(string $name): bool
-    {
-        return isset($this->getFields()[$name]);
-    }
-
-    /**
-     * Indicate if this meta has a classic, link or composite field with a given name.
-     *
-     * @param  string $name
-     * @return BaseField
-     */
-    public function getField(string $name): BaseField
-    {
-        if ($this->hasField($name)) {
+        if ($this->hasField($name, $class)) {
             return $this->getFields()[$name];
+        } else {
+            throw new \Exception("The field `$name` does not exist");
         }
-
-        throw new \Exception($name.' field does not exist');
     }
 
     /**
-     * Define a classic, link or composite field with a given name.
+     * Return the field with its native name.
      *
-     * @param string    $name
-     * @param BaseField $field
-     * @return self
+     * @param  string $nativeName
+     * @param  string $class      The field must be an instance of the class.
+     * @return Field
      */
-    public function setField(string $name, BaseField $field)
+    public function findField(string $nativeName, string $class=null): Field
     {
-        if ($field instanceof CompositeField) {
-            return $this->setComposite($name, $field);
-        } else if ($field instanceof LinkField) {
-            return $this->setLink($name, $field);
-        } else if ($field instanceof AttributeField) {
-            return $this->setAttribute($name, $field);
+        foreach ($this->getFields() as $field) {
+            if ($field->getNative() === $nativeName && (\is_null($class) || ($field instanceof $class))) {
+                return $field;
+            }
         }
 
-        throw new \Exception('To set a specific field, you have to give a AttributeField, LinkField or CompositeField');
+        throw new \Exception("The native field `$nativeName` does not exist");
     }
 
     /**
-     * Return all attribute, link and composite fields.
+     * Return getFields sub attributes and links.
      *
-     * @return array
+     * @param  string $class The field must be an instance of the class.
+     * @return array<Field>
      */
-    public function getFields(): array
+    public function getFields(string $class=null): array
     {
-        return array_merge(
-            $this->attributes,
-            $this->composites,
-            $this->links
-        );
+        if (!\is_null($class)) {
+            return \array_filter($this->fields, function ($field) use ($class) {
+                return $field instanceof $class;
+            });
+        }
+
+        return $this->fields;
     }
 
     /**
@@ -529,72 +366,6 @@ class Meta implements IsAFieldOwner
         return \array_map(function ($field) {
             return $field->getNative();
         }, $this->getFieldsWithOption($option));
-    }
-
-    /**
-     * Return all fillable fields.
-     *
-     * @return array
-     */
-    public function getFillableFields(): array
-    {
-        return $this->getFieldsWithOption('fillable');
-    }
-
-    /**
-     * Return all visibile fields.
-     *
-     * @return array
-     */
-    public function getVisibleFields(): array
-    {
-        return $this->getFieldsWithOption('visible');
-    }
-
-    /**
-     * Return all required fields.
-     *
-     * @return array
-     */
-    public function getRequiredFields(): array
-    {
-        return $this->getFieldsWithOption('required');
-    }
-
-    /**
-     * Return all fillable fieldNames.
-     *
-     * @return array
-     */
-    public function getFillableFieldNames(): array
-    {
-        return $this->getFieldNamesWithOption('fillable');
-    }
-
-    /**
-     * Return all visibile fieldNames.
-     *
-     * @return array
-     */
-    public function getVisibleFieldNames(): array
-    {
-        $names = $this->getFieldNamesWithOption('visible');
-
-        if (!\in_array('pivot', $names)) {
-            $names[] = 'pivot';
-        }
-
-        return $names;
-    }
-
-    /**
-     * Return all required fieldNames.
-     *
-     * @return array
-     */
-    public function getRequiredFieldNames(): array
-    {
-        return $this->getFieldNamesWithOption('required');
     }
 
     /**
@@ -635,11 +406,11 @@ class Meta implements IsAFieldOwner
         }
 
         if (!$this->hasTimestamps()) {
-            $this->hasTimestamps = $this->hasAttribute($this->modelClass::CREATED_AT) && $this->hasAttribute($this->modelClass::UPDATED_AT);
+            $this->hasTimestamps = $this->hasField($this->modelClass::CREATED_AT) && $this->hasField($this->modelClass::UPDATED_AT);
         }
 
         if (!$this->hasDeletedTimestamp()) {
-            $this->hasDeletedTimestamp = $this->hasAttribute(\defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at');
+            $this->hasDeletedTimestamp = $this->hasField(\defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at');
         }
     }
 
@@ -661,12 +432,12 @@ class Meta implements IsAFieldOwner
             throw new MetaException($this, "The updated field `$updatedField` already exists and can't be set as a timestamp.");
         }
 
-        $this->setAttribute(
+        $this->setField(
             $createdName,
             Timestamp::field(['not_nullable', 'visible', 'use_current'])
         );
 
-        $this->setAttribute(
+        $this->setField(
             $updatedField,
             $updatedField = Timestamp::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
         );
@@ -707,7 +478,7 @@ class Meta implements IsAFieldOwner
             throw new MetaException($this, "The deleted field `$deletedName` already exists and can't be set as a timestamp.");
         }
 
-        $this->setAttribute(
+        $this->setField(
             $deletedName,
             Timestamp::field(['nullable', 'visible'])
         );
@@ -749,30 +520,7 @@ class Meta implements IsAFieldOwner
         return $this->pivot;
     }
 
-    protected function getProxyInjection(BaseProxy $proxy, string $argName, ?IsProxied $proxiedInstance=null)
-    {
-        switch ($argName) {
-            case 'instance':
-                if (\is_null($proxiedInstance)) {
-                    throw new \Error("The proxy `{$proxy->getName()}` cannot be called statically");
-                }
-                return $proxiedInstance;
-                break;
-
-            case 'field':
-                return $proxy->getField();
-                break;
-
-            case 'value':
-                return $proxiedInstance->getAttribute($proxy->getField()->attname);
-                break;
-
-            default:
-                throw new \Exception("The proxy arg [$argName] does not exist.");
-        }
-    }
-
-    public function proxyCall(BaseProxy $proxy, ?IsProxied $proxiedInstance=null, array $args=[])
+    public function proxyCall(BaseProxy $proxy, Proxied $proxiedInstance=null, array $args=[])
     {
         if ($proxy instanceof MultiProxy) {
             $proxy = $proxy->getProxy(\array_shift($args));
@@ -794,9 +542,9 @@ class Meta implements IsAFieldOwner
      * Return the field with a given name.
      *
      * @param  string $name
-     * @return BaseField
+     * @return Field
      */
-    public function __get(string $name): BaseField
+    public function __get(string $name): Field
     {
         return $this->getField($name);
     }
@@ -804,11 +552,11 @@ class Meta implements IsAFieldOwner
     /**
      * Set a field with a given name.
      *
-     * @param string    $name
-     * @param BaseField $value
+     * @param string $name
+     * @param Field  $value
      * @return self
      */
-    public function __set(string $name, BaseField $value=null)
+    public function __set(string $name, Field $value=null)
     {
         return $this->setField($name, $value);
     }
@@ -826,10 +574,10 @@ class Meta implements IsAFieldOwner
             return $this->callMacro($method, $args);
         }
 
-        if (\preg_match('/^(.*)FieldAttribute$/', $method, $matches)) {
-            return $this->callFieldAttributeMethod(\array_shift($args), $matches[1], $args);
+        if (\preg_match('/^(.*)FieldValue$/', $method, $matches)) {
+            return $this->callFieldValueMethod(\array_shift($args), $matches[1], $args);
         }
 
-        throw new \Exception("The method `$method` does not exist.");
+        throw new \BadMethodCallException("The method `$method` does not exist.");
     }
 }
