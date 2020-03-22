@@ -11,13 +11,14 @@
 namespace Laramore\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Laramore\Interfaces\{
-	IsALaramoreManager, IsALaramoreProvider, IsALaramoreModel
+use Laramore\Contracts\{
+	Manager\LaramoreManager, Provider\LaramoreProvider, Eloquent\LaramoreModel
 };
+use Laramore\Exceptions\ConfigException;
 use Laramore\Traits\Provider\MergesConfig;
 use ReflectionNamespace;
 
-class MetaProvider extends ServiceProvider implements IsALaramoreProvider
+class MetaProvider extends ServiceProvider implements LaramoreProvider
 {
     use MergesConfig;
 
@@ -74,7 +75,7 @@ class MetaProvider extends ServiceProvider implements IsALaramoreProvider
             case 'automatic':
                 $classes = (new ReflectionNamespace(config('meta.models_namespace')))->getClassNames();
                 $classes = \array_filter($classes, function ($class) {
-                    return (new \ReflectionClass($class))->implementsInterface(IsALaramoreModel::class);
+                    return (new \ReflectionClass($class))->implementsInterface(LaramoreModel::class);
                 });
 
                 app('config')->set('meta.configurations', $classes);
@@ -103,9 +104,9 @@ class MetaProvider extends ServiceProvider implements IsALaramoreProvider
     /**
      * Generate the corresponded manager.
      *
-     * @return IsALaramoreManager
+     * @return LaramoreManager
      */
-    public static function generateManager(): IsALaramoreManager
+    public static function generateManager(): LaramoreManager
     {
         $class = config('meta.manager');
 
