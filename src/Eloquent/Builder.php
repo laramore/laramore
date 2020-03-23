@@ -13,13 +13,14 @@ namespace Laramore\Eloquent;
 use Illuminate\Database\Eloquent\Builder as BuilderBase;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Str;
-use Laramore\Interfaces\IsProxied;
+use Laramore\Contracts\Eloquent\LaramoreBuilder;
 use Laramore\Facades\{
     Meta, Operator
 };
 use Closure;
+use Illuminate\Support\Arr;
 
-class Builder extends BuilderBase implements IsProxied
+class Builder extends BuilderBase implements LaramoreBuilder
 {
     /**
      * Add a basic where clause to the query.
@@ -50,6 +51,13 @@ class Builder extends BuilderBase implements IsProxied
             return $this;
         }
 
+        // If the column is an array, we will assume it is an array of key-value pairs
+        // and can add them each as a where clause. We will maintain the boolean we
+        // received when the method was called and pass it into the nested where.
+        if (is_array($column)) {
+            $this->multiWhere(...\func_get_args());
+        }
+
         $parts = explode('.', $column);
 
         if (\count($parts) === 2) {
@@ -70,17 +78,6 @@ class Builder extends BuilderBase implements IsProxied
 
                 return $this;
             }
-        }
-
-        // If the column is an array, we will assume it is an array of key-value pairs
-        // and can add them each as a where clause. We will maintain the boolean we
-        // received when the method was called and pass it into the nested where.
-        if (is_array($column)) {
-            foreach ($column as $attname => $value) {
-                $this->where($attname, $this->dry($attname, $value));
-            }
-
-            return $this;
         }
 
         $args = \func_get_args();
@@ -174,7 +171,6 @@ class Builder extends BuilderBase implements IsProxied
      */
     public function dynamicWhere(string $where, array $parameters)
     {
-        $proxyHandler = $this->getModel()::getProxyHandler();
         $connector = 'and';
 
         if (Str::startsWith($where, 'orWhere')) {
@@ -187,7 +183,8 @@ class Builder extends BuilderBase implements IsProxied
         }
 
         $index = 0;
-        $methodParts = [];
+        $lastMethod = null;
+        $nameParts = [];
         $operatorParts = [];
         $segments = \explode('_', Str::title(Str::snake($finder)));
 
@@ -198,28 +195,26 @@ class Builder extends BuilderBase implements IsProxied
             // - the operator part (if existant else it is equal to '=').
             if ($segment === 'And' || $segment === 'Or' || $i === (\count($segments) - 1)) {
                 if ($i === (\count($segments) - 1)) {
-                    $methodParts[] = $segment;
+                    $nameParts[] = $segment;
                 }
 
                 do {
-                    $method = 'where'.\implode('', $methodParts);
+                    $method = 'where'.\implode('', $nameParts);
 
                     // Detect via proxies a whereFieldName method.
                     // By doing that, we can extract the possible operator, which is by default '='.
-                    if ($proxyHandler->has($method, $proxyHandler::BUILDER_TYPE)) {
+                    if ($this->getModel()::getMeta()->getProxyHandler()->has('scope'.\ucfirst($method))) {
                         if (\count($operatorParts)) {
                             $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
 
-                            try {
+                            if (Operator::has($opName)) {
                                 $operator = Operator::get($opName);
-                            } catch (\ErrorException $e) {
-                                if (Str::startsWith($opName, 'is_')) {
-                                    $operator = Operator::get(substr($opName, 3));
-                                } else if (Str::startsWith($opName, 'are_')) {
-                                    $operator = Operator::get(substr($opName, 4));
-                                } else {
-                                    throw $e;
-                                }
+                            } else if (Str::startsWith($opName, 'is_') && Operator::has($subOpName = substr($opName, 3))) {
+                                $operator = Operator::get($subOpName);
+                            } else if (Str::startsWith($opName, 'are_') && Operator::has($subOpName = substr($opName, 4))) {
+                                $operator = Operator::get(substr($opName, 4));
+                            } else {
+                                throw new \Exception("Operator `$opName` not identified");
                             }
                         } else {
                             $operator = Operator::equal();
@@ -228,42 +223,122 @@ class Builder extends BuilderBase implements IsProxied
                         if ($operator->needs === 'null') {
                             $value = null;
                         } else {
+                            if (!isset($parameters[$index])) {
+                                throw new \Exception("Missing value for operator `{$operator->getName()}`");
+                            }
+
                             // Only one parameter used.
                             $value = $parameters[$index++];
                         }
 
                         $params = [$operator, $value, $connector];
 
-                        $this->getModel()::getMeta()->proxyCall($proxyHandler->get($method, $proxyHandler::BUILDER_TYPE), $this, $params);
+                        if (\count($nameParts) === 0) {
+                            if (\is_null($lastMethod)) {
+                                throw new \Exception('A dynamic where condition is composed like this: `where{field name}{(operator)}`');
+                            }
+
+                            $method = $lastMethod;
+                            $nameParts[] = $lastMethod;
+                        } else {
+                            $lastMethod = $method;
+                        }
+
+                        $this->__proxy($method, $params);
 
                         break;
                     }
-                } while ($operatorParts[] = \array_pop($methodParts));
+                } while ($operatorParts[] = \array_pop($nameParts));
 
-                if (\count($methodParts)) {
-                    $methodParts = [];
+                if (\count($nameParts)) {
+                    $nameParts = [];
                     $operatorParts = [];
 
                     $connector = \strtolower($segment);
-                } else {
-                    if (\count($operatorParts)) {
-                        $operatorName = Str::camel(\implode('', \array_reverse($operatorParts)));
+                } else if (\count($operatorParts)) {
+                    $operatorName = Str::camel(\implode('', \array_reverse($operatorParts)));
 
-                        if (Operator::has($operatorName)) {
-                            $this->where($parameters[$index++], Operator::get($operatorName), $parameters[$index++] ?? null);
+                    if (Operator::has($operatorName)) {
+                        $this->where($parameters[$index++], Operator::get($operatorName), $parameters[$index++] ?? null);
 
-                            return $this;
-                        }
+                        return $this;
                     }
-
-                    throw new \Exception("Where method [$where] is invalid.");
+                } else {
+                    throw new \Exception("Where method `$where` is invalid");
                 }
             } else {
-                $methodParts[] = $segment;
+                $nameParts[] = $segment;
             }
         }
 
         return $this;
+    }
+
+    /**
+     * Multiple where conditions
+     *
+     * @param array $column
+     * @param mixed $operator
+     * @param mixed $value
+     * @param string $boolean
+     *
+     * @return void
+     */
+    public function multiWhere(array $column, $operator=null, $value=null, $boolean='and')
+    {
+        if (Arr::isAssoc($column)) {
+            foreach ($column as $attname => $value) {
+                $this->where($attname, $operator, $value);
+            }
+        } else {
+            if (\func_num_args() === 2) {
+                [$operator, $value] = [$value, $operator];
+            }
+
+            if (\is_array($value) && !\is_object($value)) {
+                if (Arr::isAssoc($value)) {
+                    foreach ($column as $attname) {
+                        $this->where($attname, $operator, $value[$attname], $boolean);
+                    }
+                } else {
+                    foreach ($column as $index => $attname) {
+                        $this->where($attname, $operator, $value[$index], $boolean);
+                    }
+                }
+            } else {
+                foreach ($column as $attname) {
+                    $this->where($attname, $operator, $value, $boolean);
+                }
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Call a proxy by its name.
+     * All proxies are handled in models.
+     * Query builders only calls methods from models via 'scope' names.
+     *
+     * @param mixed $name
+     * @param mixed $args
+     * @return mixed
+     */
+    public function __proxy($name, $args)
+    {
+        return $this->getModel()::getMeta()->getProxyHandler()->get('scope'.\ucfirst($name))->__invoke($this, ...$args);
+    }
+
+    /**
+     * Return a static proxy by its name.
+     *
+     * @param mixed $name
+     * @param mixed $args
+     * @return mixed
+     */
+    public static function __proxyStatic($name, $args)
+    {
+        throw new \BadMethodCallException("The proxy `$name` cannot be called statically.");
     }
 
     /**
@@ -295,19 +370,19 @@ class Builder extends BuilderBase implements IsProxied
             return call_user_func_array(static::$macros[$method], $parameters);
         }
 
-        if (method_exists($this->model, $scope = 'scope'.ucfirst($method))) {
+        $method = Str::camel($method);
+        $scope = 'scope'.ucfirst($method);
+
+        if (method_exists($this->model, $scope)) {
             return $this->callScope([$this->model, $scope], $parameters);
+        }
+
+        if ($this->getModel()::getMeta()->getProxyHandler()->has($scope)) {
+            return $this->__proxy($method, $parameters);
         }
 
         if (in_array($method, $this->passthru)) {
             return $this->toBase()->{$method}(...$parameters);
-        }
-
-        $proxyHandler = $this->getModel()::getProxyHandler();
-        $method = Str::camel($method);
-
-        if ($proxyHandler->has($method, $proxyHandler::BUILDER_TYPE)) {
-            return $this->getModel()::getMeta()->proxyCall($proxyHandler->get($method, $proxyHandler::BUILDER_TYPE), $this, $parameters);
         }
 
         if (Str::startsWith($method, ['where', 'orWhere', 'andWhere']) && !\method_exists($this->getQuery(), $method)) {
