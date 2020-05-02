@@ -47,6 +47,45 @@ trait HasLaramoreAttributes
     }
 
     /**
+     * Preset attributes.
+     *
+     * @return self
+     */
+    public function presetAttributes()
+    {
+        $this->resetAttributes();
+        $this->resetRelations();
+        $this->resetExtras();
+
+        return $this;
+    }
+
+    /**
+     * Unset a specific field.
+     *
+     * @param  mixed $key
+     * @return self
+     */
+    public function unsetAttribute($key)
+    {
+        unset($this->attributes[$key]);
+
+        return $this;
+    }
+
+    /**
+     * Unset all attributes.
+     *
+     * @return self
+     */
+    public function unsetAttributes()
+    {
+        $this->attributes = [];
+
+        return $this;
+    }
+
+    /**
      * Reset a specific field.
      *
      * @param  $key Name of the field.
@@ -59,7 +98,7 @@ trait HasLaramoreAttributes
 
             $field->getOwner()->resetFieldValue($field, $this);
         } else {
-            unset($this->attributes[$key]);
+            $this->unsetAttribute($key);
         }
 
         return $this;
@@ -72,9 +111,7 @@ trait HasLaramoreAttributes
      */
     public function resetAttributes()
     {
-        $this->attributes = [];
-
-        foreach (static::getMeta()->getFields(AttributeField::class) as $field) {
+        foreach (static::getMeta()->getFields() as $field) {
             $field->getOwner()->resetFieldValue($field, $this);
         }
 
@@ -145,6 +182,12 @@ trait HasLaramoreAttributes
             }
         }
 
+        // If a relation is defined with this key, return it (ex: pivot).
+        if ($this->hasRelationValue($key)) {
+            return $this->getRelationValue($key);
+        }
+
+        // Else, simply return the extra value.
         return $this->getExtraValue($key);
     }
 
@@ -203,11 +246,9 @@ trait HasLaramoreAttributes
             $field = static::getMeta()->getField($key);
 
             $field->getOwner()->setFieldValue($field, $this, $value);
-
-            return $this;
+        } else {
+            $this->setExtraValue($key, $value);
         }
-
-        $this->setExtraValue($key, $value);
 
         return $this;
     }
@@ -221,13 +262,32 @@ trait HasLaramoreAttributes
      */
     public function setAttributeValue($key, $value)
     {
-        if (static::getMeta()->hasField($key, AttributeField::class)) {
-            $field = static::getMeta()->getField($key, AttributeField::class);
+        $this->attributes[$key] = $value;
 
-            $this->attributes[$key] = $field->getOwner()->castFieldValue($field, $value);
-        } else {
-            $this->attributes[$key] = $value;
-        }
+        return $this;
+    }
+
+    /**
+     * Unset a specific field.
+     *
+     * @param  mixed $key
+     * @return self
+     */
+    public function unsetRelation($key)
+    {
+        unset($this->relations[$key]);
+
+        return $this;
+    }
+
+    /**
+     * Unset all relations.
+     *
+     * @return self
+     */
+    public function unsetRelations()
+    {
+        $this->relations = [];
 
         return $this;
     }
@@ -245,7 +305,7 @@ trait HasLaramoreAttributes
 
             $field->getOwner()->resetFieldValue($field, $this);
         } else {
-            unset($this->relations[$key]);
+            $this->unsetRelation($key);
         }
 
         return $this;
@@ -416,13 +476,32 @@ trait HasLaramoreAttributes
      */
     public function setRelationValue($key, $value)
     {
-        if (static::getMeta()->hasField($key, RelationField::class)) {
-            $field = static::getMeta()->getField($key, RelationField::class);
+        $this->relations[$key] = $value;
 
-            $this->relations[$key] = $field->getOwner()->castFieldValue($field, $value);
-        } else {
-            $this->relations[$key] = $value;
-        }
+        return $this;
+    }
+
+    /**
+     * Unset a specific field.
+     *
+     * @param  mixed $key
+     * @return self
+     */
+    public function unsetExtra($key)
+    {
+        unset($this->extras[$key]);
+
+        return $this;
+    }
+
+    /**
+     * Unset all extras.
+     *
+     * @return self
+     */
+    public function unsetExtras()
+    {
+        $this->extras = [];
 
         return $this;
     }
@@ -440,7 +519,7 @@ trait HasLaramoreAttributes
 
             $field->getOwner()->resetFieldValue($field, $this);
         } else {
-            unset($this->extras[$key]);
+            $this->unsetExtra($key);
         }
 
         return $this;
@@ -625,13 +704,7 @@ trait HasLaramoreAttributes
      */
     public function setExtraValue($key, $value)
     {
-        if (static::getMeta()->hasField($key, ExtraField::class)) {
-            $field = static::getMeta()->getField($key, ExtraField::class);
-
-            $this->extras[$key] = $field->getOwner()->castFieldValue($field, $value);
-        } else {
-            $this->extras[$key] = $value;
-        }
+        $this->extras[$key] = $value;
 
         return $this;
     }
@@ -662,34 +735,6 @@ trait HasLaramoreAttributes
         return $this;
     }
 
-    protected function finishSave(array $options=[])
-    {
-        if ($options['relate'] ?? false) {
-            $this->saveRelations();
-        }
-
-        return parent::finishSave($options);
-    }
-
-    public function saveRelations(array $relations=null)
-    {
-        $status = true;
-
-        if (\is_null($relations)) {
-            $relationsToSave = $this->relations;
-        } else {
-            $relationsToSave = \array_intersect_key($this->relations, \array_flip($relations));
-        }
-
-        foreach ($relationsToSave as $key => $relation) {
-            $field = static::getMeta()->getField($key);
-
-            $status = $status && $field->getOwner()->reverbateFieldValue($field, $this, $relation);
-        }
-
-        return $status;
-    }
-
     /**
      * Insert the given attributes and set the ID on the model.
      *
@@ -701,7 +746,39 @@ trait HasLaramoreAttributes
     {
         $ids = $query->insertGetId($attributes, $keys = $this->getKeyName());
 
-        $this->setRawAttributes(\array_combine($keys, \is_array($ids) ? $ids : [$ids]));
+        $this->setRawAttributes(\array_combine(
+            \is_array($keys) ? $keys : [$keys],
+            \is_array($ids) ? $ids : [$ids]
+        ));
+    }
+
+    /**
+     * Reload the current model instance with fresh attributes from the database.
+     *
+     * @param  array $attributes
+     * @return $this
+     */
+    public function refresh(array $attributes=['*'])
+    {
+        if (!$this->exists) {
+            return $this;
+        }
+
+        $this->setRawAttributes(
+            static::newQueryWithoutScopes()->findOrFail($this->getKey(), $attributes)->attributes
+        );
+
+        $this->load(collect($this->relations)->except('pivot')->keys()->toArray());
+
+        if ($attributes === ['*']) {
+            $this->syncOriginal();
+        } else {
+            foreach ($attributes as $attribute) {
+                $this->syncOriginalAttribute($attribute);
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -721,12 +798,7 @@ trait HasLaramoreAttributes
      */
     public function attributesToArray()
     {
-        // If an attribute is a date, we will cast it to a string after converting it
-        // to a DateTime / Carbon instance. This is so we will get some consistent
-        // formatting while accessing attributes vs. arraying / JSONing a model.
-        $attributes = $this->addDateAttributesToArray(
-            $attributes = $this->getArrayableAttributes()
-        );
+        $attributes = $this->getArrayableAttributes();
 
         $attributes = $this->addMutatedAttributesToArray(
             $attributes,
@@ -744,7 +816,6 @@ trait HasLaramoreAttributes
         foreach ($attributes as $key => $value) {
             if (static::getMeta()->hasField($key, AttributeField::class)) {
                 $field = static::getMeta()->getField($key, AttributeField::class);
-
                 $attributes[$key] = $field->getOwner()->serializeFieldValue($field, $value);
             }
         }
@@ -818,5 +889,18 @@ trait HasLaramoreAttributes
         }
 
         return \array_merge($attributes, $data);
+    }
+
+    /**
+     * Unset the value for a given offset.
+     *
+     * @param  mixed $offset
+     * @return void
+     */
+    public function offsetUnset($offset)
+    {
+        $this->unsetAttribute($offset);
+        $this->unsetRelation($offset);
+        $this->unsetExtra($offset);
     }
 }

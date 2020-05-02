@@ -16,10 +16,10 @@ use Laramore\Facades\{
     Proxy, FieldConstraint
 };
 use Laramore\Fields\{
-    Timestamp, Constraint\ConstraintHandler,
+    DateTime, Constraint\ConstraintHandler, Constraint\Primary
 };
 use Laramore\Contracts\{
-    Eloquent\LaramoreMeta, Field\Field, Field\ComposedField, Field\LinkField, Field\ExtraField, Proxied
+    Eloquent\LaramoreMeta, Field\Field, Proxied
 };
 use Laramore\Traits\{
     IsLocked, HasLockedMacros
@@ -434,12 +434,12 @@ class Meta implements LaramoreMeta
 
         $this->setField(
             $createdName,
-            Timestamp::field(['not_nullable', 'visible', 'use_current'])
+            DateTime::field(['not_nullable', 'visible', 'use_current'])->timestamp()
         );
 
         $this->setField(
             $updatedField,
-            $updatedField = Timestamp::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
+            $updatedField = DateTime::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])->timestamp()
         );
 
         if ($autoUpdated) {
@@ -480,7 +480,7 @@ class Meta implements LaramoreMeta
 
         $this->setField(
             $deletedName,
-            Timestamp::field(['nullable', 'visible'])
+            DateTime::field(['nullable', 'visible'])
         );
 
         $this->hasDeletedTimestamp = true;
