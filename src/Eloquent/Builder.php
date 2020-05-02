@@ -19,9 +19,30 @@ use Laramore\Facades\{
 };
 use Closure;
 use Illuminate\Support\Arr;
+use Laramore\Contracts\Field\AttributeField;
 
 class Builder extends BuilderBase implements LaramoreBuilder
 {
+    /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array $columns
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     */
+    public function get($columns=['*'])
+    {
+        $builder = $this->applyScopes();
+
+        // If we actually found models we will also eager load any relationships that
+        // have been specified as needing to be eager loaded, which will solve the
+        // n+1 query issue for the developers to avoid running a lot of queries.
+        if (count($models = $builder->getModels($columns)) > 0) {
+            $models = $builder->eagerLoadRelations($models);
+        }
+
+        return $builder->getModel()->newCollection($models)->fetching(false);
+    }
+
     /**
      * Add a basic where clause to the query.
      *
@@ -94,8 +115,24 @@ class Builder extends BuilderBase implements LaramoreBuilder
      */
     public function dryValues(array $values)
     {
-        foreach ($values as $attname => $value) {
-            $values[$attname] = $this->dry($attname, $value);
+        foreach ($values as $key => $value) {
+            $parts = explode('.', $key);
+
+            if (\count($parts) === 2) {
+                [$table, $attname] = $parts;
+                $meta = Meta::getMetaForTableName($table);
+                $model = $meta->getModelClass();
+            } else {
+                $attname = $key;
+                $model = $this->getModel();
+                $meta = $model::getMeta();
+            }
+
+            if ($meta->hasField($attname, AttributeField::class)) {
+                $values[$key] = $model::dry($attname, $value);
+            } else {
+                unset($values[$key]);
+            }
         }
 
         return $values;
@@ -159,7 +196,10 @@ class Builder extends BuilderBase implements LaramoreBuilder
         $values = $this->addUpdatedAtColumn($values);
         $this->getModel()->fill($values);
 
-        return $this->toBase()->update($this->dryValues($this->getModel()->getDirty()));
+        return $this->toBase()->update($this->dryValues(\array_merge(
+            $values,
+            $this->getModel()->getDirty()
+        )));
     }
 
     /**
@@ -277,9 +317,9 @@ class Builder extends BuilderBase implements LaramoreBuilder
     /**
      * Multiple where conditions
      *
-     * @param array $column
-     * @param mixed $operator
-     * @param mixed $value
+     * @param array  $column
+     * @param mixed  $operator
+     * @param mixed  $value
      * @param string $boolean
      *
      * @return void
