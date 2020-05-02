@@ -98,14 +98,19 @@ trait HasFields
      */
     public function setFieldValue(Field $field, LaramoreModel $model, $value)
     {
-        // Set the value in the model
-        return $field->set($model,
-            // Apply changes by the field.
-            $this->transformFieldValue($field,
-                // The value must be of the right type.
-                $this->castFieldValue($field, $value)
-            )
+        // Apply changes by the field.
+        $value = $this->transformFieldValue($field,
+            // The value must be of the right type.
+            $this->castFieldValue($field, $value)
         );
+
+        // Refuse any reverbation if the model is currently fetching.
+        if ($field instanceof RelationField && !$model->fetching) {
+            $value = $field->getOwner()->reverbateFieldValue($field, $model, $value);
+        }
+
+        // Set the value in the model
+        return $field->set($model, $value);
     }
 
     /**
@@ -145,14 +150,14 @@ trait HasFields
     }
 
     /**
-     * Reverbate a saved relation value for a specific field.
+     * Reverbate the relation value for a specific field.
      *
      * @param RelationField $field
      * @param LaramoreModel $model
      * @param mixed         $value
-     * @return boolean
+     * @return mixed
      */
-    public function reverbateFieldValue(RelationField $field, LaramoreModel $model, $value): bool
+    public function reverbateFieldValue(RelationField $field, LaramoreModel $model, $value)
     {
         return $field->reverbate($model, $value);
     }
