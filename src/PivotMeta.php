@@ -12,9 +12,7 @@ namespace Laramore;
 
 use Laramore\Exceptions\LaramoreException;
 use Laramore\Contracts\Field\Field;
-use Laramore\Fields\{
-    BaseField, OneToMany
-};
+use Laramore\Fields\ManyToOne;
 
 class PivotMeta extends Meta
 {
@@ -48,7 +46,7 @@ class PivotMeta extends Meta
      */
     public function setField(string $name, Field $field)
     {
-        if (count($this->pivots) !== 2 && ($field instanceof OneToMany)) {
+        if (count($this->pivots) !== 2 && ($field instanceof ManyToOne)) {
             $this->pivots[] = $field;
         }
 
@@ -71,7 +69,7 @@ class PivotMeta extends Meta
             $pivot = $this->get($pivot);
         }
 
-        if (!($pivot instanceof OneToMany)) {
+        if (!($pivot instanceof ManyToOne)) {
             throw new LaramoreException($this, 'The pivots need to be foreign fields.');
         }
 
