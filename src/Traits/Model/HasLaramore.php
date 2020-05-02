@@ -26,16 +26,32 @@ trait HasLaramore
 {
     use HasLaramoreAttributes;
 
+    /**
+     * List all required fields.
+     *
+     * @var array
+     */
     protected $required = [];
+
+    /**
+     * Indicate if the model is currently fetching from the database.
+     * Public property as the exists one it is (not a good think tbh).
+     *
+     * @var bool
+     */
+    public $fetching;
 
     /**
      * Create a new Eloquent model instance.
      *
-     * @param  array $attributes
+     * @param  array   $attributes
+     * @param  boolean $fetching   Is the model currently fetching from the database.
      * @return void
      */
-    public function __construct(array $attributes=[])
+    public function __construct(array $attributes=[], bool $fetching=false)
     {
+        $this->exists = $this->fetching = $fetching;
+
         if (\version_compare(app()::VERSION, '5.7.0', '<')) {
             $this->bootIfNotBooted();
 
@@ -76,7 +92,10 @@ trait HasLaramore
 
         $this->setTable($meta->getTableName());
         $this->setConnection($meta->getConnectionName());
-        $this->resetAttributes();
+
+        if (!$this->fetching) {
+            $this->presetAttributes();
+        }
     }
 
     /**
@@ -109,18 +128,20 @@ trait HasLaramore
      */
     public function getKeyName()
     {
-        return $this->getPrimaryKey()->getAttnames();
+        return $this->getPrimaryKey()->isComposed() ? $this->getPrimaryKey()->getAttnames() : $this->getPrimaryKey()->getAttname();
     }
 
     /**
-     * Set the primary key for the model.
+     * Set the primary key from the targeted keys for the model.
      *
-     * @param  string $key
+     * @param  string|array $keys
      * @return $this
      */
-    public function setKeyName($key)
+    public function setKeyName($keys)
     {
-        $this->setPrimaryKey(static::getMeta()->getConstraintHandler()->getTarget($key));
+        $keys = \is_array($keys) ? $keys : [$keys];
+
+        $this->setPrimaryKey(static::getMeta()->getConstraintHandler()->getTarget($keys));
 
         return $this;
     }
@@ -128,11 +149,21 @@ trait HasLaramore
     /**
      * Get the value of the model's primary key.
      *
-     * @return mixed
+     * @return string|array Depending if the key is composed or not.
      */
     public function getKey()
     {
-        return $this->getPrimaryKey()->getModelValues($this);
+        if ($this->getPrimaryKey()->isComposed()) {
+            $values = [];
+
+            foreach ($this->getPrimaryKey()->getAttnames() as $attname) {
+                $values[$attname] = $this->getAttribute($attname);
+            }
+
+            return $values;
+        }
+
+        return $this->getAttribute($this->getPrimaryKey()->getAttname());
     }
 
     /**
@@ -185,7 +216,7 @@ trait HasLaramore
     public function getCasts()
     {
         if ($this->getIncrementing()) {
-            return array_merge(\array_fill_keys($this->getKeyName(), $this->getKeyType()), $this->casts);
+            return array_merge(\array_fill_keys((array) $this->getKeyName(), $this->getKeyType()), $this->casts);
         }
 
         return $this->casts;
@@ -246,44 +277,22 @@ trait HasLaramore
     /**
      * Create a new instance of the given model.
      *
-     * @param  array   $attributes
-     * @param  boolean $exists
+     * @param  array|mixed $attributes
+     * @param  boolean     $fetching
      * @return static
      */
-    public function newInstance($attributes=[], $exists=false)
+    public function newInstance($attributes=[], $fetching=false)
     {
         // This method just provides a convenient way for us to generate fresh model
         // instances of this current model. It is particularly useful during the
         // hydration of new objects via the Eloquent query builder instances.
-        $model = new static((array) $attributes);
-
-        $model->exists = $exists;
+        $model = new static((array) $attributes, $fetching);
 
         $model->setConnection(
             $this->getConnectionName()
         );
 
         $model->setTable($this->getTable());
-
-        return $model;
-    }
-
-    /**
-     * Create a new model instance that is existing.
-     *
-     * @param  array       $attributes
-     * @param  string|null $connection
-     * @return static
-     */
-    public function newFromBuilder($attributes=[], $connection=null)
-    {
-        $model = $this->newInstance([], true);
-
-        $model->setRawAttributes((array) $attributes, true);
-
-        $model->setConnection($connection ?: $this->getConnectionName());
-
-        $model->fireModelEvent('retrieved', false);
 
         return $model;
     }
@@ -298,7 +307,7 @@ trait HasLaramore
      * Override the original method.
      *
      * @param  mixed $query
-     * @return \Illuminate\Database\Eloquent\Builder|static
+     * @return \Illuminate\Database\Eloquent\Builder
      */
     public function newEloquentBuilder($query)
     {
@@ -307,15 +316,22 @@ trait HasLaramore
         return new $class($query);
     }
 
-    /**
-     * Unset the value for a given offset.
-     *
-     * @param  mixed $offset
-     * @return void
-     */
-    public function offsetUnset($offset)
+    public static function getCollectionClass()
     {
-        $this->resetAttribute($offset);
+        return config('meta.collection_class');
+    }
+
+    /**
+     * Create a new Eloquent Collection instance.
+     *
+     * @param  array $models
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function newCollection(array $models=[])
+    {
+        $class = static::getCollectionClass();
+
+        return new $class($models);
     }
 
     /**
@@ -352,6 +368,55 @@ trait HasLaramore
         }
 
         return $proxy->__invoke(...$args);
+    }
+
+    /**
+     * Dynamically retrieve attributes on the model.
+     *
+     * @param  string $key
+     * @return mixed
+     */
+    public function __get($key)
+    {
+        if ($key === 'meta') {
+            return static::getMeta();
+        }
+
+        return parent::__get(Str::snake($key));
+    }
+
+    /**
+     * Dynamically set attributes on the model.
+     *
+     * @param  string $key
+     * @param  mixed  $value
+     * @return void
+     */
+    public function __set($key, $value)
+    {
+        return parent::__set(Str::snake($key), $value);
+    }
+
+    /**
+     * Determine if an attribute or relation exists on the model.
+     *
+     * @param  string $key
+     * @return boolean
+     */
+    public function __isset($key)
+    {
+        return parent::__isset(Str::snake($key));
+    }
+
+    /**
+     * Unset an attribute on the model.
+     *
+     * @param  string $key
+     * @return void
+     */
+    public function __unset($key)
+    {
+        return parent::__set(Str::snake($key));
     }
 
     /**
