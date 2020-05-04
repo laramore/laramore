@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Eloquent;
 
 use Laramore\Traits\IsLocked;
 use Laramore\Contracts\Manager\LaramoreManager;
@@ -74,7 +74,7 @@ class MetaManager implements LaramoreManager
      * Indicate if a meta exists a specific model.
      *
      * @param  string $modelClass
-     * @return boolean
+     * @return Meta
      */
     public function get(string $modelClass): Meta
     {
@@ -82,10 +82,9 @@ class MetaManager implements LaramoreManager
     }
 
     /**
-     * Return the meta for a specific model.
+     * Return all metas.
      *
-     * @param  string $modelClass
-     * @return boolean
+     * @return array
      */
     public function all(): array
     {

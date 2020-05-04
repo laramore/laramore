@@ -8,16 +8,38 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Eloquent;
 
 use Laramore\Exceptions\LaramoreException;
-use Laramore\Contracts\Field\Field;
+use Laramore\Contracts\Field\{
+    Field, RelationField
+};
 use Laramore\Fields\ManyToOne;
 
 class PivotMeta extends Meta
 {
+    /**
+     * List of pivot relations.
+     *
+     * @var array
+     */
     protected $pivots = [];
 
+    /**
+     * Indicate the this meta is a pivot one.
+     *
+     * @return boolean
+     */
+    public function isPivot(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Return all foreign pivots.
+     *
+     * @return array
+     */
     public function getPivots(): array
     {
         return $this->pivots;
@@ -53,24 +75,35 @@ class PivotMeta extends Meta
         return parent::setField($name, $field);
     }
 
-    public function pivots($pivot1, $pivot2)
+    /**
+     * Define pivots for this meta pivot.
+     *
+     * @param RelationField $pivotSource
+     * @param RelationField $pivotTarget
+     * @return self
+     */
+    public function pivots(RelationField $pivotSource, RelationField $pivotTarget)
     {
         $this->needsToBeUnlocked();
 
         $this->pivots = [];
 
-        $this->addPivot($pivot1);
-        $this->addPivot($pivot2);
+        $this->addPivot($pivotSource);
+        $this->addPivot($pivotTarget);
+
+        return $this;
     }
 
-    protected function addPivot($pivot)
+    /**
+     * Add a pivot for this pivot meta.
+     *
+     * @param RelationField $pivot
+     * @return void
+     */
+    protected function addPivot(RelationField $pivot)
     {
         if (is_string($pivot)) {
             $pivot = $this->get($pivot);
-        }
-
-        if (!($pivot instanceof ManyToOne)) {
-            throw new LaramoreException($this, 'The pivots need to be foreign fields.');
         }
 
         $this->pivots[] = $pivot;

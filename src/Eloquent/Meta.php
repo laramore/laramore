@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore;
+namespace Laramore\Eloquent;
 
 use Illuminate\Support\Str;
 use Laramore\Exceptions\MetaException;
@@ -22,10 +22,7 @@ use Laramore\Contracts\{
     Eloquent\LaramoreMeta, Field\Field, Proxied
 };
 use Laramore\Traits\{
-    IsLocked, HasLockedMacros
-};
-use Laramore\Traits\Meta\{
-    HasFields, HasFieldsConstraints
+    IsLocked, HasLockedMacros, Eloquent\HasFields, Eloquent\HasFieldsConstraints
 };
 use Laramore\Proxies\{
     BaseProxy, MultiProxy, ProxyHandler
@@ -69,13 +66,6 @@ class Meta implements LaramoreMeta
      * @var bool
      */
     protected $hasDeletedTimestamp = false;
-
-    /**
-     * Indicate if this meta is a pivot one.
-     *
-     * @var bool
-     */
-    protected $pivot = false;
 
     /**
      * Create a Meta for a specific model.
@@ -252,11 +242,13 @@ class Meta implements LaramoreMeta
 
         if ($field->isOwned()) {
             if ($field->getName() !== $name) {
-                throw new \Exception("The field name must be the same as the given one, expecting `{$field->getName()}`, got `$name`.");
+                throw new \Exception('The field name must be the same as the given one, '
+                    ."expecting `{$field->getName()}`, got `$name`.");
             }
 
             if ($field->getMeta() !== $this) {
-                throw new \LogicException("The field `$name` is already owned by another meta.");
+                throw new \LogicException("The field `$name` is already"
+                    .'owned by another meta.');
             }
         } else {
             $field->own($this, $name);
@@ -282,7 +274,8 @@ class Meta implements LaramoreMeta
      */
     public function hasField(string $name, string $class=null): bool
     {
-        return isset($this->getFields()[$name]) && (\is_null($class) || ($this->getFields()[$name] instanceof $class));
+        return isset($this->getFields()[$name])
+            && (\is_null($class) || ($this->getFields()[$name] instanceof $class));
     }
 
     /**
@@ -311,7 +304,8 @@ class Meta implements LaramoreMeta
     public function findField(string $nativeName, string $class=null): Field
     {
         foreach ($this->getFields() as $field) {
-            if ($field->getNative() === $nativeName && (\is_null($class) || ($field instanceof $class))) {
+            if ($field->getNative() === $nativeName
+                && (\is_null($class) || ($field instanceof $class))) {
                 return $field;
             }
         }
@@ -395,7 +389,7 @@ class Meta implements LaramoreMeta
      */
     protected function locking()
     {
-        if (\is_null($this->getPrimary()) && !$this->pivot) {
+        if (\is_null($this->getPrimary()) && !$this->isPivot()) {
             throw new MetaException($this, 'A meta needs a primary key or must be set as pivot.');
         }
 
@@ -406,20 +400,24 @@ class Meta implements LaramoreMeta
         }
 
         if (!$this->hasTimestamps()) {
-            $this->hasTimestamps = $this->hasField($this->modelClass::CREATED_AT) && $this->hasField($this->modelClass::UPDATED_AT);
+            $this->hasTimestamps = $this->hasField($this->modelClass::CREATED_AT)
+                && $this->hasField($this->modelClass::UPDATED_AT);
         }
 
         if (!$this->hasDeletedTimestamp()) {
-            $this->hasDeletedTimestamp = $this->hasField(\defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at');
+            $key = \defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at';
+
+            $this->hasDeletedTimestamp = $this->hasField($key);
         }
     }
 
     /**
      * Add default timestamp fields.
      *
+     * @param boolean $autoUpdated
      * @return self
      */
-    public function useTimestamps($autoUpdated=false)
+    public function useTimestamps(bool $autoUpdated=false)
     {
         $createdName = $this->modelClass::CREATED_AT;
         $updatedField = $this->modelClass::UPDATED_AT;
@@ -464,9 +462,11 @@ class Meta implements LaramoreMeta
     /**
      * Add default soft delete field.
      *
+     * @param boolean $useTimestamps
+     * @param boolean $autoUpdated
      * @return self
      */
-    public function useDeleteTimestamp($useTimestamps=false, $autoUpdated=false)
+    public function useDeleteTimestamp(bool $useTimestamps=false, bool $autoUpdated=false)
     {
         if ($useTimestamps) {
             $this->useTimestamps($autoUpdated);
@@ -499,27 +499,23 @@ class Meta implements LaramoreMeta
     }
 
     /**
-     * Indicate if the meta use default timestamps.
-     *
-     * @return self
-     */
-    public function setPivot($pivot=true)
-    {
-        $this->pivot = $pivot;
-
-        return $this;
-    }
-
-    /**
-     * Indicate if the meta use default timestamps.
+     * Indicate the this meta is not a pivot one.
      *
      * @return boolean
      */
     public function isPivot(): bool
     {
-        return $this->pivot;
+        return false;
     }
 
+    /**
+     * Call a proxy.
+     *
+     * @param BaseProxy $proxy
+     * @param Proxied   $proxiedInstance
+     * @param array     $args
+     * @return mixed
+     */
     public function proxyCall(BaseProxy $proxy, Proxied $proxiedInstance=null, array $args=[])
     {
         if ($proxy instanceof MultiProxy) {
@@ -527,9 +523,6 @@ class Meta implements LaramoreMeta
         }
 
         $injections = $proxy->getInjections();
-
-        if (!\in_array('instance', $injections)) {
-        }
 
         foreach (\array_reverse($injections) as $name) {
             \array_unshift($args, $this->getProxyInjection($proxy, $name, $proxiedInstance));

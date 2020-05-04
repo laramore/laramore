@@ -10,7 +10,7 @@ return [
     |
     */
 
-    'manager' => Laramore\MetaManager::class,
+    'manager' => Laramore\Eloquent\MetaManager::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -21,7 +21,7 @@ return [
     |
     */
 
-    'class' => Laramore\Meta::class,
+    'class' => Laramore\Eloquent\Meta::class,
 
     /*
     |--------------------------------------------------------------------------
@@ -32,7 +32,7 @@ return [
     |
     */
 
-	'pivot_class' => Laramore\PivotMeta::class,
+	'pivot_class' => Laramore\Eloquent\PivotMeta::class,
 
     /*
     |--------------------------------------------------------------------------

@@ -10,7 +10,7 @@
 
 namespace Laramore\Eloquent;
 
-use Laramore\Meta;
+use Laramore\Eloquent\Meta;
 
 class FakePivot extends Pivot
 {
@@ -18,10 +18,10 @@ class FakePivot extends Pivot
      * Allow the user to define all meta data for the current pivot.
      *
      * @param  Meta $meta
-     * @return void
+     * @return mixed
      */
     protected static function __meta(Meta $meta)
     {
-        return $meta->setPivot();
+        return $meta;
     }
 }

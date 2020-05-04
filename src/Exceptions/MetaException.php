@@ -10,7 +10,7 @@
 
 namespace Laramore\Exceptions;
 
-use Laramore\Meta;
+use Laramore\Eloquent\Meta;
 
 class MetaException extends LaramoreException
 {
