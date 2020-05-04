@@ -4,179 +4,328 @@ Describe your table fields in the model and let Laravel the rest.
 
 # Installation
 ## Simple installation
-`composer require laramore/laramore`
+
+Laramore is available with Composer.
+
+```bash
+composer require laramore/laramore
+````
 
 # Usage
-Laravel ORM allows you to automate multiple Laravel features as:
-    - Describe perfectly all fields and relations for your model
-    - Manage with the right type all your model attributes
-    - Create easely your relations
-    - Generate for you all your migrations (depending on your model description)
-    - Create all scopes and helpers for building queries
-    - Smartly add validations to your controller
+Laramore allows you to automate multiple Laravel features:
+- Describe perfectly all fields and relations for and from your model
+- Manage with the right type all your model attributes
+- Do not loose your mind with relation definitions
+- Generate for you all your migrations (depending on your model description)
+- Create all scopes and helpers for building queries
+- Smartly add validations to your controller
+- Generate automatically your factories
+- Build simply your API with Laramore
 
 
 ## Model description
-In a regular `User` model, it is hard to detect all the fields, the relations, without reading deeply the code or the migration file(s).
 
-### Before
+In a regular `User` model, it is hard to detect all the fields, the relations, without reading deeply the code or the migration files.
+
+### Before, with Laravel
+
 ```php
 <?php
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Uuid;
 
-class User extends Model {
-    protected $fillable = ['firstname', 'lastname', 'email', 'admin', 'group_id'];
+class User extends Model 
+{
+    protected $fillable = ['firstname', 'lastname', 'email', 'password', 'admin', 'score', 'group_id'];
 
+	// Here we use UUIDs, not incremental ids.
+	protected $increment = false;
+
+	// Casts.
     protected $casts = [
         'admin' => 'boolean',
+		'score' => 'integer',
     ];
 
-    // By default, we want all except the admin boolean
-    protected $hidden = ['admin'];
+	// Append the name field.
+	protected $appends = ['name'];
 
+    // By default, we want to display all fields except the admin boolean.
+    protected $hidden = ['password', 'admin'];
+
+    // Add an uuid just before the creation.
+    public static function boot()
+    {
+        parent::boot();
+
+		static::creating(function ($model) {
+			$model->id = $model->id ?: Uuid::generate()->string;
+        });		
+	}
+
+	// Group relation definition.
     public function group() {
-        $this->belongsTo(Group::class);
+        $this->belongsTo(Group::class, 'group_id');
     }
+
+	// Title first names.
+	public function setFirstnameAttribute(string $value)
+	{
+		return Str::title($value);
+	}
+
+	// Uppercase last names.
+	public function setLastnameAttribute(string $value)
+	{
+		return Str::uppercase($value);
+	}
+
+	// Concate names.
+	public function getNameAttribute()
+	{
+		return "{$this->lastname} {$this->firstname}";
+	}
+
+	// Attributes must be postive or equal to 0.
+	public function setScoreAttribute($value)
+	{
+		if ($value < 0) {
+			throw new \Exception('Score negative !');
+		}
+
+		return $value;
+	}
 }
+
+?>
 ```
 
-### After
+### After, with Laravel + Laramore
+
+The examples use all possible Laramore packages.
+
 ```php
 <?php
 
 use Laramore\Traits\Model\HasLaramore;
 use Laramore\Fields\{
-    PrimaryId, Text, Email, Boolean, Belongs
+    PrimaryUuid, Name, Email, Increment, Boolean, ManyToOne, Password
 };
 
-class User extends Model {
+class User extends Model 
+{
 	use HasLaramore;
 
-    protected function __meta($meta, $fields) {
-        $fields->id = PrimaryId::field(); // an increment field, by default unfillable and primary
-        $fields->firstname = Text::field();
-        $fields->lastname = Text::field();
-        $fields->email = Email::field()->unique();
-        $fields->admin = Boolean::field()->default(false)->hidden(); // Auto cast and hidden by default
-        $fields->group = Belongs::field()->to(Group::class);
+    protected function __meta($meta) {
+		// Auto generate uuid, no params required.
+		$meta->id = PrimaryUuid::field(); 
+		// Generate two attributes: firstname ("First Name" format) and lastname ("LAST NAME" format).
+		// It is possible to set names directly from "name".
+		$meta->name = Name::field();
+		// Email field: regex filter.
+		$meta->email = Email::field()->unique();
+		// Password field: auto hashed.
+		$meta->password = Password::field();
+		// Auto cast into a boolean and hide the field by default.
+		$meta->admin = Boolean::field()->default(false)
+									   ->hidden();
+		// Incremental score.
+		$meta->number = Increment::field()->default(0);
+		// Foreign field. Relation defined in both sides. Eager loaded.
+		$meta->group = ManyToOne::field()->to(Group::class)
+										 ->with()
+										 ->nullable();
 
+		// Use timestamps.
         $meta->useTimestamps();
-
-        $meta->unique([$fields->firstname, $fields->lastname]);
     }
 }
+
+?>
 ```
 
-Here we can now know all defined fields. The `group` relation is automatically defined.
-
-
 ## Model interaction
-### Before
+
+Sometimes, model interactions are not fast and simple enough.
+
+### Before, with Laravel
 ```php
 <?php
 
-// Get the first user
-$user = User::first();
-// Get with id 2
-User::where('id', 2)->first();
-// Get the email adress
-$user->email;
-// Set a bad format email adress
-$user->email = 'bad-email';
-// Set a good format email adress
-$user->email = 'good@email.orm';
-// Get user group relation
-$user->group();
-// Get user group
-$group = $user->group;
-// Search one user by group
-$user = $user->where('group_id', $group->id)->first();
-// Search all users by group
-$user = $user->where('group_id', $group->id)->get();
-// Search all users with a group id greater than specific one
-$user = $user->where('group_id', '>', $group->id)->get();
-// Get admin boolean (with casting)
-$user->admin; // true
-// Get admin boolean (without casting)
-$user->admin; // 1
+// Creating a new user does not define default values.
+$user = new User();
+
+// Let's define some values for our user:
+$user->lastname = 'NaStUZzi'; // "NASTUZZI" (uppercased via setter).
+$user->firstname = 'SAMY'; // "Samy" (titled via setter).
+$user->email = 'email@example.org'; // "email@example.org".
+$user->password = Illuminate\Support\Facades\Hash::make('password'); // Generated hash.
+$user->admin = false; // false (required only if not set as default in database).
+$user->score = 0; // 0 (required only if not set as default in database).
+$user->group_id = Group::first()->id; // 1.
+$user->save() // true (uuid generated at this moment).
+
+// Let's fetch the group relation:
+$group = $user->group; // The group was fetched in the database even if we already have loaded it.
+
+// Check if a password is correct:
+$user->password = Illuminate\Support\Facades\Hash::make('password'); // true (fastidious).
+
+// Check if a user is not an admin:
+!$user->admin; // true.
+
+// Increment score:
+$user->score += 1; // 1.
+
+// Search by name:
+User::where('lastname', 'NASTUZZI')->where('firstname', 'Samy')->first();
+
+// Search by score:
+User::where('score', '>', 50)->first();
+
+// Search by group:
+User::where('group_id', $group->id)->first();
+
+// Retrieve reversed relation, supposing it is defined in the reversed side.
+// We suppose we have two users. Only the first one is linked to our group.
+$group->users; // The first user.
+
+// To link all users to the first group and save them in the database:
+User::update(['group_id' => $group->id]);
+
+// Let's fetch the users relation:
+$users = $group->users; // The users relation was fetched in the database.
+
+?>
 ```
 
-### After
+### After, with Laravel + Laramore
 ```php
-	// Get the first user
-	$user = User::first();
-	// Get with id 2, simple finder:
-	$user2 = User::id(2);
-	// Get with id 2, explicit finder:
-	$user2 = User::findId(2);
-	// Get the email adress
-	$user->email;
-	/* Set a bad format email adress
-	 * In function of setttings:
-	 * - Add automatically the domain (ex: '@email.orm')
-	 * - Write the wrong email
-	 * - Throw an exception telling the email adress is wrong
-	 */
-	$user->email = 'bad-email'; // => bad-email@email.orm or Exception
-	// Set a good format email adress
-	$user->email = 'good@email.orm';
-	// Get user group relation
-	$user->group();
-	// Get user group
-	$group = $user->group;
-	// Search user by group
-	$user = $user->group($group);
-	// Search user by group
-	$user = $user->whereGroup($group)->get();
-	// Search all users with a group id greater than specific one
-	$user = $user->whereGroup('>', $group)->get();
-	// Get admin boolean (auto casting)
-	$user->admin; // true
+
+// Creating a new user does define default values: 
+$user = new User();
+// uuid = generated uuid
+// admin = false
+// score = 0
+
+// Let's define some values for our user:
+$user->name = 'NASTUZZI Samy'; // lastname = "NASTUZZI" (uppercase detected) and firstname = "Samy" (tilted detected).
+$user->email = 'email@example.org'; // "email@example.org".
+$user->password = 'password'; // Hash generated and saved.
+$user->group = Group::first(); // group = Group (relation set) and group_id = 1 (reverbation).
+$user->save() // true.
+
+// Let's fetch the group relation:
+$group = $user->group; // As the group was already fetched, return the group we had fetched.
+
+// Check if a password is correct:
+$user->checkPassword('password'); // true (clerver nah ?).
+
+// Check if a user is not an admin:
+$user->isNotAdmin(); // true (reverse possible: isAdmin).
+
+// Increment score:
+$user->incrementScore(); // 1.
+
+// Search by name:
+User::where('name', 'NASTUZZI Samy')->first(); // Use composed fields !
+User::whereName('NASTUZZI Samy')->first(); // Even simplier.
+
+// Search by score:
+User::whereScore('>', 50)->first(); // Name in where method.
+User::whereScoreSup(50)->first(); // Operators can be dynamically added.
+
+// Search by group:
+User::where('group', $group)->first(); // Use relations !
+User::whereGroup($group)->first(); // Again simplier.
+
+// Retrieve reversed relation, reversed side auto defined.
+// We suppose we have two users. Only the first one is linked to our group.
+$group->users; // The first user.
+
+// To link all users to the first group and save them in the database:
+// The users relation is auto set we values.
+$group->users = User::get(); // What could be simplier ??
+
+// Let's fetch the users relation:
+$users = $group->users; // As users was already fetched, return users we had fetched.
+
+?>
 ```
 
-## Interaction listing
+## Model generation
 
-### All possible interactions for the field `id`, a binary uuid field.
+Laravel brings a great bundle to make factories simple. But with Laramore, it is again quicker.
 
-| User calls | Action | Meta call | Owner call | Field call |
-|-----------|--------|-------------|---------|-|
-| Attribute manipulation ||||
-| `$model->id`, `$model->getId()`, `$model->getAttribute('id')`, `$model->getAttributeValue('id')` | Get the `id` attribute value |  |
-| `$model->id = 'uuid'`, `$model->setId('uuid')`, `$model->setAttribute('id', 'uuid')` | Set the `id` attribute value |   |
-| - |||
-| `$model->rawId`, `$model->getRawId()`, `$model->getRawAttribute('id')` | Get the `id` attribute raw value | Real model method `getRawAttribute` |
-| `$model->rawId = 0x0001`, `$model->setRawId(0x0001)`, `$model->setRawAttribute('id', 0x0001)` | Set the `id` attribute raw value |   |
-| - |||
-| `$model->resetId()`, `model->reset('id')` | Set the default for value for the attribute | |
-| - |||
-| `$model->anyCustomFieldMethodId(...$args)`, `model->anyCustomFieldMethod('id', ...$args)` | Call and return the `ænyCustomFieldMethodFieldValue` or `ænyCustomFieldMethodValue` value of the field `id` | |
+### Before, with Laravel
 
-### All possible interactions for the related field `group`, using an uuid field `group_id`.
+You have to define each factory for each model in a separated files in `factories` directory.
 
-| User calls | Action | Field calls |
-|-----------|--------|-------------|
-| Attribute manipulation |||
-| `$model->group()`, `$model->getRelation('group')` | Get the `group` relation value |   |
-| - |||
-| `$model->group`, `$model->getAttribute('group')`, `$model->getRelationValue('group')` | Get the `group` relation value |   |
-| `$model->group = $group`, `$model->setAttribute('group', $group)` | Set the `group` attribute value |   |
-| - |||
-| `$model->rawId`, `$model->getRawAttribute('group')` | Get the `group` attribute raw value |   |
-| `$model->rawId = 0x0001`, `$model->setRawAttribute('group', 0x0001)` | Set the `group` attribute raw value |   |
-| - |||
-| `$model->resetId()`, `model->reset('group')` | Set the default for value for the attribute | |
-| - |||
-| `$model->anyCustomFieldMethodGroup(...$args)`, `model->anyCustomFieldMethod('group', ...$args)` | Call and return the `ænyCustomFieldMethodFieldValue` or `ænyCustomFieldMethodValue` value of the field `group` | |
+```php
+<?php
 
-### All possible static interactions
+// Make a new model:
+factory(User::class)->make();
 
-| User calls | Action | Field calls |
-|-----------|--------|-------------|
-| Attribute manipulation |||
-| `Model::dryId('uuid')`, `Model::dry('id', 'uuid')` | Return a raw value of 'uuid' (a binary here) |   |
-| `Model::castId(0x0001)`, `Model::cast('id', 0x0001)` | Return a normalized value of 0x0001 (a string here) |   |
-| `Model::defaultId()`, `Model::default('id')` | Return a normalized value of 0x0001 (a string here) |   |
-| Attribute querying |||
-| `Model::whereId(...$args)`, `Model::where('id', ...$args)` | Return a query builder with a condition on the field `id` |   |
-|   |   |   |
+// Create a new model:
+factory(User::class)->create();
+
+// Make multiple models:
+factory(User::class, 3)->make();
+
+// Create multiple models:
+factory(User::class, 5)->create();
+
+?>
+```
+
+### After, with Laravel + Laramore
+
+No files to configure, it is autonomous !
+
+```php
+<?php
+
+// Make a new model:
+factory(User::class)->make();
+User::make(); // Simplier
+
+// Create a new model:
+factory(User::class)->create();
+User::generate(); // Simplier
+
+// Make multiple models:
+factory(User::class, 3)->make();
+User::make(3); // Simplier
+
+// Create multiple models:
+factory(User::class, 5)->create();
+User::generate(5); // Simplier
+
+?>
+```
+
+## Migrations
+
+Laravel has a powerfull migration management. Unfortunately, they are no way to generate them.
+
+### Before, with Laravel
+
+You need to create yourself all migration files and be carefull that your models follows your database schema.
+
+### After, with Laravel + Laramore
+
+Laramore follows your model meta configuration. Each time you edit your models, run this following commands to update your migrations:
+
+```bash
+php artisan migrate:generate
+php artisan migrate
+```
+
+## More to come with:
+- Validations
+- Requests
+- Serializers
+- Routers
