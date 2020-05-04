@@ -8,14 +8,12 @@
  * @license MIT
  */
 
-namespace Laramore\Traits\Pivot;
+namespace Laramore\Traits\Eloquent;
 
-use Laramore\Traits\Model\HasLaramore as BaseHasLaramore;
-
-trait HasLaramore
+trait HasLaramorePivot
 {
-    use BaseHasLaramore {
-        BaseHasLaramore::getMetaClass as protected getBaseMetaClass;
+    use HasLaramoreModel {
+        HasLaramoreModel::getMetaClass as protected getBaseMetaClass;
     }
 
     /**

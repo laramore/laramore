@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Traits\Model;
+namespace Laramore\Traits\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
@@ -20,9 +20,9 @@ use Laramore\Facades\{
 use Laramore\Contracts\Field\IncrementField;
 use Laramore\Exceptions\MetaException;
 use Laramore\Fields\Constraint\Primary;
-use Laramore\Meta;
+use Laramore\Eloquent\Meta;
 
-trait HasLaramore
+trait HasLaramoreModel
 {
     use HasLaramoreAttributes;
 
@@ -64,6 +64,8 @@ trait HasLaramore
     /**
      * Prepare the model during the creation of the object.
      * Add by default fillable fields, visible fields and the primary key.
+     *
+     * @return void
      */
     protected function initializeHasLaramore()
     {
@@ -128,7 +130,9 @@ trait HasLaramore
      */
     public function getKeyName()
     {
-        return $this->getPrimaryKey()->isComposed() ? $this->getPrimaryKey()->getAttnames() : $this->getPrimaryKey()->getAttname();
+        $primaryKey = $this->getPrimaryKey();
+
+        return $primaryKey->isComposed() ? $primaryKey->getAttnames() : $primaryKey->getAttname();
     }
 
     /**
@@ -184,8 +188,8 @@ trait HasLaramore
     /**
      * Execute a query for a single record by ID.
      *
-     * @param  array $ids     Array of keys, like [column => value].
-     * @param  array $columns
+     * @param  array|mixed $ids     Array of keys, like [column => value].
+     * @param  array|mixed $columns
      * @return mixed|static
      */
     public static function find($ids, $columns=['*'])
@@ -226,14 +230,14 @@ trait HasLaramore
      * Allow the user to define all meta data for the current model.
      *
      * @param  Meta $meta
-     * @return void
+     * @return mixed
      */
     abstract protected static function __meta(Meta $meta);
 
     /**
      * Generate one time the model meta.
      *
-     * @return void
+     * @return Meta
      */
     public static function generateMeta()
     {
@@ -277,8 +281,8 @@ trait HasLaramore
     /**
      * Create a new instance of the given model.
      *
-     * @param  array|mixed $attributes
-     * @param  boolean     $fetching
+     * @param  array|mixed   $attributes
+     * @param  boolean|mixed $fetching
      * @return static
      */
     public function newInstance($attributes=[], $fetching=false)
@@ -297,7 +301,12 @@ trait HasLaramore
         return $model;
     }
 
-    public static function getEloquentBuilderClass()
+    /**
+     * Return the builder class.
+     *
+     * @return string
+     */
+    public static function getEloquentBuilderClass(): string
     {
         return config('meta.builder_class');
     }
@@ -316,7 +325,12 @@ trait HasLaramore
         return new $class($query);
     }
 
-    public static function getCollectionClass()
+    /**
+     * Return the collection class.
+     *
+     * @return string
+     */
+    public static function getCollectionClass(): string
     {
         return config('meta.collection_class');
     }
@@ -373,7 +387,7 @@ trait HasLaramore
     /**
      * Dynamically retrieve attributes on the model.
      *
-     * @param  string $key
+     * @param  string|mixed $key
      * @return mixed
      */
     public function __get($key)
@@ -388,9 +402,9 @@ trait HasLaramore
     /**
      * Dynamically set attributes on the model.
      *
-     * @param  string $key
-     * @param  mixed  $value
-     * @return void
+     * @param  string|mixed $key
+     * @param  mixed        $value
+     * @return mixed
      */
     public function __set($key, $value)
     {
@@ -400,7 +414,7 @@ trait HasLaramore
     /**
      * Determine if an attribute or relation exists on the model.
      *
-     * @param  string $key
+     * @param  string|mixed $key
      * @return boolean
      */
     public function __isset($key)
@@ -411,20 +425,20 @@ trait HasLaramore
     /**
      * Unset an attribute on the model.
      *
-     * @param  string $key
+     * @param  string|mixed $key
      * @return void
      */
     public function __unset($key)
     {
-        return parent::__set(Str::snake($key));
+        parent::__unset(Str::snake($key));
     }
 
     /**
-     * Dynamically set attributes on the model.
+     * Dynamically call attribute proxies on the model.
      *
-     * @param  string $methodName
-     * @param  mixed  $args
-     * @return void
+     * @param  string|mixed $methodName
+     * @param  mixed        $args
+     * @return mixed
      */
     public function __call($methodName, $args)
     {
@@ -438,11 +452,11 @@ trait HasLaramore
     }
 
     /**
-     * Dynamically set attributes on the model.
+     * Dynamically call attribute proxies on the model.
      *
-     * @param  string $methodName
-     * @param  mixed  $args
-     * @return void
+     * @param  string|mixed $methodName
+     * @param  mixed        $args
+     * @return mixed
      */
     public static function __callStatic($methodName, $args)
     {

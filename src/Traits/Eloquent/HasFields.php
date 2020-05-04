@@ -1,11 +1,15 @@
 <?php
 /**
+ * Metas manage fields.-white
+ *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
  * @copyright Copyright (c) 2019
  * @license MIT
  */
-namespace Laramore\Traits\Meta;
+
+namespace Laramore\Traits\Eloquent;
+
 use Illuminate\Support\{
     Str, Collection
 };
@@ -109,7 +113,7 @@ trait HasFields
             $value = $field->getOwner()->reverbateFieldValue($field, $model, $value);
         }
 
-        // Set the value in the model
+        // Set the value in the model.
         return $field->set($model, $value);
     }
 

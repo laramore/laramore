@@ -1,4 +1,12 @@
 <?php
+/**
+ * Allow SoftDeletes trait usage.
+ *
+ * @author Samy Nastuzzi <samy@nastuzzi.fr>
+ *
+ * @copyright Copyright (c) 2020
+ * @license MIT
+ */
 
 namespace Laramore\Traits\Eloquent;
 

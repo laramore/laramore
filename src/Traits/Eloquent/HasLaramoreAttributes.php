@@ -8,7 +8,7 @@
  * @license MIT
  */
 
-namespace Laramore\Traits\Model;
+namespace Laramore\Traits\Eloquent;
 
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Laramore\Contracts\Field\{
@@ -88,7 +88,7 @@ trait HasLaramoreAttributes
     /**
      * Reset a specific field.
      *
-     * @param  $key Name of the field.
+     * @param  mixed $key Name of the field.
      * @return self
      */
     public function resetAttribute($key)
@@ -170,7 +170,7 @@ trait HasLaramoreAttributes
     /**
      * Get the attribute value for a specific key.
      *
-     * @param  $key Not specified because Model has no parameter types.
+     * @param  string|mixed $key Not specified because Model has no parameter types.
      * @return mixed
      */
     public function getAttribute($key)
@@ -227,9 +227,9 @@ trait HasLaramoreAttributes
     /**
      * Set an attribute on the model.
      *
-     * @param  $key
-     * @param  mixed $value
-     * @return $this
+     * @param  string|mixed $key
+     * @param  mixed        $value
+     * @return self
      */
     public function setAttribute($key, $value)
     {
@@ -256,9 +256,9 @@ trait HasLaramoreAttributes
     /**
      * Set the given attributeship into the model array.
      *
-     * @param  $key
-     * @param  mixed $value
-     * @return $this
+     * @param  string|mixed $key
+     * @param  mixed        $value
+     * @return self
      */
     public function setAttributeValue($key, $value)
     {
@@ -295,7 +295,7 @@ trait HasLaramoreAttributes
     /**
      * Reset a specific field.
      *
-     * @param  $key Name of the field.
+     * @param  string|mixed $key Name of the field.
      * @return self
      */
     public function resetRelation($key)
@@ -356,6 +356,7 @@ trait HasLaramoreAttributes
     /**
      * Indicate if it has a specific relation.
      *
+     * @param  string|mixed $key
      * @return boolean
      */
     public function hasRelation($key): bool
@@ -368,6 +369,7 @@ trait HasLaramoreAttributes
     /**
      * Indicate if it has a loaded relation.
      *
+     * @param  string|mixed $key
      * @return boolean
      */
     public function hasRelationValue($key): bool
@@ -378,7 +380,7 @@ trait HasLaramoreAttributes
     /**
      * Get the relation value for a specific key.
      *
-     * @param  $key Not specified because Model has no parameter types.
+     * @param  string|mixed $key Not specified because Model has no parameter types.
      * @return mixed
      */
     public function getRelation($key)
@@ -404,7 +406,7 @@ trait HasLaramoreAttributes
     /**
      * Get a relationship.
      *
-     * @param  mixed $key
+     * @param  string|mixed $key
      * @return mixed
      */
     public function getRelationValue($key)
@@ -450,9 +452,9 @@ trait HasLaramoreAttributes
     /**
      * Set the given relationship on the model.
      *
-     * @param  $key
-     * @param  mixed $value
-     * @return $this
+     * @param  string|mixed $key
+     * @param  mixed        $value
+     * @return self
      */
     public function setRelation($key, $value)
     {
@@ -470,9 +472,9 @@ trait HasLaramoreAttributes
     /**
      * Set the given relationship into the model array.
      *
-     * @param  $key
-     * @param  mixed $value
-     * @return $this
+     * @param  string|mixed $key
+     * @param  mixed        $value
+     * @return self
      */
     public function setRelationValue($key, $value)
     {
@@ -509,7 +511,7 @@ trait HasLaramoreAttributes
     /**
      * Reset a specific field.
      *
-     * @param  $key Name of the field.
+     * @param  string|mixed $key Name of the field.
      * @return self
      */
     public function resetExtra($key)
@@ -570,6 +572,7 @@ trait HasLaramoreAttributes
     /**
      * Indicate if it has a specific extra.
      *
+     * @param  string|mixed $key
      * @return boolean
      */
     public function hasExtra($key): bool
@@ -584,6 +587,7 @@ trait HasLaramoreAttributes
     /**
      * Indicate if it has a loaded extra.
      *
+     * @param  string|mixed $key
      * @return boolean
      */
     public function hasExtraValue($key): bool
@@ -594,7 +598,7 @@ trait HasLaramoreAttributes
     /**
      * Get the extra value for a specific key.
      *
-     * @param  $key Not specified because Model has no parameter types.
+     * @param  string|mixed $key Not specified because Model has no parameter types.
      * @return mixed
      */
     public function getExtra($key)
@@ -652,7 +656,7 @@ trait HasLaramoreAttributes
     /**
      * Return the extra value from array.
      *
-     * @param mixed $key
+     * @param  string|mixed $key
      * @return mixed
      */
     public function getExtraFromArray($key)
@@ -665,9 +669,9 @@ trait HasLaramoreAttributes
     /**
      * Set the given extraship on the model.
      *
-     * @param  $key
-     * @param  mixed $value
-     * @return $this
+     * @param  string|mixed $key
+     * @param  mixed        $value
+     * @return self
      */
     public function setExtra($key, $value)
     {
@@ -698,9 +702,9 @@ trait HasLaramoreAttributes
     /**
      * Set the given extraship into the model array.
      *
-     * @param  $key
-     * @param  mixed $value
-     * @return $this
+     * @param  string|mixed $key
+     * @param  mixed        $value
+     * @return self
      */
     public function setExtraValue($key, $value)
     {
@@ -714,7 +718,7 @@ trait HasLaramoreAttributes
      *
      * @param  array $attributes
      * @param  mixed $sync
-     * @return $this
+     * @return self
      */
     public function setRawAttributes(array $attributes, $sync=false)
     {
@@ -739,7 +743,7 @@ trait HasLaramoreAttributes
      * Insert the given attributes and set the ID on the model.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  array                                 $attributes
+     * @param  array|mixed                           $attributes
      * @return void
      */
     protected function insertAndSetId(Builder $query, $attributes)
@@ -756,7 +760,7 @@ trait HasLaramoreAttributes
      * Reload the current model instance with fresh attributes from the database.
      *
      * @param  array $attributes
-     * @return $this
+     * @return self
      */
     public function refresh(array $attributes=['*'])
     {

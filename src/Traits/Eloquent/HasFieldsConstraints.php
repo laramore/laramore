@@ -1,11 +1,14 @@
 <?php
 /**
+ * Meta has field constraints.
+ *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
  * @copyright Copyright (c) 2019
  * @license MIT
  */
-namespace Laramore\Traits\Meta;
+
+namespace Laramore\Traits\Eloquent;
 
 use Laramore\Contracts\Field\{
     AttributeField, ComposedField, Constraint\Constrainted
