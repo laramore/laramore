@@ -40,17 +40,17 @@ class User extends Model
 {
     protected $fillable = ['firstname', 'lastname', 'email', 'password', 'admin', 'score', 'group_id'];
 
-	// Here we use UUIDs, not incremental ids.
-	protected $increment = false;
+    // Here we use UUIDs, not incremental ids.
+    protected $increment = false;
 
-	// Casts.
+    // Casts.
     protected $casts = [
         'admin' => 'boolean',
-		'score' => 'integer',
+        'score' => 'integer',
     ];
 
-	// Append the name field.
-	protected $appends = ['name'];
+    // Append the name field.
+    protected $appends = ['name'];
 
     // By default, we want to display all fields except the admin boolean.
     protected $hidden = ['password', 'admin'];
@@ -60,43 +60,43 @@ class User extends Model
     {
         parent::boot();
 
-		static::creating(function ($model) {
-			$model->id = $model->id ?: Uuid::generate()->string;
+        static::creating(function ($model) {
+            $model->id = $model->id ?: Uuid::generate()->string;
         });		
-	}
+    }
 
-	// Group relation definition.
+    // Group relation definition.
     public function group() {
         $this->belongsTo(Group::class, 'group_id');
     }
 
-	// Title first names.
-	public function setFirstnameAttribute(string $value)
-	{
-		return Str::title($value);
-	}
+    // Title first names.
+    public function setFirstnameAttribute(string $value)
+    {
+        return Str::title($value);
+    }
 
-	// Uppercase last names.
-	public function setLastnameAttribute(string $value)
-	{
-		return Str::uppercase($value);
-	}
+    // Uppercase last names.
+    public function setLastnameAttribute(string $value)
+    {
+        return Str::uppercase($value);
+    }
 
-	// Concate names.
-	public function getNameAttribute()
-	{
-		return "{$this->lastname} {$this->firstname}";
-	}
+    // Concate names.
+    public function getNameAttribute()
+    {
+        return "{$this->lastname} {$this->firstname}";
+    }
 
-	// Attributes must be postive or equal to 0.
-	public function setScoreAttribute($value)
-	{
-		if ($value < 0) {
-			throw new \Exception('Score negative !');
-		}
+    // Attributes must be postive or equal to 0.
+    public function setScoreAttribute($value)
+    {
+        if ($value < 0) {
+            throw new \Exception('Score negative !');
+        }
 
-		return $value;
-	}
+        return $value;
+    }
 }
 
 ?>
@@ -116,29 +116,29 @@ use Laramore\Fields\{
 
 class User extends Model 
 {
-	use HasLaramore;
+    use HasLaramore;
 
     protected function __meta($meta) {
-		// Auto generate uuid, no params required.
-		$meta->id = PrimaryUuid::field(); 
-		// Generate two attributes: firstname ("First Name" format) and lastname ("LAST NAME" format).
-		// It is possible to set names directly from "name".
-		$meta->name = Name::field();
-		// Email field: regex filter.
-		$meta->email = Email::field()->unique();
-		// Password field: auto hashed.
-		$meta->password = Password::field();
-		// Auto cast into a boolean and hide the field by default.
-		$meta->admin = Boolean::field()->default(false)
-									   ->hidden();
-		// Incremental score.
-		$meta->number = Increment::field()->default(0);
-		// Foreign field. Relation defined in both sides. Eager loaded.
-		$meta->group = ManyToOne::field()->to(Group::class)
-										 ->with()
-										 ->nullable();
+        // Auto generate uuid, no params required.
+        $meta->id = PrimaryUuid::field(); 
+        // Generate two attributes: firstname ("First Name" format) and lastname ("LAST NAME" format).
+        // It is possible to set names directly from "name".
+        $meta->name = Name::field();
+        // Email field: regex filter.
+        $meta->email = Email::field()->unique();
+        // Password field: auto hashed.
+        $meta->password = Password::field();
+        // Auto cast into a boolean and hide the field by default.
+        $meta->admin = Boolean::field()->default(false)
+                                       ->hidden();
+        // Incremental score.
+        $meta->number = Increment::field()->default(0);
+        // Foreign field. Relation defined in both sides. Eager loaded.
+        $meta->group = ManyToOne::field()->to(Group::class)
+                                         ->with()
+                                         ->nullable();
 
-		// Use timestamps.
+        // Use timestamps.
         $meta->useTimestamps();
     }
 }
