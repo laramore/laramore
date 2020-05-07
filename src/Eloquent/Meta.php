@@ -358,7 +358,7 @@ class Meta implements LaramoreMeta
     public function getFieldNamesWithOption(string $option): array
     {
         return \array_map(function ($field) {
-            return $field->getNative();
+            return $field->getName();
         }, $this->getFieldsWithOption($option));
     }
 
@@ -506,29 +506,6 @@ class Meta implements LaramoreMeta
     public function isPivot(): bool
     {
         return false;
-    }
-
-    /**
-     * Call a proxy.
-     *
-     * @param BaseProxy $proxy
-     * @param Proxied   $proxiedInstance
-     * @param array     $args
-     * @return mixed
-     */
-    public function proxyCall(BaseProxy $proxy, Proxied $proxiedInstance=null, array $args=[])
-    {
-        if ($proxy instanceof MultiProxy) {
-            $proxy = $proxy->getProxy(\array_shift($args));
-        }
-
-        $injections = $proxy->getInjections();
-
-        foreach (\array_reverse($injections) as $name) {
-            \array_unshift($args, $this->getProxyInjection($proxy, $name, $proxiedInstance));
-        }
-
-        return $proxy(...$args);
     }
 
     /**
