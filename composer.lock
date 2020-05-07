@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a79ad9c5dac67cd0f0bd6db526b52c5f",
+    "content-hash": "980bc85a58af7a2a17a0e6536fcc9776",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -364,16 +364,16 @@
         },
         {
             "name": "laramore/fields",
-            "version": "v0.12.0",
+            "version": "v0.12.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/fields.git",
-                "reference": "b72fdd4fd6cc8f76342f133a25ae81f7661f2961"
+                "reference": "d1b60b3ad3b8fba58477dcb7db50335803a11589"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/fields/zipball/b72fdd4fd6cc8f76342f133a25ae81f7661f2961",
-                "reference": "b72fdd4fd6cc8f76342f133a25ae81f7661f2961",
+                "url": "https://api.github.com/repos/laramore/fields/zipball/d1b60b3ad3b8fba58477dcb7db50335803a11589",
+                "reference": "d1b60b3ad3b8fba58477dcb7db50335803a11589",
                 "shasum": ""
             },
             "require": {
@@ -434,7 +434,7 @@
                 "table",
                 "validations"
             ],
-            "time": "2020-05-07T09:21:10+00:00"
+            "time": "2020-05-07T10:47:26+00:00"
         },
         {
             "name": "laramore/proxies",

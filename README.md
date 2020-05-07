@@ -1,5 +1,5 @@
 # Laramore
-Describe your table fields in the model and let Laravel the rest.
+Describe your table fields in the model and let Laravel do the rest.
 
 
 # Installation
@@ -146,6 +146,23 @@ class User extends Model
 ?>
 ```
 
+## Migrations
+
+Laravel has a powerfull migration management. Unfortunately, they are no way to generate them.
+
+### Before, with Laravel
+
+You need to create yourself all migration files and be carefull that your models follows your database schema.
+
+### After, with Laravel + Laramore
+
+Laramore follows your model meta configuration. Each time you edit your models, run this following commands to update your migrations:
+
+```bash
+php artisan migrate:generate
+php artisan migrate
+```
+
 ## Model interaction
 
 Sometimes, model interactions are not fast and simple enough.
@@ -231,7 +248,7 @@ $user->incrementScore(); // 1.
 
 // Search by name:
 User::where('name', 'NASTUZZI Samy')->first(); // Use composed fields !
-User::whereName('NASTUZZI Samy')->first(); // Even simplier.
+User::whereName('NASTUZZI Samy')->first(); // Even simpler.
 
 // Search by score:
 User::whereScore('>', 50)->first(); // Name in where method.
@@ -239,7 +256,7 @@ User::whereScoreSup(50)->first(); // Operators can be dynamically added.
 
 // Search by group:
 User::where('group', $group)->first(); // Use relations !
-User::whereGroup($group)->first(); // Again simplier.
+User::whereGroup($group)->first(); // Again simpler.
 
 // Retrieve reversed relation, reversed side auto defined.
 // We suppose we have two users. Only the first one is linked to our group.
@@ -247,7 +264,7 @@ $group->users; // The first user.
 
 // To link all users to the first group and save them in the database:
 // The users relation is auto set we values.
-$group->users = User::get(); // What could be simplier ??
+$group->users = User::get(); // What could be simpler ??
 
 // Let's fetch the users relation:
 $users = $group->users; // As users was already fetched, return users we had fetched.
@@ -265,6 +282,9 @@ You have to define each factory for each model in a separated files in `factorie
 
 ```php
 <?php
+
+// Access to the User factory:
+factory(User::class);
 
 // Make a new model:
 factory(User::class)->make();
@@ -288,6 +308,10 @@ No files to configure, it is autonomous !
 ```php
 <?php
 
+// Access to the User factory:
+factory(User::class);
+User::factory();
+
 // Make a new model:
 factory(User::class)->make();
 User::make(); // Simplier
@@ -305,23 +329,6 @@ factory(User::class, 5)->create();
 User::generate(5); // Simplier
 
 ?>
-```
-
-## Migrations
-
-Laravel has a powerfull migration management. Unfortunately, they are no way to generate them.
-
-### Before, with Laravel
-
-You need to create yourself all migration files and be carefull that your models follows your database schema.
-
-### After, with Laravel + Laramore
-
-Laramore follows your model meta configuration. Each time you edit your models, run this following commands to update your migrations:
-
-```bash
-php artisan migrate:generate
-php artisan migrate
 ```
 
 ## More to come with:
