@@ -10,6 +10,7 @@
 
 namespace Laramore\Eloquent;
 
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use Laramore\Exceptions\MetaException;
 use Laramore\Facades\{
@@ -27,7 +28,6 @@ use Laramore\Traits\{
 use Laramore\Proxies\{
     BaseProxy, MultiProxy, ProxyHandler
 };
-use Event;
 
 class Meta implements LaramoreMeta
 {
@@ -432,12 +432,12 @@ class Meta implements LaramoreMeta
 
         $this->setField(
             $createdName,
-            DateTime::field(['not_nullable', 'visible', 'use_current'])->timestamp()
+            DateTime::field(['not_nullable', 'visible', 'use_current'])
         );
 
         $this->setField(
             $updatedField,
-            $updatedField = DateTime::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])->timestamp()
+            $updatedField = DateTime::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
         );
 
         if ($autoUpdated) {

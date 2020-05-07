@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c65d30d483526fceb1a896ac6e397252",
+    "content-hash": "a79ad9c5dac67cd0f0bd6db526b52c5f",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -364,22 +364,22 @@
         },
         {
             "name": "laramore/fields",
-            "version": "v0.11.0",
+            "version": "v0.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/fields.git",
-                "reference": "75ba60fa8a270475655f142f3dbcffa3b0965843"
+                "reference": "b72fdd4fd6cc8f76342f133a25ae81f7661f2961"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/fields/zipball/75ba60fa8a270475655f142f3dbcffa3b0965843",
-                "reference": "75ba60fa8a270475655f142f3dbcffa3b0965843",
+                "url": "https://api.github.com/repos/laramore/fields/zipball/b72fdd4fd6cc8f76342f133a25ae81f7661f2961",
+                "reference": "b72fdd4fd6cc8f76342f133a25ae81f7661f2961",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": ">=5.5",
                 "laramore/proxies": "^0.3.2",
-                "laramore/types": "^0.5.2",
+                "laramore/types": "^0.6.0",
                 "nesbot/carbon": ">=1.0",
                 "php": ">=7.0.8",
                 "symfony/http-kernel": ">=3.4"
@@ -434,7 +434,7 @@
                 "table",
                 "validations"
             ],
-            "time": "2020-05-02T15:24:57+00:00"
+            "time": "2020-05-07T09:21:10+00:00"
         },
         {
             "name": "laramore/proxies",
@@ -505,16 +505,16 @@
         },
         {
             "name": "laramore/types",
-            "version": "v0.5.2",
+            "version": "v0.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/types.git",
-                "reference": "80c558f3c98002af2c842d76076023f3346c6c47"
+                "reference": "a2a4d14b56812663444b74de7f888bc052c065e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/types/zipball/80c558f3c98002af2c842d76076023f3346c6c47",
-                "reference": "80c558f3c98002af2c842d76076023f3346c6c47",
+                "url": "https://api.github.com/repos/laramore/types/zipball/a2a4d14b56812663444b74de7f888bc052c065e3",
+                "reference": "a2a4d14b56812663444b74de7f888bc052c065e3",
                 "shasum": ""
             },
             "require": {
@@ -572,7 +572,7 @@
                 "model",
                 "types"
             ],
-            "time": "2020-04-20T07:53:29+00:00"
+            "time": "2020-05-07T08:33:27+00:00"
         },
         {
             "name": "laravel/framework",

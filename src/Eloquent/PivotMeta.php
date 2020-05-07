@@ -11,12 +11,12 @@
 namespace Laramore\Eloquent;
 
 use Laramore\Exceptions\LaramoreException;
-use Laramore\Contracts\Field\{
-    Field, RelationField
+use Laramore\Contracts\{
+    Eloquent\LaramorePivotMeta, Field\Field, Field\RelationField
 };
 use Laramore\Fields\ManyToOne;
 
-class PivotMeta extends Meta
+class PivotMeta extends Meta implements LaramorePivotMeta
 {
     /**
      * List of pivot relations.
@@ -98,7 +98,7 @@ class PivotMeta extends Meta
      * Add a pivot for this pivot meta.
      *
      * @param RelationField $pivot
-     * @return void
+     * @return self
      */
     protected function addPivot(RelationField $pivot)
     {
@@ -107,5 +107,7 @@ class PivotMeta extends Meta
         }
 
         $this->pivots[] = $pivot;
+
+        return $this;
     }
 }
