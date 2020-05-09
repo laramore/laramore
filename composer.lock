@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "980bc85a58af7a2a17a0e6536fcc9776",
+    "content-hash": "d2ed0b2eae024fd316ed60c14695f852",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -298,16 +298,16 @@
         },
         {
             "name": "laramore/base",
-            "version": "v0.6.0",
+            "version": "v0.7.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/base.git",
-                "reference": "97a4e76189f7f20987068d3c9254ebdfa75bf2b4"
+                "reference": "cdd16e265ef50209ea7366d1754851410ea9c578"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/base/zipball/97a4e76189f7f20987068d3c9254ebdfa75bf2b4",
-                "reference": "97a4e76189f7f20987068d3c9254ebdfa75bf2b4",
+                "url": "https://api.github.com/repos/laramore/base/zipball/cdd16e265ef50209ea7366d1754851410ea9c578",
+                "reference": "cdd16e265ef50209ea7366d1754851410ea9c578",
                 "shasum": ""
             },
             "require": {
@@ -360,26 +360,26 @@
                 "owned",
                 "unlock"
             ],
-            "time": "2020-03-03T21:42:23+00:00"
+            "time": "2020-05-08T17:39:39+00:00"
         },
         {
             "name": "laramore/fields",
-            "version": "v0.12.1",
+            "version": "v0.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/fields.git",
-                "reference": "d1b60b3ad3b8fba58477dcb7db50335803a11589"
+                "reference": "a4443d47e858bd262887f8053bfc5ca5b8cb2180"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/fields/zipball/d1b60b3ad3b8fba58477dcb7db50335803a11589",
-                "reference": "d1b60b3ad3b8fba58477dcb7db50335803a11589",
+                "url": "https://api.github.com/repos/laramore/fields/zipball/a4443d47e858bd262887f8053bfc5ca5b8cb2180",
+                "reference": "a4443d47e858bd262887f8053bfc5ca5b8cb2180",
                 "shasum": ""
             },
             "require": {
                 "illuminate/database": ">=5.5",
-                "laramore/proxies": "^0.3.2",
-                "laramore/types": "^0.6.0",
+                "laramore/proxies": "^0.5.0",
+                "laramore/types": "^0.6.1",
                 "nesbot/carbon": ">=1.0",
                 "php": ">=7.0.8",
                 "symfony/http-kernel": ">=3.4"
@@ -395,12 +395,10 @@
                 "laravel": {
                     "providers": [
                         "Laramore\\Providers\\FieldProvider",
-                        "Laramore\\Providers\\FieldConstraintProvider",
-                        "Laramore\\Providers\\FieldProxyProvider"
+                        "Laramore\\Providers\\FieldConstraintProvider"
                     ],
                     "aliases": {
-                        "FieldConstraint": "Laramore\\Facades\\FieldConstraint",
-                        "FieldProxy": "Laramore\\Facades\\FieldProxy"
+                        "FieldConstraint": "Laramore\\Facades\\FieldConstraint"
                     }
                 }
             },
@@ -434,24 +432,24 @@
                 "table",
                 "validations"
             ],
-            "time": "2020-05-07T10:47:26+00:00"
+            "time": "2020-05-08T18:17:34+00:00"
         },
         {
             "name": "laramore/proxies",
-            "version": "v0.3.2",
+            "version": "v0.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/proxies.git",
-                "reference": "cde5b703b2fe6f951876c58b859c844280f3c612"
+                "reference": "fab626966f84a8be817ba04cda5411109d49903a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/proxies/zipball/cde5b703b2fe6f951876c58b859c844280f3c612",
-                "reference": "cde5b703b2fe6f951876c58b859c844280f3c612",
+                "url": "https://api.github.com/repos/laramore/proxies/zipball/fab626966f84a8be817ba04cda5411109d49903a",
+                "reference": "fab626966f84a8be817ba04cda5411109d49903a",
                 "shasum": ""
             },
             "require": {
-                "laramore/base": "^0.6.0",
+                "laramore/base": "^0.7.1",
                 "php": ">=7.0.8"
             },
             "require-dev": {
@@ -501,24 +499,24 @@
                 "table",
                 "validations"
             ],
-            "time": "2020-04-20T15:14:11+00:00"
+            "time": "2020-05-08T18:10:40+00:00"
         },
         {
             "name": "laramore/types",
-            "version": "v0.6.0",
+            "version": "v0.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laramore/types.git",
-                "reference": "a2a4d14b56812663444b74de7f888bc052c065e3"
+                "reference": "c8df418e691c1876897e8b218027ac2f51b617e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laramore/types/zipball/a2a4d14b56812663444b74de7f888bc052c065e3",
-                "reference": "a2a4d14b56812663444b74de7f888bc052c065e3",
+                "url": "https://api.github.com/repos/laramore/types/zipball/c8df418e691c1876897e8b218027ac2f51b617e9",
+                "reference": "c8df418e691c1876897e8b218027ac2f51b617e9",
                 "shasum": ""
             },
             "require": {
-                "laramore/base": "^0.6.0",
+                "laramore/base": "^0.7.0",
                 "php": ">=7.0.8"
             },
             "require-dev": {
@@ -572,7 +570,7 @@
                 "model",
                 "types"
             ],
-            "time": "2020-05-07T08:33:27+00:00"
+            "time": "2020-05-08T11:44:39+00:00"
         },
         {
             "name": "laravel/framework",
@@ -1882,16 +1880,16 @@
         },
         {
             "name": "symfony/polyfill-ctype",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-ctype.git",
-                "reference": "4719fa9c18b0464d399f1a63bf624b42b6fa8d14"
+                "reference": "1aab00e39cebaef4d8652497f46c15c1b7e45294"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/4719fa9c18b0464d399f1a63bf624b42b6fa8d14",
-                "reference": "4719fa9c18b0464d399f1a63bf624b42b6fa8d14",
+                "url": "https://api.github.com/repos/symfony/polyfill-ctype/zipball/1aab00e39cebaef4d8652497f46c15c1b7e45294",
+                "reference": "1aab00e39cebaef4d8652497f46c15c1b7e45294",
                 "shasum": ""
             },
             "require": {
@@ -1903,7 +1901,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -1950,20 +1948,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-02-27T09:26:54+00:00"
+            "time": "2020-05-08T16:50:20+00:00"
         },
         {
             "name": "symfony/polyfill-iconv",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-iconv.git",
-                "reference": "ad6d62792bfbcfc385dd34b424d4fcf9712a32c8"
+                "reference": "d51debc1391a609c514f6f072dd59a61b461502a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-iconv/zipball/ad6d62792bfbcfc385dd34b424d4fcf9712a32c8",
-                "reference": "ad6d62792bfbcfc385dd34b424d4fcf9712a32c8",
+                "url": "https://api.github.com/repos/symfony/polyfill-iconv/zipball/d51debc1391a609c514f6f072dd59a61b461502a",
+                "reference": "d51debc1391a609c514f6f072dd59a61b461502a",
                 "shasum": ""
             },
             "require": {
@@ -1975,7 +1973,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -2023,20 +2021,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-03-09T19:04:49+00:00"
+            "time": "2020-05-08T16:50:20+00:00"
         },
         {
             "name": "symfony/polyfill-intl-idn",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-intl-idn.git",
-                "reference": "47bd6aa45beb1cd7c6a16b7d1810133b728bdfcf"
+                "reference": "ab0af41deab94ec8dceb3d1fb408bdd038eba4dc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-intl-idn/zipball/47bd6aa45beb1cd7c6a16b7d1810133b728bdfcf",
-                "reference": "47bd6aa45beb1cd7c6a16b7d1810133b728bdfcf",
+                "url": "https://api.github.com/repos/symfony/polyfill-intl-idn/zipball/ab0af41deab94ec8dceb3d1fb408bdd038eba4dc",
+                "reference": "ab0af41deab94ec8dceb3d1fb408bdd038eba4dc",
                 "shasum": ""
             },
             "require": {
@@ -2050,7 +2048,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -2099,20 +2097,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-03-09T19:04:49+00:00"
+            "time": "2020-05-08T16:50:20+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "81ffd3a9c6d707be22e3012b827de1c9775fc5ac"
+                "reference": "a54881ec0ab3b2005c406aed0023c062879031e7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/81ffd3a9c6d707be22e3012b827de1c9775fc5ac",
-                "reference": "81ffd3a9c6d707be22e3012b827de1c9775fc5ac",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/a54881ec0ab3b2005c406aed0023c062879031e7",
+                "reference": "a54881ec0ab3b2005c406aed0023c062879031e7",
                 "shasum": ""
             },
             "require": {
@@ -2124,7 +2122,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -2172,20 +2170,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-03-09T19:04:49+00:00"
+            "time": "2020-05-08T16:50:20+00:00"
         },
         {
             "name": "symfony/polyfill-php56",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php56.git",
-                "reference": "d51ec491c8ddceae7dca8dd6c7e30428f543f37d"
+                "reference": "14b55b0e88c67c6a14526799abaea197dde78911"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php56/zipball/d51ec491c8ddceae7dca8dd6c7e30428f543f37d",
-                "reference": "d51ec491c8ddceae7dca8dd6c7e30428f543f37d",
+                "url": "https://api.github.com/repos/symfony/polyfill-php56/zipball/14b55b0e88c67c6a14526799abaea197dde78911",
+                "reference": "14b55b0e88c67c6a14526799abaea197dde78911",
                 "shasum": ""
             },
             "require": {
@@ -2195,7 +2193,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -2242,20 +2240,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-03-09T19:04:49+00:00"
+            "time": "2020-05-08T16:50:20+00:00"
         },
         {
             "name": "symfony/polyfill-php70",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php70.git",
-                "reference": "2a18e37a489803559284416df58c71ccebe50bf0"
+                "reference": "6cc55bd2a085dbe05b4122c1987a82897b8da419"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php70/zipball/2a18e37a489803559284416df58c71ccebe50bf0",
-                "reference": "2a18e37a489803559284416df58c71ccebe50bf0",
+                "url": "https://api.github.com/repos/symfony/polyfill-php70/zipball/6cc55bd2a085dbe05b4122c1987a82897b8da419",
+                "reference": "6cc55bd2a085dbe05b4122c1987a82897b8da419",
                 "shasum": ""
             },
             "require": {
@@ -2265,7 +2263,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -2301,20 +2299,34 @@
                 "portable",
                 "shim"
             ],
-            "time": "2020-02-27T09:26:54+00:00"
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2020-05-02T14:56:09+00:00"
         },
         {
             "name": "symfony/polyfill-php72",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php72.git",
-                "reference": "37b0976c78b94856543260ce09b460a7bc852747"
+                "reference": "42fda6d7380e5c940d7f68341ccae89d5ab9963b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php72/zipball/37b0976c78b94856543260ce09b460a7bc852747",
-                "reference": "37b0976c78b94856543260ce09b460a7bc852747",
+                "url": "https://api.github.com/repos/symfony/polyfill-php72/zipball/42fda6d7380e5c940d7f68341ccae89d5ab9963b",
+                "reference": "42fda6d7380e5c940d7f68341ccae89d5ab9963b",
                 "shasum": ""
             },
             "require": {
@@ -2323,7 +2335,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -2370,20 +2382,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-02-27T09:26:54+00:00"
+            "time": "2020-05-08T17:28:34+00:00"
         },
         {
             "name": "symfony/polyfill-util",
-            "version": "v1.15.0",
+            "version": "v1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-util.git",
-                "reference": "d8e76c104127675d0ea3df3be0f2ae24a8619027"
+                "reference": "fa1fdaf94e8a60932d8821692eb1ed07efc52db2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-util/zipball/d8e76c104127675d0ea3df3be0f2ae24a8619027",
-                "reference": "d8e76c104127675d0ea3df3be0f2ae24a8619027",
+                "url": "https://api.github.com/repos/symfony/polyfill-util/zipball/fa1fdaf94e8a60932d8821692eb1ed07efc52db2",
+                "reference": "fa1fdaf94e8a60932d8821692eb1ed07efc52db2",
                 "shasum": ""
             },
             "require": {
@@ -2392,7 +2404,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.15-dev"
+                    "dev-master": "1.16-dev"
                 }
             },
             "autoload": {
@@ -2436,7 +2448,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-03-02T11:55:35+00:00"
+            "time": "2020-05-02T14:56:09+00:00"
         },
         {
             "name": "symfony/process",

@@ -10,7 +10,7 @@
    },
     "require": {
         "php": ">=7.0.8",
-        "laramore/fields": "^0.12.1",
+        "laramore/fields": "^0.13.0",
         "laravel/framework": "> 5.5",
         "nastuzzi-samy/reflection-namespace": "^1.0"
     },

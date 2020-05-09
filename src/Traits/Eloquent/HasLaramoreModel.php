@@ -381,7 +381,7 @@ trait HasLaramoreModel
             throw new \BadMethodCallException("The proxy `{$proxy->getName()}` cannot be called statically.");
         }
 
-        return $proxy->__invoke(...$args);
+        return $proxy->__invoke(static::class, ...$args);
     }
 
     /**
