@@ -102,15 +102,20 @@ trait HasFields
      */
     public function setFieldValue(Field $field, LaramoreModel $model, $value)
     {
-        // Apply changes by the field.
-        $value = $this->transformFieldValue($field,
-            // The value must be of the right type.
-            $this->castFieldValue($field, $value)
-        );
+        // Refuse any transformation and reverbation if the model is currently fetching.
+        if (!$model->fetching) {
+            // Apply changes by the field.
+            $value = $this->transformFieldValue(
+                $field,
+                // The value must be of the right type.
+                $this->castFieldValue($field, $value)
+            );
 
-        // Refuse any reverbation if the model is currently fetching.
-        if ($field instanceof RelationField && !$model->fetching) {
-            $value = $field->getOwner()->reverbateFieldValue($field, $model, $value);
+            if ($field instanceof RelationField) {
+                $value = $field->getOwner()->reverbateFieldValue($field, $model, $value);
+            }
+        } else {
+            $value = $this->castFieldValue($field, $value);
         }
 
         // Set the value in the model.

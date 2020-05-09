@@ -191,7 +191,11 @@ trait HasLaramoreBuilder
     public function update(array $values)
     {
         $values = $this->addUpdatedAtColumn($values);
-        $this->getModel()->fill($values);
+        $model = $this->getModel();
+
+        $model->fetching = true;
+        $model->fill($values);
+        $model->fetching = false;
 
         return $this->toBase()->update($this->dryValues(\array_merge(
             $values,
@@ -412,7 +416,7 @@ trait HasLaramoreBuilder
         }
 
         $method = Str::camel($method);
-        $scope = 'scope' . ucfirst($method);
+        $scope = 'scope'.ucfirst($method);
 
         if (method_exists($this->model, $scope)) {
             return $this->callScope([$this->model, $scope], $parameters);
