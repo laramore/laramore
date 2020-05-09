@@ -35,10 +35,6 @@ class MetaProvider extends ServiceProvider implements LaramoreProvider
             __DIR__.'/../../config/meta.php', 'meta',
         );
 
-        $this->mergeConfigFrom(
-            __DIR__.'/../../config/field/proxies.php', 'field.proxies',
-        );
-
         $this->app->singleton('Meta', function() {
             if (\is_null(static::$manager)) {
                 return static::generateManager();
