@@ -79,10 +79,9 @@ class MetaProvider extends ServiceProvider implements LaramoreProvider
                 return $classes;
 
             case 'disabled':
-                return [];
+                app('config')->set('meta.configurations', []);
 
-            case 'base':
-                return config('meta.namespace');
+                return [];
 
             default:
                 if (\is_array($classes)) {

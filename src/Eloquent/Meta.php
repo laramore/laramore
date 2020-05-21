@@ -20,14 +20,12 @@ use Laramore\Fields\{
     DateTime, Constraint\ConstraintHandler, Constraint\Primary
 };
 use Laramore\Contracts\{
-    Eloquent\LaramoreMeta, Field\Field, Proxied
+    Eloquent\LaramoreMeta, Field\Field
 };
 use Laramore\Traits\{
     IsLocked, HasLockedMacros, Eloquent\HasFields, Eloquent\HasFieldsConstraints
 };
-use Laramore\Proxies\{
-    BaseProxy, MultiProxy, ProxyHandler
-};
+use Laramore\Proxies\ProxyHandler;
 
 class Meta implements LaramoreMeta
 {
@@ -341,7 +339,7 @@ class Meta implements LaramoreMeta
         $fields = [];
 
         foreach ($this->getFields() as $field) {
-            if ($field->$option) {
+            if ($field->hasOption($option)) {
                 $fields[] = $field;
             }
         }
