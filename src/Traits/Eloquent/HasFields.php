@@ -81,6 +81,18 @@ trait HasFields
     }
 
     /**
+     * Return the has value for a specific field.
+     *
+     * @param Field         $field
+     * @param LaramoreModel $model
+     * @return mixed
+     */
+    public function hasFieldValue(Field $field, LaramoreModel $model)
+    {
+        return $field->has($model);
+    }
+
+    /**
      * Return the get value for a specific field.
      *
      * @param Field         $field

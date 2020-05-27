@@ -152,8 +152,13 @@ trait HasLaramoreAttributes
      */
     public function hasAttribute($key): bool
     {
-        return $this->hasAttributeValue($key)
-            || static::getMeta()->hasField($key, AttributeField::class);
+        if (static::getMeta()->hasField($key)) {
+            $field = static::getMeta()->getField($key);
+
+            return $field->getOwner()->hasFieldValue($field, $this);
+        }
+
+        return $this->hasAttributeValue($key);
     }
 
     /**
@@ -177,6 +182,7 @@ trait HasLaramoreAttributes
     {
         if (static::getMeta()->hasField($key)) {
             $field = static::getMeta()->getField($key);
+
             if (!($field instanceof AttributeField) || !$this->hasGetMutator($key)) {
                 return $field->getOwner()->getFieldValue($field, $this);
             }
@@ -361,9 +367,13 @@ trait HasLaramoreAttributes
      */
     public function hasRelation($key): bool
     {
-        return $this->hasRelationValue($key)
-            || \method_exists($this, $key)
-            || static::getMeta()->hasField($key, RelationField::class);
+        if (static::getMeta()->hasField($key, RelationField::class)) {
+            $field = static::getMeta()->getField($key, RelationField::class);
+
+            return $field->getOwner()->hasFieldValue($field, $this);
+        }
+
+        return $this->hasRelationValue($key) || \method_exists($this, $key);
     }
 
     /**
@@ -577,11 +587,15 @@ trait HasLaramoreAttributes
      */
     public function hasExtra($key): bool
     {
-        return $this->hasExtraValue($key)
-            || $this->hasMutator($this, $key)
-            || (static::getMeta()->hasField($key)
-                && !($field = static::getMeta()->getField($key) instanceof RelationField)
-                && !($field instanceof AttributeField));
+        if (static::getMeta()->hasField($key)) {
+            $field = static::getMeta()->getField($key);
+
+            if (!($field instanceof RelationField) && !($field instanceof AttributeField)) {
+                return $field->getOwner()->hasFieldValue($field, $this);
+            }
+        }
+
+        return $this->hasExtraValue($key) || $this->hasMutator($this, $key);
     }
 
     /**
