@@ -55,7 +55,7 @@ trait HasLaramoreBuilder
         if ($column instanceof Closure) {
             $column($query = $this->model->newModelQuery());
 
-            $this->query->addNestedWhereQuery($query->getQuery(), 'and');
+            $this->query->addNestedWhereQuery($query->getQuery(), \func_num_args() === 2 ? $operator : $boolean);
 
             return $this;
         }
