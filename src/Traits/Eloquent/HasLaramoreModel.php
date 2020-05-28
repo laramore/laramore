@@ -96,7 +96,7 @@ trait HasLaramoreModel
         $this->setConnection($meta->getConnectionName());
 
         if (!$this->fetching) {
-            static::unguard(function () {
+            static::unguarded(function () {
                 $this->presetAttributes();
             });
         }
