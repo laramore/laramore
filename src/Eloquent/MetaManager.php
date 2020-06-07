@@ -10,12 +10,16 @@
 
 namespace Laramore\Eloquent;
 
-use Laramore\Traits\IsLocked;
-use Laramore\Contracts\Manager\LaramoreManager;
+use Laramore\Contracts\{
+    Prepared, Manager\LaramoreManager, Eloquent\LaramoreModel
+};
+use Laramore\Traits\{
+    IsLocked, IsPrepared
+};
 
-class MetaManager implements LaramoreManager
+class MetaManager implements Prepared, LaramoreManager
 {
-    use IsLocked;
+    use IsLocked, IsPrepared;
 
     /**
      * List all managed Metas.
@@ -23,6 +27,14 @@ class MetaManager implements LaramoreManager
      * @var array
      */
     protected $metas = [];
+
+    /**
+     * Define all models.
+     */
+    public function __construct(array $models)
+    {
+        $this->metas = \array_fill_keys($models, null);
+    }
 
     /**
      * Indicate if a Meta exists for a specific table name.
@@ -78,7 +90,13 @@ class MetaManager implements LaramoreManager
      */
     public function get(string $modelClass): Meta
     {
-        return $this->metas[$modelClass];
+        $meta = $this->metas[$modelClass];
+
+        if (\is_null($meta)) {
+            return $this->prepareMeta($modelClass);
+        }
+
+        return $meta;
     }
 
     /**
@@ -92,47 +110,47 @@ class MetaManager implements LaramoreManager
     }
 
     /**
-     * Return all Metas, indexed by their table name.
+     * Prepare all metas.
      *
-     * @return array
+     * @return void
      */
-    public function allWithTableNames(): array
+    protected function preparing()
     {
-        $metas = [];
-
-        foreach ($this->all() as $meta) {
-            $metas[$meta->getTableName()] = $meta;
+        foreach (\array_keys($this->metas) as $modelClass) {
+            if (!$this->has($modelClass)) {
+                $this->prepareMeta($modelClass);
+            }
         }
+    }
 
-        return $metas;
+    protected function prepared()
+    {
+        foreach ($this->metas as $meta) {
+            $meta->prepared();
+        }
     }
 
     /**
-     * Add a meta.
+     * Prepare a new meta class.
      *
-     * @param Meta $meta
-     * @return self
-     * @throws \LogicException If the meta already exists or one already exists for a the same table name.
+     * @param string $modelClass
+     * @return Meta
      */
-    public function add(Meta $meta)
+    protected function prepareMeta(string $modelClass): Meta
     {
-        $this->needsToBeUnlocked();
+        $this->needsToBePreparing();
 
-        $tableName = $meta->getTableName();
-
-        foreach ($this->all() as $modelClass => $inMeta) {
-            if ($meta === $inMeta) {
-                throw new \LogicException('This meta is already added');
-            } else if ($inMeta->getTableName() === $tableName) {
-                throw new \LogicException('A meta already exists for this table');
-            } else if ($modelClass === $meta->getModelClass()) {
-                throw new \LogicException('A meta already exists for this model');
-            }
+        if (!\is_subclass_of($modelClass, LaramoreModel::class)) {
+            throw new \LogicException("Cannot create a meta from a non LaramoreModel. `$modelClass` given.");
         }
 
-        $this->metas[$meta->getModelClass()] = $meta;
+        $metaClass = $modelClass::getMetaClass();
 
-        return $this;
+        $this->metas[$modelClass] = $meta = new $metaClass($modelClass);
+
+        $modelClass::prepareMeta();
+
+        return $meta;
     }
 
     /**
@@ -141,8 +159,10 @@ class MetaManager implements LaramoreManager
      * @return void
      * @throws \LogicException If an object is not locked properly.
      */
-    public function locking()
+    protected function locking()
     {
+        $this->needsToBePrepared();
+
         foreach ($this->all() as $meta) {
             $meta->lock();
         }

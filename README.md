@@ -118,7 +118,7 @@ class User extends Model
 {
     use HasLaramore;
 
-    protected function __meta($meta) {
+    public function meta($meta) {
         // Auto generate uuid, no params required.
         $meta->id = PrimaryUuid::field(); 
         // Generate two attributes: firstname ("First Name" format) and lastname ("LAST NAME" format).
@@ -196,6 +196,9 @@ $user->password = Illuminate\Support\Facades\Hash::make('password'); // true (fa
 // Increment score:
 $user->score += 1; // 1.
 
+// Check if the user created its account before now:
+new \Carbon\Carbon($user->created_at)->before(now());
+
 // Search by name:
 User::where('lastname', 'NASTUZZI')->where('firstname', 'Samy')->first();
 
@@ -245,6 +248,9 @@ $user->isNotAdmin(); // true (reverse possible: isAdmin).
 
 // Increment score:
 $user->incrementScore(); // 1.
+
+// Check if the user created its account before now:
+$user->created_at->before(now()); // Use Carbon methods
 
 // Search by name:
 User::where('name', 'NASTUZZI Samy')->first(); // Use composed fields !

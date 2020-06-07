@@ -14,13 +14,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laramore\Facades\{
-    Meta as MetaManager,
-    Operator
+    Meta as MetaManager, Operator
 };
 use Laramore\Contracts\Field\IncrementField;
-use Laramore\Exceptions\MetaException;
+use Laramore\Exceptions\PrepareException;
 use Laramore\Fields\Constraint\Primary;
-use Laramore\Eloquent\Meta;
+use Laramore\Contracts\Eloquent\LaramoreMeta;
 
 trait HasLaramoreModel
 {
@@ -238,29 +237,25 @@ trait HasLaramoreModel
     /**
      * Allow the user to define all meta data for the current model.
      *
-     * @param  Meta $meta
+     * @param  LaramoreMeta $meta
      * @return mixed
      */
-    abstract protected static function __meta(Meta $meta);
+    abstract public static function meta(LaramoreMeta $meta);
 
     /**
      * Generate one time the model meta.
      *
-     * @return Meta
+     * @return void
      */
-    public static function generateMeta()
+    public static function prepareMeta()
     {
-        if (MetaManager::has(static::class)) {
-            throw new MetaException(MetaManager::get(static::class), 'The meta already exists for `'.static::class.'`');
+        $meta = static::getMeta();
+
+        if ($meta->isPreparing() || $meta->isPrepared()) {
+            throw new PrepareException("Can only prepare unprepared metas. Happened on `{$meta->getModelClass()}");
         }
 
-        // Generate all meta data defined by the user in the current pivot.
-        $class = static::getMetaClass();
-        MetaManager::add($meta = new $class(static::class));
-
-        static::__meta($meta);
-
-        return $meta;
+        $meta->setPreparing();
     }
 
     /**
@@ -280,10 +275,6 @@ trait HasLaramoreModel
      */
     public static function getMeta()
     {
-        if (!MetaManager::has(static::class)) {
-            return static::generateMeta();
-        }
-
         return MetaManager::get(static::class);
     }
 

@@ -105,13 +105,9 @@ class MetaProvider extends ServiceProvider implements LaramoreProvider
     {
         $class = config('meta.manager');
 
-        static::$manager = new $class();
+        static::$manager = new $class(static::getDefaults());
 
-        foreach (static::getDefaults() as $modelClass) {
-            if (!static::$manager->has($modelClass)) {
-                $modelClass::generateMeta();
-            }
-        }
+        static::$manager->setPreparing();
 
         return static::$manager;
     }

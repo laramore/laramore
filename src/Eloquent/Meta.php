@@ -24,13 +24,13 @@ use Laramore\Contracts\{
     Eloquent\LaramoreMeta, Field\Field
 };
 use Laramore\Traits\{
-    IsLocked, HasLockedMacros, Eloquent\HasFields, Eloquent\HasFieldsConstraints
+    IsPrepared, IsLocked, HasLockedMacros, Eloquent\HasFields, Eloquent\HasFieldsConstraints
 };
 use Laramore\Proxies\ProxyHandler;
 
 class Meta implements LaramoreMeta
 {
-    use IsLocked, HasLockedMacros, HasFields, HasFieldsConstraints {
+    use IsPrepared, IsLocked, HasLockedMacros, HasFields, HasFieldsConstraints {
         IsLocked::lock as protected lockFromTrait;
         HasLockedMacros::__call as protected callMacro;
     }
@@ -66,6 +66,13 @@ class Meta implements LaramoreMeta
      * @var bool
      */
     protected $hasDeletedTimestamp = false;
+
+    /**
+     * Callback when the meta has been prepared.
+     *
+     * @var callback|\Closure
+     */
+    protected $afterPreparating;
 
     /**
      * Create a Meta for a specific model.
@@ -386,6 +393,43 @@ class Meta implements LaramoreMeta
         return \array_map(function ($field) {
             return $field->getName();
         }, $this->getFieldsWithOption($option));
+    }
+
+    /**
+     * Add after preparing callback.
+     *
+     * @param callback|\Closure $callback
+     * @return self
+     */
+    public function after($callback)
+    {
+        $this->needsToBeUnprepared();
+
+        $this->afterPreparating = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Prepare all fields.
+     *
+     * @return void
+     */
+    protected function preparing()
+    {
+        $this->getModelClass()::meta($this);
+    }
+
+    /**
+     * Execute callback.
+     *
+     * @return void
+     */
+    protected function prepared()
+    {
+        if (!\is_null($this->afterPreparating)) {
+            $this->afterPreparating($this);
+        }
     }
 
     /**
