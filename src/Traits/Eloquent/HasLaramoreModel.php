@@ -89,7 +89,7 @@ trait HasLaramoreModel
         if ($primary = $meta->getPrimary()) {
             $this->setPrimaryKey($primary);
 
-            $this->setIncrementing(!$primary->isComposed() && $primary->getAttribute() instanceof IncrementField);
+            $this->setIncrementing(!$primary->isComposed() && $primary->getMainAttribute() instanceof IncrementField);
         }
 
         $this->setTable($meta->getTableName());
@@ -128,13 +128,19 @@ trait HasLaramoreModel
     /**
      * Get the primary key for the model.
      *
-     * @return string
+     * @return string|array
      */
     public function getKeyName()
     {
         $primaryKey = $this->getPrimaryKey();
 
-        return $primaryKey->isComposed() ? $primaryKey->getAttnames() : $primaryKey->getAttname();
+        if ($primaryKey->isComposed()) {
+            return \array_map(function ($attribute) {
+                return $attribute->getNative();
+            }, $primaryKey->getAttributes());
+        }
+
+        return $primaryKey->getMainAttribute()->getNative();
     }
 
     /**
@@ -162,14 +168,14 @@ trait HasLaramoreModel
         if ($this->getPrimaryKey()->isComposed()) {
             $values = [];
 
-            foreach ($this->getPrimaryKey()->getAttnames() as $attname) {
-                $values[$attname] = $this->getAttribute($attname);
+            foreach ($this->getKeyName() as $name) {
+                $values[$name] = $this->getAttribute($name);
             }
 
             return $values;
         }
 
-        return $this->getAttribute($this->getPrimaryKey()->getAttname());
+        return $this->getAttribute($this->getKeyName());
     }
 
     /**
@@ -180,8 +186,10 @@ trait HasLaramoreModel
      */
     protected function setKeysForSaveQuery(Builder $query)
     {
-        foreach ($this->getPrimaryKey()->getAttnames() as $attname) {
-            $query->where($attname, Operator::equal(), $this->getAttribute($attname));
+        foreach ($this->getPrimaryKey()->getAttributes() as $attribute) {
+            $name = $attribute->getName();
+
+            $query->where($name, Operator::equal(), $this->getAttribute($name));
         }
 
         return $query;
@@ -198,15 +206,14 @@ trait HasLaramoreModel
     {
         $instance = new static;
         $query = $instance->newQuery();
-        $primary = $instance->getPrimaryKey();
         $ids = \is_array($ids) ? $ids : [$ids];
 
         if ($primary->isComposed()) {
-            foreach ($primary->getAttnames() as $index => $attname) {
+            foreach ($instance->getKeyName() as $index => $attname) {
                 $query->where($attname, Operator::equal(), Arr::isAssoc($ids) ? $ids[$attname] : $ids[$index]);
             }
         } else {
-            $attname = $primary->getAttname();
+            $attname = $instance->getKeyName();
 
             $query->where($attname, Operator::equal(), Arr::isAssoc($ids) ? $ids[$attname] : $ids[0]);
         }
