@@ -10,8 +10,9 @@
 
 namespace Laramore\Eloquent;
 
-use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Str;
+use Illuminate\Support\{
+    Str, Facades\Event
+};
 use Laramore\Exceptions\MetaException;
 use Laramore\Facades\{
     Proxy, FieldConstraint
@@ -41,6 +42,7 @@ class Meta implements LaramoreMeta
      */
     protected $modelClass;
     protected $modelClassName;
+    protected $description;
     protected $tableName;
     protected $connectionName;
 
@@ -90,7 +92,8 @@ class Meta implements LaramoreMeta
     protected function setModelClass(string $modelClass)
     {
         $this->modelClass = $modelClass;
-        $this->modelClassName = class_basename($modelClass);
+        $this->modelClassName = Str::snake(\class_basename($modelClass));
+        $this->description = $this->description ?: $this->modelClassName;
 
         $this->tableName = $this->getDefaultTableName();
     }
@@ -175,6 +178,31 @@ class Meta implements LaramoreMeta
         return \implode('_', \array_map(function ($element) {
             return Str::plural($element);
         }, \explode(' ', Str::snake($this->modelClassName, ' '))));
+    }
+
+    /**
+     * Return the description.
+     *
+     * @return string
+     */
+    public function getDescription(): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * Define the description.
+     *
+     * @param string $description
+     * @return self
+     */
+    public function setDescription(string $description)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->description = $description;
+
+        return $this;
     }
 
     /**
