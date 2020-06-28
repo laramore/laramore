@@ -10,8 +10,7 @@
    },
     "require": {
         "php": ">=7.0.8",
-        "laramore/fields": "~0.18",
-        "laravel/framework": "> 5.5",
+        "laramore/fields": ">=0.19",
         "nastuzzi-samy/reflection-namespace": "^1.0"
     },
     "authors": [
