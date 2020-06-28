@@ -34,15 +34,18 @@ trait HasLaramoreAttributes
     {
         $time = $this->freshTimestamp();
 
-        if (!$this->exists && !\is_null(static::CREATED_AT) && !$this->isDirty(static::CREATED_AT)) {
-            $this->setRawAttributes([static::CREATED_AT => $time]);
+        // @var \Illuminate\Database\Eloquent\Model
+        $class = static::class;
+
+        if (!$this->exists && !\is_null($class::CREATED_AT) && !$this->isDirty($class::CREATED_AT)) {
+            $this->setRawAttributes([$class::CREATED_AT => $time]);
         }
 
         // Only update the updated field if the model already exists or the field cannot be null.
-        if (!\is_null(static::UPDATED_AT) && !$this->isDirty(static::UPDATED_AT) && (
-            $this->exists || !static::getMeta()->getField(static::UPDATED_AT)->nullable
+        if (!\is_null($class::UPDATED_AT) && !$this->isDirty($class::UPDATED_AT) && (
+            $this->exists || !static::getMeta()->getField($class::UPDATED_AT)->nullable
         )) {
-            $this->setRawAttributes([static::UPDATED_AT => $time]);
+            $this->setRawAttributes([$class::UPDATED_AT => $time]);
         }
     }
 

@@ -30,6 +30,8 @@ class MetaManager implements Prepared, LaramoreManager
 
     /**
      * Define all models.
+     *
+     * @param array<string> $models
      */
     public function __construct(array $models)
     {
@@ -90,13 +92,13 @@ class MetaManager implements Prepared, LaramoreManager
      */
     public function get(string $modelClass): Meta
     {
-        $meta = $this->metas[$modelClass];
-
-        if (\is_null($meta)) {
-            return $this->prepareMeta($modelClass);
+        if ($this->isPreparing()) {
+            if (!isset($this->metas[$modelClass]) || \is_null($this->metas[$modelClass])) {
+                return $this->prepareMeta($modelClass);
+            }
         }
 
-        return $meta;
+        return $this->metas[$modelClass];
     }
 
     /**
@@ -123,10 +125,15 @@ class MetaManager implements Prepared, LaramoreManager
         }
     }
 
+    /**
+     * Set all metas as prepared.
+     *
+     * @return void
+     */
     protected function prepared()
     {
         foreach ($this->metas as $meta) {
-            $meta->prepared();
+            $meta->setPrepared();
         }
     }
 

@@ -17,4 +17,6 @@ use Illuminate\Database\Eloquent\Model as BaseModel;
 abstract class Model extends BaseModel implements LaramoreModel
 {
     use HasLaramoreModel;
+
+    const DELETED_AT = 'deleted_at';
 }

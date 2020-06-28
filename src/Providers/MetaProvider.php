@@ -15,6 +15,7 @@ use Laramore\Contracts\{
 	Manager\LaramoreManager, Provider\LaramoreProvider, Eloquent\LaramoreModel
 };
 use Laramore\Exceptions\ConfigException;
+use Laramore\Facades\Meta;
 use Laramore\Traits\Provider\MergesConfig;
 use ReflectionNamespace;
 
@@ -56,6 +57,8 @@ class MetaProvider extends ServiceProvider implements LaramoreProvider
         ]);
 
         $this->app->register(LastProvider::class);
+
+        Meta::setPrepared();
     }
 
     /**
@@ -69,10 +72,17 @@ class MetaProvider extends ServiceProvider implements LaramoreProvider
 
         switch ($classes) {
             case 'automatic':
-                $classes = (new ReflectionNamespace(config('meta.models_namespace')))->getClassNames();
-                $classes = \array_filter($classes, function ($class) {
+                $modelClasses = (new ReflectionNamespace(config('meta.models_namespace')))->getClassNames();
+                $modelClasses = \array_filter($modelClasses, function ($class) {
                     return (new \ReflectionClass($class))->implementsInterface(LaramoreModel::class);
                 });
+
+                $pivotClasses = (new ReflectionNamespace(config('meta.pivots_namespace')))->getClassNames();
+                $pivotClasses = \array_filter($pivotClasses, function ($class) {
+                    return (new \ReflectionClass($class))->implementsInterface(LaramoreModel::class);
+                });
+
+                $classes = \array_merge($modelClasses, $pivotClasses);
 
                 app('config')->set('meta.configurations', $classes);
 

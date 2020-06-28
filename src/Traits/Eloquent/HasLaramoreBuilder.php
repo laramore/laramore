@@ -22,6 +22,13 @@ use Laramore\Contracts\Field\AttributeField;
 trait HasLaramoreBuilder
 {
     /**
+     * All of the globally registered builder macros.
+     *
+     * @var array
+     */
+    protected static $macros = [];
+
+    /**
      * Execute the query as a "select" statement.
      *
      * @param  array|mixed $columns
@@ -127,7 +134,7 @@ trait HasLaramoreBuilder
             }
 
             if ($meta->hasField($attname, AttributeField::class)) {
-                $values[$key] = $model::dry($attname, $value);
+                $values[$key] = $meta->getField($attname)->dry($value);
             } else {
                 unset($values[$key]);
             }
@@ -150,10 +157,12 @@ trait HasLaramoreBuilder
         if (\count($parts) === 2) {
             [$table, $attname] = $parts;
 
-            return Meta::getMetaForTableName($table)->getModelClass()::dry($attname, $value);
+            $meta = Meta::getMetaForTableName($table);
+        } else {
+            $meta = $this->getModel()::getMeta();
         }
 
-        return $this->getModel()::dry($attname, $value);
+        return $meta->getField($attname, AttributeField::class)->dry($value);
     }
 
     /**

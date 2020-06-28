@@ -86,9 +86,7 @@ trait HasLaramoreModel
 
         // Define all model metas.
         if ($primary = $meta->getPrimary()) {
-            $this->setPrimaryKey($primary);
-
-            $this->setIncrementing(!$primary->isComposed() && $primary->getMainAttribute() instanceof IncrementField);
+            $this->setIncrementing(!$primary->isComposed() && $primary->getAttribute() instanceof IncrementField);
         }
 
         $this->setTable($meta->getTableName());
@@ -108,20 +106,7 @@ trait HasLaramoreModel
      */
     public function getPrimaryKey()
     {
-        return $this->primaryKey;
-    }
-
-    /**
-     * Set the primary key for the model.
-     *
-     * @param  Primary $key
-     * @return $this
-     */
-    public function setPrimaryKey(Primary $key)
-    {
-        $this->primaryKey = $key;
-
-        return $this;
+        return static::getMeta()->getPrimary();
     }
 
     /**
@@ -139,7 +124,7 @@ trait HasLaramoreModel
             }, $primaryKey->getAttributes());
         }
 
-        return $primaryKey->getMainAttribute()->getNative();
+        return $primaryKey->getAttribute()->getNative();
     }
 
     /**
@@ -207,7 +192,7 @@ trait HasLaramoreModel
         $query = $instance->newQuery();
         $ids = \is_array($ids) ? $ids : [$ids];
 
-        if ($primary->isComposed()) {
+        if ($instance->getPrimaryKey()->isComposed()) {
             foreach ($instance->getKeyName() as $index => $attname) {
                 $query->where($attname, Operator::equal(), Arr::isAssoc($ids) ? $ids[$attname] : $ids[$index]);
             }
@@ -252,7 +237,7 @@ trait HasLaramoreModel
         $meta = static::getMeta();
 
         if ($meta->isPreparing() || $meta->isPrepared()) {
-            throw new PrepareException("Can only prepare unprepared metas. Happened on `{$meta->getModelClass()}");
+            throw new PrepareException("Can only prepare unprepared metas. Happened on `{$meta->getModelClass()}", 'prepare');
         }
 
         $meta->setPreparing();

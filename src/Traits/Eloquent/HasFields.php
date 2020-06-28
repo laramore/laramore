@@ -17,6 +17,7 @@ use Laramore\Facades\Operator;
 use Laramore\Contracts\{
 	Proxied, Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel
 };
+use Laramore\Contracts\Field\AttributeField;
 use Laramore\Elements\OperatorElement;
 
 trait HasFields
@@ -48,13 +49,25 @@ trait HasFields
     /**
      * Dry a value for a specific field.
      *
-     * @param Field $field
-     * @param mixed $value
+     * @param AttributeField $field
+     * @param mixed          $value
      * @return mixed
      */
-    public function dryFieldValue(Field $field, $value)
+    public function dryFieldValue(AttributeField $field, $value)
     {
         return $field->dry($value);
+    }
+
+    /**
+     * Hydrate a value for a specific field.
+     *
+     * @param AttributeField $field
+     * @param mixed          $value
+     * @return mixed
+     */
+    public function hydrateFieldValue(AttributeField $field, $value)
+    {
+        return $field->hydrate($value);
     }
 
     /**
@@ -67,17 +80,6 @@ trait HasFields
     public function castFieldValue(Field $field, $value)
     {
         return $field->cast($value);
-    }
-
-    /**
-     * Return the default value for a specific field.
-     *
-     * @param Field $field
-     * @return mixed
-     */
-    public function defaultFieldValue(Field $field)
-    {
-        return $field->getProperty('default');
     }
 
     /**
@@ -117,17 +119,13 @@ trait HasFields
         // Refuse any transformation and reverbation if the model is currently fetching.
         if (!$model->fetching) {
             // Apply changes by the field.
-            $value = $this->transformFieldValue(
-                $field,
-                // The value must be of the right type.
-                $this->castFieldValue($field, $value)
-            );
+            $value = $this->castFieldValue($field, $value);
 
             if ($field instanceof RelationField) {
                 $value = $field->getOwner()->reverbateFieldValue($field, $model, $value);
             }
-        } else {
-            $value = $this->castFieldValue($field, $value);
+        } else if ($field instanceof AttributeField) {
+            $value = $this->hydrateFieldValue($field, $value);
         }
 
         // Set the value in the model.
@@ -211,29 +209,33 @@ trait HasFields
             $builder = $builder->newModelQuery();
         }
 
-        switch ($operator->needs) {
-            case 'null':
-                $dryValue = null;
-                break;
+        if ($value instanceof AttributeField) {
+            switch ($operator->needs) {
+                case 'null':
+                    $dryValue = null;
+                    break;
 
-            case 'binary':
-                $dryValue = (integer) $value;
-                break;
+                case 'binary':
+                    $dryValue = (integer) $value;
+                    break;
 
-            case 'collection':
-                if (!($value instanceof Collection)) {
-                    $value = collect($value);
-                }
+                case 'collection':
+                    if (!($value instanceof Collection)) {
+                        $value = collect($value);
+                    }
 
-            default:
-                if ($value instanceof Collection) {
-                    $dryValue = $value->map(function ($sub) use ($field) {
-                        return $field->getOwner()->dryFieldValue($field, $sub);
-                    });
-                } else {
-                    $dryValue = $field->getOwner()->dryFieldValue($field, $value);
-                }
-                break;
+                default:
+                    if ($value instanceof Collection) {
+                        $dryValue = $value->map(function ($sub) use ($field) {
+                            return $field->getOwner()->dryFieldValue($field, $sub);
+                        });
+                    } else {
+                        $dryValue = $field->getOwner()->dryFieldValue($field, $value);
+                    }
+                    break;
+            }
+        } else {
+            $dryValue = $field->getOwner()->castFieldValue($field, $value);
         }
 
         if (\method_exists($field, $method = 'where'.Str::studly($operator->name))) {
