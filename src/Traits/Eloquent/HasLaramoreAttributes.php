@@ -15,6 +15,11 @@ use Laramore\Contracts\Field\{
     AttributeField, RelationField, ExtraField
 };
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
+use Laramore\Elements\Element;
+use Laramore\Eloquent\Relations\MorphTo;
 
 trait HasLaramoreAttributes
 {
@@ -757,6 +762,37 @@ trait HasLaramoreAttributes
     }
 
     /**
+     * Retrieve the actual class name for a given morph class.
+     *
+     * @param  string  $class
+     * @return string
+     */
+    public static function getActualClassNameForMorph($class)
+    {
+        if ($class instanceof Element) {
+            $class = $class->getName();
+        }
+
+        return Arr::get(Relation::morphMap() ?: [], $class, $class);
+    }
+
+    /**
+     * Instantiate a new MorphTo relationship.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Database\Eloquent\Model  $parent
+     * @param  string  $foreignKey
+     * @param  string  $ownerKey
+     * @param  string  $type
+     * @param  string  $relation
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
+    protected function newMorphTo(Builder $query, Model $parent, $foreignKey, $ownerKey, $type, $relation)
+    {
+        return new MorphTo($query, $parent, $foreignKey, $ownerKey, $type, $relation);
+    }
+
+    /**
      * Insert the given attributes and set the ID on the model.
      *
      * @param  \Illuminate\Database\Eloquent\Builder $query
@@ -803,13 +839,13 @@ trait HasLaramoreAttributes
     }
 
     /**
-     * Get an attribute array of all arrayable extras.
+     * Get an attribute array of all \ArrayAccess extras.
      *
      * @return array
      */
-    protected function getArrayableExtras()
+    protected function getArrayAccessExtras()
     {
-        return $this->getArrayableItems($this->extras);
+        return $this->getArrayAccessItems($this->extras);
     }
 
     /**
@@ -819,7 +855,7 @@ trait HasLaramoreAttributes
      */
     public function attributesToArray()
     {
-        $attributes = $this->getArrayableAttributes();
+        $attributes = $this->getArrayAccessAttributes();
 
         $attributes = $this->addMutatedAttributesToArray(
             $attributes,
@@ -871,12 +907,12 @@ trait HasLaramoreAttributes
      */
     public function extrasToArray()
     {
-        $extras = $this->getArrayableExtras();
+        $extras = $this->getArrayAccessExtras();
 
         // Here we will grab all of the appended, calculated attributes to this model
         // as these attributes are not really in the attributes array, but are run
         // when we need to array or JSON the model for convenience to the coder.
-        foreach ($this->getArrayableAppends() as $key) {
+        foreach ($this->getArrayAccessAppends() as $key) {
             $extras[$key] = $this->mutateAttributeForArray($key, null);
         }
 

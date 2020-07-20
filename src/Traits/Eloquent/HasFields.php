@@ -86,10 +86,10 @@ trait HasFields
      * Return the has value for a specific field.
      *
      * @param Field         $field
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
-    public function hasFieldValue(Field $field, LaramoreModel $model)
+    public function hasFieldValue(Field $field, $model)
     {
         return $field->has($model);
     }
@@ -98,10 +98,10 @@ trait HasFields
      * Return the get value for a specific field.
      *
      * @param Field         $field
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
-    public function getFieldValue(Field $field, LaramoreModel $model)
+    public function getFieldValue(Field $field, $model)
     {
         return $field->get($model);
     }
@@ -110,14 +110,17 @@ trait HasFields
      * Return the set value for a specific field.
      *
      * @param Field         $field
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\ArrayAccess $model
      * @param mixed         $value
      * @return mixed
      */
-    public function setFieldValue(Field $field, LaramoreModel $model, $value)
+    public function setFieldValue(Field $field, $model, $value)
     {
         // Refuse any transformation and reverbation if the model is currently fetching.
-        if (!$model->fetching) {
+        if (!($model instanceof LaramoreModel)) {
+            // Apply changes by the field.
+            $value = $this->castFieldValue($field, $value);
+        } else if (!$model->fetching) {
             // Apply changes by the field.
             $value = $this->castFieldValue($field, $value);
 
@@ -136,12 +139,24 @@ trait HasFields
      * Reset the value with the default value for a specific field.
      *
      * @param Field         $field
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
-    public function resetFieldValue(Field $field, LaramoreModel $model)
+    public function resetFieldValue(Field $field, $model)
     {
         return $field->reset($model);
+    }
+
+    /**
+     * Return the set value for a relation field.
+     *
+     * @param ExtraField    $field
+     * @param LaramoreModel|array|\ArrayAccess $model
+     * @return mixed
+     */
+    public function retrieveFieldValue(ExtraField $field, $model)
+    {
+        return $field->retrieve($model);
     }
 
     /**
@@ -154,18 +169,6 @@ trait HasFields
     public function relateFieldValue(RelationField $field, LaramoreModel $model)
     {
         return $field->relate($model);
-    }
-
-    /**
-     * Return the set value for a relation field.
-     *
-     * @param ExtraField    $field
-     * @param LaramoreModel $model
-     * @return mixed
-     */
-    public function retrieveFieldValue(ExtraField $field, LaramoreModel $model)
-    {
-        return $field->retrieve($model);
     }
 
     /**
