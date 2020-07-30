@@ -18,14 +18,16 @@ class MorphTo extends BaseMorphTo
     /**
      * Build a dictionary with the models.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection  $models
+     * @param  \Illuminate\Database\Eloquent\Collection $models
      * @return void
      */
     protected function buildDictionary(Collection $models)
     {
         foreach ($models as $model) {
             if ($model->{$this->morphType}) {
-                $this->dictionary[$model::getActualClassNameForMorph($model->{$this->morphType})][$model->{$this->foreignKey}][] = $model;
+                $name = $model::getActualClassNameForMorph($model->{$this->morphType});
+
+                $this->dictionary[$name][$model->{$this->foreignKey}][] = $model;
             }
         }
     }
