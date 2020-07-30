@@ -85,7 +85,7 @@ trait HasFields
     /**
      * Return the has value for a specific field.
      *
-     * @param Field         $field
+     * @param Field                            $field
      * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
@@ -97,7 +97,7 @@ trait HasFields
     /**
      * Return the get value for a specific field.
      *
-     * @param Field         $field
+     * @param Field                            $field
      * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
@@ -109,9 +109,9 @@ trait HasFields
     /**
      * Return the set value for a specific field.
      *
-     * @param Field         $field
+     * @param Field                            $field
      * @param LaramoreModel|array|\ArrayAccess $model
-     * @param mixed         $value
+     * @param mixed                            $value
      * @return mixed
      */
     public function setFieldValue(Field $field, $model, $value)
@@ -138,7 +138,7 @@ trait HasFields
     /**
      * Reset the value with the default value for a specific field.
      *
-     * @param Field         $field
+     * @param Field                            $field
      * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
@@ -150,7 +150,7 @@ trait HasFields
     /**
      * Return the set value for a relation field.
      *
-     * @param ExtraField    $field
+     * @param ExtraField                       $field
      * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
@@ -196,10 +196,6 @@ trait HasFields
      */
     public function whereFieldValue(Field $field, Proxied $builder, $operator, $value=null, ...$args)
     {
-        if (func_num_args() === 2) {
-            throw new \BadMethodCallException('Missing params');
-        }
-
         if (func_num_args() === 3) {
             [$operator, $value] = [Operator::equal(), $operator];
         }
@@ -212,45 +208,43 @@ trait HasFields
             $builder = $builder->newModelQuery();
         }
 
-        if ($value instanceof AttributeField) {
-            switch ($operator->needs) {
-                case 'null':
-                    $dryValue = null;
-                    break;
-
-                case 'binary':
-                    $dryValue = (integer) $value;
-                    break;
-
-                case 'collection':
-                    if (!($value instanceof Collection)) {
-                        $value = collect($value);
-                    }
-
-                default:
-                    if ($value instanceof Collection) {
-                        $dryValue = $value->map(function ($sub) use ($field) {
-                            return $field->getOwner()->dryFieldValue($field, $sub);
-                        });
-                    } else {
-                        $dryValue = $field->getOwner()->dryFieldValue($field, $value);
-                    }
-                    break;
-            }
-        } else {
-            $dryValue = $field->getOwner()->castFieldValue($field, $value);
+        if ($operator->needs(OperatorElement::COLLECTION_TYPE) && !($value instanceof Collection)) {
+            $value = new Collection($value);
         }
 
-        if (\method_exists($field, $method = 'where'.Str::studly($operator->name))) {
-            return \call_user_func([$field, $method], $builder, $dryValue, ...$args) ?: $builder;
+        if ($field instanceof AttributeField) {
+            switch ($operator->valueType) {
+                case OperatorElement::NULL_TYPE:
+                    $value = null;
+                    break;
+
+                case OperatorElement::BINARY_TYPE:
+                    $value = (integer) $value;
+                    break;
+            }
+        }
+
+        if ($operator->needs(OperatorElement::COLLECTION_TYPE)) {
+            $value = $value->map(function ($sub) use ($field) {
+                return $field->cast($sub);
+            });
+        } else {
+            $value = $field->cast($value);
+        }
+
+        if (\method_exists($field, $method = $operator->getWhereMethod())) {
+            if ($operator->needs(OperatorElement::NULL_TYPE)) {
+                return \call_user_func([$field, $method], $builder, ...$args) ?: $builder;
+            }
+
+            return \call_user_func([$field, $method], $builder, $value, ...$args) ?: $builder;
         }
 
         if (!\in_array($operator->native, $builder->getQuery()->operators)) {
-            throw new \LogicException('As the operator is not handled by default by Laravel, \
-				you need to define a where method for this operator.');
+            throw new \LogicException("The operator {$operator->native} is not available for the field {$field->getName()}");
         }
 
-        return $field->where($builder, $operator, $dryValue, ...$args) ?: $builder;
+        return $field->where($builder, $operator, $value, ...$args) ?: $builder;
     }
 
     /**

@@ -18,6 +18,7 @@ use Laramore\Facades\{
 use Closure;
 use Illuminate\Support\Arr;
 use Laramore\Contracts\Field\AttributeField;
+use Laramore\Elements\OperatorElement;
 
 trait HasLaramoreBuilder
 {
@@ -270,7 +271,7 @@ trait HasLaramoreBuilder
                             $operator = Operator::equal();
                         }
 
-                        if ($operator->needs === 'null') {
+                        if ($operator->needs(OperatorElement::NULL_TYPE)) {
                             $value = null;
                         } else {
                             if (!isset($parameters[$index])) {

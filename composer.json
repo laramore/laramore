@@ -10,7 +10,7 @@
    },
     "require": {
         "php": ">=7.0.8",
-        "laramore/fields": ">=0.20",
+        "laramore/fields": ">=0.21",
         "nastuzzi-samy/reflection-namespace": "^1.0"
     },
     "authors": [

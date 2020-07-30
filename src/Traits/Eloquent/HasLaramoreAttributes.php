@@ -764,7 +764,7 @@ trait HasLaramoreAttributes
     /**
      * Retrieve the actual class name for a given morph class.
      *
-     * @param  string  $class
+     * @param  string|mixed $class
      * @return string
      */
     public static function getActualClassNameForMorph($class)
@@ -779,12 +779,12 @@ trait HasLaramoreAttributes
     /**
      * Instantiate a new MorphTo relationship.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Model  $parent
-     * @param  string  $foreignKey
-     * @param  string  $ownerKey
-     * @param  string  $type
-     * @param  string  $relation
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Model   $parent
+     * @param  string|mixed                          $foreignKey
+     * @param  string|mixed                          $ownerKey
+     * @param  string|mixed                          $type
+     * @param  string|mixed                          $relaétion
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
     protected function newMorphTo(Builder $query, Model $parent, $foreignKey, $ownerKey, $type, $relation)
@@ -843,9 +843,9 @@ trait HasLaramoreAttributes
      *
      * @return array
      */
-    protected function getArrayAccessExtras()
+    protected function getArrayableExtras()
     {
-        return $this->getArrayAccessItems($this->extras);
+        return $this->getArrayableItems($this->extras);
     }
 
     /**
@@ -855,7 +855,7 @@ trait HasLaramoreAttributes
      */
     public function attributesToArray()
     {
-        $attributes = $this->getArrayAccessAttributes();
+        $attributes = $this->getArrayableAttributes();
 
         $attributes = $this->addMutatedAttributesToArray(
             $attributes,
@@ -907,12 +907,12 @@ trait HasLaramoreAttributes
      */
     public function extrasToArray()
     {
-        $extras = $this->getArrayAccessExtras();
+        $extras = $this->getArrayableExtras();
 
         // Here we will grab all of the appended, calculated attributes to this model
         // as these attributes are not really in the attributes array, but are run
         // when we need to array or JSON the model for convenience to the coder.
-        foreach ($this->getArrayAccessAppends() as $key) {
+        foreach ($this->getArrayableAppends() as $key) {
             $extras[$key] = $this->mutateAttributeForArray($key, null);
         }
 
