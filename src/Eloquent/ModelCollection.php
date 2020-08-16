@@ -15,15 +15,15 @@ use Illuminate\Database\Eloquent\Collection;
 class ModelCollection extends Collection
 {
     /**
-     * Set all models as fetching.
+     * Set all models as fetchingDatabase.
      *
-     * @param boolean $fetching
+     * @param boolean $fetchingDatabase
      * @return self
      */
-    public function fetching(bool $fetching=true)
+    public function fetchingDatabase(bool $fetchingDatabase=true)
     {
-        return $this->each(function ($model) use ($fetching) {
-            $model->fetching = $fetching;
+        return $this->each(function ($model) use ($fetchingDatabase) {
+            $model->fetchingDatabase = $fetchingDatabase;
         });
     }
 }

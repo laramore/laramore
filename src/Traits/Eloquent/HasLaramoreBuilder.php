@@ -30,6 +30,22 @@ trait HasLaramoreBuilder
     protected static $macros = [];
 
     /**
+     * Create a new instance of the model being queried.
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function newModelInstance($attributes = [])
+    {
+        $model = $this->model->newInstance($attributes, true)->setConnection(
+            $this->query->getConnection()->getName()
+        );
+        $model->fetchingDatabase = false;
+
+        return $model;
+    }
+
+    /**
      * Execute the query as a "select" statement.
      *
      * @param  array|mixed $columns
@@ -46,7 +62,7 @@ trait HasLaramoreBuilder
             $models = $builder->eagerLoadRelations($models);
         }
 
-        return $builder->getModel()->newCollection($models)->fetching(false);
+        return $builder->getModel()->newCollection($models)->fetchingDatabase(false);
     }
 
     /**
@@ -174,7 +190,9 @@ trait HasLaramoreBuilder
      */
     public function insertGetId($values)
     {
+        $this->getModel()->fetchingDatabase = true;
         $this->getModel()->fill($values);
+        $this->getModel()->fetchingDatabase = false;
 
         return $this->toBase()->insertGetId($this->dryValues($this->getModel()->getAttributes()));
     }
@@ -187,7 +205,9 @@ trait HasLaramoreBuilder
      */
     public function insert($values)
     {
+        $this->getModel()->fetchingDatabase = true;
         $this->getModel()->fill($values);
+        $this->getModel()->fetchingDatabase = false;
 
         return $this->toBase()->insert($this->dryValues($this->getModel()->getAttributes()));
     }
@@ -203,9 +223,9 @@ trait HasLaramoreBuilder
         $values = $this->addUpdatedAtColumn($values);
         $model = $this->getModel();
 
-        $model->fetching = true;
+        $model->fetchingDatabase = true;
         $model->fill($values);
-        $model->fetching = false;
+        $model->fetchingDatabase = false;
 
         return $this->toBase()->update($this->dryValues(\array_merge(
             $values,

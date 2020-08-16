@@ -116,11 +116,11 @@ trait HasFields
      */
     public function setFieldValue(Field $field, $model, $value)
     {
-        // Refuse any transformation and reverbation if the model is currently fetching.
+        // Refuse any transformation and reverbation if the model is currently fetchingDatabase.
         if (!($model instanceof LaramoreModel)) {
             // Apply changes by the field.
             $value = $this->castFieldValue($field, $value);
-        } else if (!$model->fetching) {
+        } else if (!$model->fetchingDatabase) {
             // Apply changes by the field.
             $value = $this->castFieldValue($field, $value);
 

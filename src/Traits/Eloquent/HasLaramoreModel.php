@@ -33,23 +33,23 @@ trait HasLaramoreModel
     protected $required = [];
 
     /**
-     * Indicate if the model is currently fetching from the database.
+     * Indicate if the model is currently fetchingDatabase from the database.
      * Public property as the exists one it is (not a good think tbh).
      *
      * @var bool
      */
-    public $fetching;
+    public $fetchingDatabase;
 
     /**
      * Create a new Eloquent model instance.
      *
      * @param  array   $attributes
-     * @param  boolean $fetching   Is the model currently fetching from the database.
+     * @param  boolean $fetchingDatabase   Is the model currently fetchingDatabase from the database.
      * @return void
      */
-    public function __construct(array $attributes=[], bool $fetching=false)
+    public function __construct(array $attributes=[], bool $fetchingDatabase=false)
     {
-        $this->exists = $this->fetching = $fetching;
+        $this->exists = $this->fetchingDatabase = $fetchingDatabase;
 
         if (\version_compare(app()::VERSION, '5.7.0', '<')) {
             $this->bootIfNotBooted();
@@ -92,7 +92,7 @@ trait HasLaramoreModel
         $this->setTable($meta->getTableName());
         $this->setConnection($meta->getConnectionName());
 
-        if (!$this->fetching) {
+        if (!$this->fetchingDatabase) {
             static::unguarded(function () {
                 $this->presetAttributes();
             });
@@ -267,21 +267,39 @@ trait HasLaramoreModel
      * Create a new instance of the given model.
      *
      * @param  array|mixed   $attributes
-     * @param  boolean|mixed $fetching
+     * @param  boolean|mixed $fetchingDatabase
      * @return static
      */
-    public function newInstance($attributes=[], $fetching=false)
+    public function newInstance($attributes=[], $fetchingDatabase=false)
     {
         // This method just provides a convenient way for us to generate fresh model
         // instances of this current model. It is particularly useful during the
         // hydration of new objects via the Eloquent query builder instances.
-        $model = new static((array) $attributes, $fetching);
+        $model = new static((array) $attributes, $fetchingDatabase);
 
         $model->setConnection(
             $this->getConnectionName()
         );
 
         $model->setTable($this->getTable());
+
+        return $model;
+    }
+
+    /**
+     * Create a new model instance for a related model.
+     *
+     * @param  string  $class
+     * @return mixed
+     */
+    protected function newRelatedInstance($class)
+    {
+        $model = tap(new $class([], true), function ($instance) {
+            if (!$instance->getConnectionName()) {
+                $instance->setConnection($this->connection);
+            }
+        });
+        $model->fetchingDatabase = true;
 
         return $model;
     }
@@ -451,6 +469,10 @@ trait HasLaramoreModel
             return static::__proxyStatic($methodName, $args);
         }
 
-        return parent::__callStatic($methodName, $args);
+        if (\in_array($methodName, ['increment', 'decrement'])) {
+            return parent::__callStatic($methodName, $args);
+        }
+
+        return (new static([], true))->newQuery()->$methodName(...$args);
     }
 }
