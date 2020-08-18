@@ -784,7 +784,7 @@ trait HasLaramoreAttributes
      * @param  string|mixed                          $foreignKey
      * @param  string|mixed                          $ownerKey
      * @param  string|mixed                          $type
-     * @param  string|mixed                          $relaétion
+     * @param  string|mixed                          $relation
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
     protected function newMorphTo(Builder $query, Model $parent, $foreignKey, $ownerKey, $type, $relation)

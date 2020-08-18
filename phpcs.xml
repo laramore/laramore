@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.1"?>
 <ruleset name="NastuzziSamy">
     <description>NastuzziSamy's standards</description>
 
@@ -35,7 +35,7 @@
     <!-- Length rules -->
     <rule ref="Generic.Files.LineLength">
         <properties>
-            <property name="lineLimit" value="128" />
+            <property name="lineLimit" value="150" />
             <property name="absoluteLineLimit" value="null" />
             <property name="ignoreComments" value="true" />
         </properties>
@@ -43,10 +43,8 @@
 
     <!-- Comment rules -->
     <rule ref="Generic.Commenting.Todo"/>
-    <rule ref="Squiz.Commenting.BlockComment" />
     <rule ref="Squiz.Commenting.DocCommentAlignment" />
     <rule ref="Squiz.Commenting.EmptyCatchComment" />
-    <rule ref="Squiz.Commenting.InlineComment" />
     <rule ref="Squiz.Commenting.PostStatementComment" />
     <rule ref="Squiz.Commenting.FileComment">
         <type>warning</type>
@@ -98,6 +96,7 @@
     <rule ref="Squiz.ControlStructures.ElseIfDeclaration" />
     <rule ref="Squiz.Formatting.OperatorBracket" />
     <rule ref="Squiz.Scope.MethodScope" />
+    <rule ref="Squiz.Strings.ConcatenationSpacing" />
     <rule ref="Squiz.WhiteSpace.ControlStructureSpacing" />
     <rule ref="Squiz.WhiteSpace.OperatorSpacing" />
     <rule ref="Squiz.WhiteSpace.SuperfluousWhitespace" />

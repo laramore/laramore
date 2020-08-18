@@ -44,7 +44,7 @@ trait HasLaramoreModel
      * Create a new Eloquent model instance.
      *
      * @param  array   $attributes
-     * @param  boolean $fetchingDatabase   Is the model currently fetchingDatabase from the database.
+     * @param  boolean $fetchingDatabase Is the model currently fetchingDatabase from the database.
      * @return void
      */
     public function __construct(array $attributes=[], bool $fetchingDatabase=false)
@@ -289,7 +289,7 @@ trait HasLaramoreModel
     /**
      * Create a new model instance for a related model.
      *
-     * @param  string  $class
+     * @param  string|mixed $class
      * @return mixed
      */
     protected function newRelatedInstance($class)

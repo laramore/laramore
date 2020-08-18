@@ -275,13 +275,11 @@ class Meta implements LaramoreMeta
 
         if ($field->isOwned()) {
             if ($field->getName() !== $name) {
-                throw new \Exception('The field name must be the same as the given one, '
-                    ."expecting `{$field->getName()}`, got `$name`.");
+                throw new \Exception("The field name must be the same as the given one, expecting `{$field->getName()}`, got `$name`.");
             }
 
             if ($field->getMeta() !== $this) {
-                throw new \LogicException("The field `$name` is already"
-                    .'owned by another meta.');
+                throw new \LogicException("The field `$name` is already".'owned by another meta.');
             }
         } else {
             $field->own($this, $name);

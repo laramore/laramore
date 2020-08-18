@@ -77,7 +77,7 @@ class Element implements Locked, Arrayable
      * Indicate if it is the same element.
      *
      * @param Element $element
-     * @return bool
+     * @return boolean
      */
     public function is(Element $element): bool
     {

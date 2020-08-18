@@ -32,10 +32,10 @@ trait HasLaramoreBuilder
     /**
      * Create a new instance of the model being queried.
      *
-     * @param  array  $attributes
+     * @param  array|mixed $attributes
      * @return \Illuminate\Database\Eloquent\Model
      */
-    public function newModelInstance($attributes = [])
+    public function newModelInstance($attributes=[])
     {
         $model = $this->model->newInstance($attributes, true)->setConnection(
             $this->query->getConnection()->getName()
@@ -126,7 +126,7 @@ trait HasLaramoreBuilder
         $args = \func_get_args();
         \array_shift($args);
 
-        return \call_user_func([$this, 'where' . Str::studly($column)], ...$args);
+        return \call_user_func([$this, 'where'.Str::studly($column)], ...$args);
     }
 
     /**
@@ -270,11 +270,11 @@ trait HasLaramoreBuilder
                 }
 
                 do {
-                    $method = 'where' . \implode('', $nameParts);
+                    $method = 'where'.\implode('', $nameParts);
 
                     // Detect via proxies a whereFieldName method.
                     // By doing that, we can extract the possible operator, which is by default '='.
-                    if ($this->getModel()::getMeta()->getProxyHandler()->has('scope' . \ucfirst($method))) {
+                    if ($this->getModel()::getMeta()->getProxyHandler()->has('scope'.\ucfirst($method))) {
                         if (\count($operatorParts)) {
                             $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
 
@@ -401,7 +401,7 @@ trait HasLaramoreBuilder
      */
     public function __proxy($name, $args)
     {
-        return $this->getModel()::getMeta()->getProxyHandler()->get('scope' . \ucfirst($name))->__invoke($this, ...$args);
+        return $this->getModel()::getMeta()->getProxyHandler()->get('scope'.\ucfirst($name))->__invoke($this, ...$args);
     }
 
     /**
