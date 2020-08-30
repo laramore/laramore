@@ -74,8 +74,50 @@ trait HasProperties
             \call_user_func([$this, $key], $value);
         } else if (\property_exists($this, $key)) {
             $this->defineProperty($key, $value);
-        } else {
-            throw new \ErrorException("The property `$key` cannot be set as it does not exist");
+        } else { // Try with plural key.
+            $pluralKey = Str::plural($key);
+
+            if (\method_exists($this, $pluralKey)) {
+                \call_user_func([$this, $pluralKey], [$value]);
+            } else if (\property_exists($this, $pluralKey)) {
+                $this->defineProperty($pluralKey, [$value]);
+            } else {
+                throw new \ErrorException("The property `$key` cannot be set as it does not exist");
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Init all properties with a set of properties.
+     * @param array $properties
+     * @return self
+     */
+    protected function initProperties(array $properties)
+    {
+        foreach ($properties as $key => $value) {
+            $key = Str::camel($key);
+
+            if (\property_exists($this, $key) && !$this->hasProperty($key)) {
+                $this->setProperty($key, $value);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Manage the definition of many properties.
+     *
+     * @param array $properties
+     * @return self
+     * @throws \ErrorException If no property exists with this name.
+     */
+    public function setProperties(array $properties)
+    {
+        foreach ($properties as $key => $value) {
+            $this->setProperty($key, $value);
         }
 
         return $this;
@@ -126,22 +168,23 @@ trait HasProperties
      */
     public function __call(string $method, array $args)
     {
-
-        if (count($args) === 0) {
+        if (\count($args) === 0) {
             if (Str::startsWith($method, 'get')) {
                 return $this->getProperty(Str::camel(substr(Str::snake($method), 4)));
             } else if (Str::startsWith($method, 'has')) {
                 return $this->hasProperty(Str::camel(substr(Str::snake($method), 4)));
-            } else {
-                return $this->setProperty($method, true);
+            } else if (Str::startsWith($method, 'set')) {
+                return $this->setProperty(Str::camel(\substr(Str::snake($method), 4)), $args);
             }
-        } else if (count($args) === 1) {
-            if (Str::startsWith($method, 'set')) {
-                return $this->setProperty(Str::camel(substr(Str::snake($method), 4)), $args[0]);
-            } else {
-                $this->setProperty($method, $args[0]);
-            }
+
+            return $this->setProperty($method, true);
         } else {
+            $args = (\count($args) === 1) ? $args[0] : $args;
+
+            if (Str::startsWith($method, 'set')) {
+                return $this->setProperty(Str::camel(\substr(Str::snake($method), 4)), $args);
+            }
+
             $this->setProperty($method, $args);
         }
 
