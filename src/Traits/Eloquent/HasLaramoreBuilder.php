@@ -66,6 +66,22 @@ trait HasLaramoreBuilder
     }
 
     /**
+     * Handle nested condition.
+     *
+     * @param \Closure|callback $callback
+     * @param string|mixed      $boolean
+     * @return self
+     */
+    public function whereNested($callback, $boolean='and')
+    {
+        \call_user_func($callback, $query = $this->model->newModelQuery());
+
+        $this->query->addNestedWhereQuery($query->getQuery(), $boolean);
+
+        return $this;
+    }
+
+    /**
      * Add a basic where clause to the query.
      *
      * @param  string|array|\Closure $column
@@ -77,11 +93,7 @@ trait HasLaramoreBuilder
     public function where($column, $operator=null, $value=null, $boolean='and')
     {
         if ($column instanceof Closure) {
-            $column($query = $this->model->newModelQuery());
-
-            $this->query->addNestedWhereQuery($query->getQuery(), \func_num_args() === 2 ? $operator : $boolean);
-
-            return $this;
+            return $this->whereNested(...\func_get_args());
         }
 
         if ($column instanceof Expression) {
@@ -97,7 +109,7 @@ trait HasLaramoreBuilder
         // If the column is an array, we will assume it is an array of key-value pairs
         // and can add them each as a where clause. We will maintain the boolean we
         // received when the method was called and pass it into the nested where.
-        if (is_array($column)) {
+        if (\is_array($column)) {
             $this->multiWhere(...\func_get_args());
         }
 

@@ -34,12 +34,30 @@ class TypeElement extends Element
         $this->needsToBeUnlocked();
 
         if ($this->has('parent') && $this->inherited === false) {
-            $parentType = Type::get(parent::get('parent'));
+            $parentType = Type::get($this->get('parent'));
 
             $this->values = $this->mergeConfig($parentType->inherit()->toArray(), $this->values, []);
             $this->inherited = true;
         }
 
         return $this;
+    }
+
+    /**
+     * Indicate if this type inherit from a specific one.
+     *
+     * @param TypeElement $typeElement
+     * @return boolean
+     */
+    public function doesInherit(TypeElement $typeElement): bool
+    {
+        if (!$this->has('parent')) {
+            return false;
+        }
+
+        $parentType = Type::get($this->get('parent'));
+
+        return $parentType === $typeElement
+            || $parentType->doesInherit($typeElement);
     }
 }

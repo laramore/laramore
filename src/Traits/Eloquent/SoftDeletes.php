@@ -115,7 +115,7 @@ trait SoftDeletes
      */
     public function getDeletedAtColumn()
     {
-        // @var \Laramore\Eloquent\Model
+        /** @var \Laramore\Eloquent\Model */
         $class = static::class;
 
         return defined('static::DELETED_AT') ? $class::DELETED_AT : 'deleted_at';

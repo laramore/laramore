@@ -282,7 +282,7 @@ class Meta implements LaramoreMeta
                 throw new \LogicException("The field `$name` is already".'owned by another meta.');
             }
         } else {
-            $field->own($this, $name);
+            $field->ownedBy($this, $name);
         }
 
         $name = $field->getName();
@@ -500,12 +500,12 @@ class Meta implements LaramoreMeta
 
         $this->setField(
             $createdName,
-            DateTime::field(['not_nullable', 'visible', 'use_current'])
+            DateTime::field()->options(['not_nullable', 'visible', 'use_current'])
         );
 
         $this->setField(
             $updatedField,
-            $updatedField = DateTime::field($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
+            $updatedField = DateTime::field()->options($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
         );
 
         if ($autoUpdated) {
@@ -548,7 +548,7 @@ class Meta implements LaramoreMeta
 
         $this->setField(
             $deletedName,
-            DateTime::field(['nullable', 'visible'])
+            DateTime::field()->options(['nullable', 'visible'])
         );
 
         $this->hasDeletedTimestamp = true;

@@ -104,7 +104,7 @@ return [
         'like_binary' => [
             'native' => 'like binary',
         ],
-        'not_nike' => [
+        'not_like' => [
             'native' => 'not like',
             'fallback' => '!=',
         ],

@@ -32,7 +32,7 @@ use Laramore\Exceptions\ConfigException;
 abstract class BaseField implements Field, Configured
 {
     use IsOwned, IsLocked, HasLockedMacros, HasProperties, HasOptions {
-        own as protected ownFromTrait;
+        ownedBy as protected ownedByFromTrait;
         setOwner as protected setOwnerFromTrait;
         lock as protected lockFromTrait;
         setProperty as protected forceProperty;
@@ -62,23 +62,20 @@ abstract class BaseField implements Field, Configured
     protected $constraintHandler;
 
     /**
-     * Create a new field with basic options.
+     * Create a new field with basic properties.
      * The constructor is protected so the field is created writing left to right.
      * ex: Char::field()->maxLength(255) insteadof (new Char)->maxLength(255).
      *
-     * @param array|null $options
+     * @param array $properties
      */
-    protected function __construct(array $options=null)
+    protected function __construct(array $properties=[])
     {
-        $this->addOptions($options ?: $this->getType()->getDefaultOptions());
+        $this->addOptions($this->getType()->getDefaultOptions());
 
-        foreach ($this->getConfig() as $key => $value) {
-            $key = Str::camel($key);
-
-            if (\property_exists($this, $key) && !$this->hasProperty($key)) {
-                $this->setProperty($key, $value);
-            }
-        }
+        $this->initProperties(\array_merge(
+            $this->getConfig(),
+            $properties
+        ));
 
         $this->setConstraintHandler();
     }
@@ -86,10 +83,10 @@ abstract class BaseField implements Field, Configured
     /**
      * Call the constructor and generate the field.
      *
-     * @param  array|null $options
+     * @param  array $properties
      * @return self
      */
-    public static function field(array $options=null)
+    public static function field(array $properties=[])
     {
         $creating = Event::until('fields.creating', static::class, \func_get_args());
 
@@ -97,7 +94,7 @@ abstract class BaseField implements Field, Configured
             return null;
         }
 
-        $field = $creating ?: new static($options);
+        $field = $creating ?: new static($properties);
 
         Event::dispatch('fields.created', $field);
 
@@ -112,9 +109,7 @@ abstract class BaseField implements Field, Configured
      */
     public function getConfigPath(string $path=null)
     {
-        $name = Str::snake((new \ReflectionClass($this))->getShortName());
-
-        return 'field.configurations.'.$name.(\is_null($path) ? '' : '.'.$path);
+        return 'field.configurations.'.static::class.(\is_null($path) ? '' : '.'.$path);
     }
 
     /**
@@ -127,6 +122,22 @@ abstract class BaseField implements Field, Configured
     public function getConfig(string $path=null, $default=null)
     {
         return config($this->getConfigPath($path), $default);
+    }
+
+    /**
+     * Define all options for this field.
+     *
+     * @param array $options
+     * @return self
+     */
+    public function options(array $options)
+    {
+        $this->needsToBeUnlocked();
+
+        $this->options = [];
+        $this->addOptions($options);
+
+        return $this;
     }
 
     /**
@@ -366,7 +377,7 @@ abstract class BaseField implements Field, Configured
      * @param  string $name
      * @return self
      */
-    public function own($owner, string $name)
+    public function ownedBy($owner, string $name)
     {
         $this->needsToBeUnlocked();
 
@@ -378,7 +389,7 @@ abstract class BaseField implements Field, Configured
             return $this;
         }
 
-        $this->ownFromTrait(($owning[0] ?? $owner), ($owning[1] ?? $name));
+        $this->ownedByFromTrait(($owning[0] ?? $owner), ($owning[1] ?? $name));
 
         Event::dispatch('fields.owned', $this);
 

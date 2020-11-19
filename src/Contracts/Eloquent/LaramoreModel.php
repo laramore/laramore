@@ -449,4 +449,12 @@ interface LaramoreModel extends Proxied, ArrayAccess, Arrayable, Jsonable, JsonS
      * @return \Illuminate\Database\Eloquent\Builder|static
      */
     public function newModelQuery();
+
+    /**
+     * Create a new Eloquent Collection instance.
+     *
+     * @param  array $models
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function newCollection(array $models=[]);
 }

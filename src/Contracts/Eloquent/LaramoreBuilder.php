@@ -22,6 +22,13 @@ interface LaramoreBuilder extends Proxied
     public function getQuery();
 
     /**
+     * Get the model instance being queried.
+     *
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function getModel();
+
+    /**
      * Update a record in the database.
      *
      * @param  array $values
@@ -97,4 +104,30 @@ interface LaramoreBuilder extends Proxied
      * @return \Illuminate\Database\Eloquent\Builder|static
      */
     public function doesntHave($relation, $boolean='and', \Closure $callback=null);
+
+    /**
+     * Set the relationships that should be eager loaded.
+     *
+     * @param  mixed $relations
+     * @return $this
+     */
+    public function with($relations);
+
+    /**
+     * Prevent the specified relations from being eager loaded.
+     *
+     * @param  mixed $relations
+     * @return $this
+     */
+    public function without($relations);
+
+    /**
+     * Handle dynamic method calls into the method.
+     *
+     * @param  string|mixed $method
+     * @param  array|mixed  $parameters
+     * @return mixed
+     * @throws \BadMethodCallException If not a query method.
+     */
+    public function __call($method, $parameters);
 }

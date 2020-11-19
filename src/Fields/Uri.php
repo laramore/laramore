@@ -46,17 +46,6 @@ class Uri extends Char implements PatternField, FixableField
     }
 
     /**
-     * Define the allowed protocol.
-     *
-     * @param string $allowedProtocol
-     * @return self
-     */
-    public function allowedProtocol(string $allowedProtocol)
-    {
-        return $this->allowedProtocols([$allowedProtocol]);
-    }
-
-    /**
      * Return the main protocol.
      *
      * @return string

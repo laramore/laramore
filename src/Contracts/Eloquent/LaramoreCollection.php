@@ -15,12 +15,12 @@ use Illuminate\Contracts\Queue\QueueableCollection;
 interface LaramoreCollection extends QueueableCollection
 {
     /**
-     * Set all models as fetching.
+     * Set all models as fetching database.
      *
-     * @param boolean $fetching
+     * @param boolean $fetchingDatabase
      * @return self
      */
-    public function fetching(bool $fetching=true);
+    public function fetchingDatabase(bool $fetchingDatabase=true);
 
     /**
      * Find a model in the collection by key.

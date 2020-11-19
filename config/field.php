@@ -1,5 +1,7 @@
 <?php
 
+namespace Laramore\Fields;
+
 use Illuminate\Support\Facades\Schema;
 
 return [
@@ -30,7 +32,7 @@ return [
     */
 
     'configurations' => [
-        'belongs_to_many' => [
+        Reversed\BelongsToMany::class => [
             'type' => 'reversed_relation',
             'proxy' => [
                 'configurations' => [
@@ -46,7 +48,7 @@ return [
                 ],
             ],
         ],
-        'binary' => [
+        Binary::class => [
             'type' => 'binary',
             'proxy' => [
                 'configurations' => [
@@ -65,7 +67,7 @@ return [
                 ],
             ],
         ],
-        'boolean' => [
+        Boolean::class => [
             'type' => 'boolean',
             'proxy' => [
                 'configurations' => [
@@ -86,7 +88,7 @@ return [
                 ],
             ],
         ],
-        'char' => [
+        Char::class => [
             'type' => 'char',
             'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
             'proxy' => [
@@ -103,7 +105,7 @@ return [
                 ],
             ],
         ],
-        'date_time' => [
+        DateTime::class => [
             'type' => 'date_time',
             'format' => 'Y-m-d H:i:s',
             'proxy' => [
@@ -119,7 +121,7 @@ return [
                 ],
             ],
         ],
-        'decimal' => [
+        Decimal::class => [
             'type' => 'decimal',
             'types' =>  [
                 'big' => 'big_decimal',
@@ -141,7 +143,7 @@ return [
                 ],
             ],
         ],
-        'email' => [
+        Email::class => [
             'type' => 'email',
             'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
             'proxy' => [
@@ -165,11 +167,11 @@ return [
                 'flags' => null,
             ],
         ],
-        'enum' => [
+        Enum::class => [
             'type' => 'enum',
             'elements' => [
                 'proxy' => [
-                    'class' => Laramore\Proxies\EnumProxy::class,
+                    'class' => \Laramore\Proxies\EnumProxy::class,
                     'configurations' => [
                         'is' => [
                             'templates' => [
@@ -209,7 +211,7 @@ return [
                 ],
             ],
         ],
-        'has_many' => [
+        Reversed\HasMany::class => [
             'type' => 'reversed_relation',
             'proxy' => [
                 'configurations' => [
@@ -225,7 +227,7 @@ return [
                 ],
             ],
         ],
-        'has_one' => [
+        Reversed\HasOne::class => [
             'type' => 'reversed_relation',
             'proxy' => [
                 'configurations' => [
@@ -241,7 +243,7 @@ return [
                 ],
             ],
         ],
-        'increment' => [
+        Increment::class => [
             'type' => 'increment',
             'step' => 1,
             'proxy' => [
@@ -259,7 +261,7 @@ return [
                 ],
             ],
         ],
-        'integer' => [
+        Integer::class => [
             'type' => 'integer',
             'types' =>  [
                 'big' => 'big_integer',
@@ -281,7 +283,7 @@ return [
                 ],
             ],
         ],
-        'json' => [
+        Json::class => [
             'type' => 'json',
             'proxy' => [
                 'configurations' => [
@@ -296,11 +298,11 @@ return [
                 ],
             ],
         ],
-        'many_to_many' => [
+        ManyToMany::class => [
             'type' => 'relation',
             'pivot_namespace' => 'App\\Pivots',
             'fields' => [
-                'reversed' => Laramore\Fields\Reversed\BelongsToMany::class,
+                'reversed' => Reversed\BelongsToMany::class,
             ],
             'templates' => [
                 'reversed' => '+{modelname}',
@@ -318,11 +320,11 @@ return [
                 ],
             ],
         ],
-        'many_to_one' => [
+        ManyToOne::class => [
             'type' => 'relation',
             'fields' => [
-                'id' => Laramore\Fields\Integer::class,
-                'reversed' => Laramore\Fields\Reversed\HasMany::class,
+                'id' => Integer::class,
+                'reversed' => Reversed\HasMany::class,
             ],
             'templates' => [
                 'id' => '${name}_${identifier}',
@@ -343,11 +345,11 @@ return [
                 ],
             ],
         ],
-        'one_to_one' => [
+        OneToOne::class => [
             'type' => 'relation',
             'fields' => [
-                'id' => Laramore\Fields\UniqueId::class,
-                'reversed' => Laramore\Fields\Reversed\HasOne::class,
+                'id' => UniqueId::class,
+                'reversed' => Reversed\HasOne::class,
             ],
             'templates' => [
                 'id' => '${name}_${identifier}',
@@ -368,7 +370,7 @@ return [
                 ],
             ],
         ],
-        'password' => [
+        Password::class => [
             'type' => 'password',
             'max_length' => 60, // Length required for hashs.
             'min_length' => 8, // Min length of any password.
@@ -400,7 +402,7 @@ return [
                 'one_special_part' => '(?=\S*[\W])',
             ]
         ],
-        'primary_id' => [
+        PrimaryId::class => [
             'type' => 'primary_id',
             'proxy' => [
                 'configurations' => [
@@ -415,7 +417,7 @@ return [
                 ],
             ],
         ],
-        'unique_id' => [
+        UniqueId::class => [
             'type' => 'integer',
             'types' =>  [
                 'big' => 'big_integer',
@@ -437,7 +439,7 @@ return [
                 ],
             ],
         ],
-        'text' => [
+        Text::class => [
             'type' => 'text',
             'proxy' => [
                 'configurations' => [
@@ -452,7 +454,7 @@ return [
                 ],
             ],
         ],
-        'timestamp' => [
+        Timestamp::class => [
             'type' => 'timestamp',
             'format' => 'timestamp',
             'proxy' => [
@@ -468,7 +470,7 @@ return [
                 ],
             ],
         ],
-        'uri' => [
+        Uri::class => [
             'type' => 'uri',
             'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
             'proxy' => [

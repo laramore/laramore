@@ -72,7 +72,7 @@ trait IsOwned
      * @param  string $name
      * @return self
      */
-    public function own($owner, string $name)
+    public function ownedBy($owner, string $name)
     {
         $this->setOwner($owner);
         $this->setName($name);

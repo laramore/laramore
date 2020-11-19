@@ -11,8 +11,9 @@
 namespace Laramore\Eloquent;
 
 use Illuminate\Database\Eloquent\Collection;
+use Laramore\Contracts\Eloquent\LaramoreCollection;
 
-class ModelCollection extends Collection
+class ModelCollection extends Collection implements LaramoreCollection
 {
     /**
      * Set all models as fetchingDatabase.

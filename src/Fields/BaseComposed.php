@@ -40,20 +40,20 @@ abstract class BaseComposed extends BaseField implements ComposedField
     protected $templates;
 
     /**
-     * Create a new field with basic options.
+     * Create a new field with basic properties.
      * The constructor is protected so the field is created writing left to right.
      * ex: OneToMany::field()->on(User::class) insteadof (new OneToMany)->on(User::class).
      *
-     * @param array $options
-     * @param array $fields  Allow the user to define sub fields.
+     * @param array $properties
+     * @param array $fields     Allow the user to define sub fields.
      */
-    protected function __construct(array $options=null, array $fields=null)
+    protected function __construct(array $properties=[], array $fields=[])
     {
-        parent::__construct($options);
+        parent::__construct($properties);
 
         $fields = ($fields ?: $this->getConfig('fields'));
 
-        if (\is_null($fields) || (\count($fields) && !Arr::isAssoc($fields))) {
+        if (\count($fields) && !Arr::isAssoc($fields)) {
             throw new ConfigException($this->getConfigPath('fields'), ['any associative array of fields'], $fields);
         }
 
@@ -69,11 +69,11 @@ abstract class BaseComposed extends BaseField implements ComposedField
     /**
      * Call the constructor and generate the field.
      *
-     * @param array $options
-     * @param array $fields  Allow the user to define sub fields.
+     * @param array $properties
+     * @param array $fields     Allow the user to define sub fields.
      * @return self
      */
-    public static function field(array $options=null, array $fields=null)
+    public static function field(array $properties=[], array $fields=[])
     {
         $creating = Event::until('fields.creating', static::class, \func_get_args());
 
@@ -81,7 +81,7 @@ abstract class BaseComposed extends BaseField implements ComposedField
             return null;
         }
 
-        $field = $creating ?: new static($options, $fields);
+        $field = $creating ?: new static($properties, $fields);
 
         Event::dispatch('fields.created', $field);
 
@@ -252,7 +252,7 @@ abstract class BaseComposed extends BaseField implements ComposedField
         foreach ($this->fields as $key => $field) {
             $name = $this->replaceInFieldTemplate($this->templates[$key], $key);
 
-            $this->fields[$key] = $field->own($this, $name);
+            $this->fields[$key] = $field->ownedBy($this, $name);
 
             $field->getMeta()->setField($field->getName(), $field);
         }

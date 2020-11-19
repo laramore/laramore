@@ -44,6 +44,14 @@ interface Field extends Locked, Owned
     public function getQualifiedName(): string;
 
     /**
+     * Define all options for this field.
+     *
+     * @param array $options
+     * @return self
+     */
+    public function options(array $options);
+
+    /**
      * Indicate if a propery exists.
      *
      * @param  string $key

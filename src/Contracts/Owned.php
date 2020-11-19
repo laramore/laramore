@@ -21,7 +21,7 @@ interface Owned
      * @param  string $name
      * @return self
      */
-    public function own($owner, string $name);
+    public function ownedBy($owner, string $name);
 
     /**
      * Return the owner of this instance.

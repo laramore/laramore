@@ -46,17 +46,6 @@ class Email extends Char implements PatternField, FixableField
     }
 
     /**
-     * Define the allowed domain.
-     *
-     * @param string $allowedDomain
-     * @return self
-     */
-    public function allowedDomain(string $allowedDomain)
-    {
-        return $this->allowedDomains([$allowedDomain]);
-    }
-
-    /**
      * Return the main domain.
      *
      * @return string

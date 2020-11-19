@@ -74,7 +74,8 @@ trait HasProperties
             \call_user_func([$this, $key], $value);
         } else if (\property_exists($this, $key)) {
             $this->defineProperty($key, $value);
-        } else { // Try with plural key.
+        } else {
+            // Try with plural key.
             $pluralKey = Str::plural($key);
 
             if (\method_exists($this, $pluralKey)) {
