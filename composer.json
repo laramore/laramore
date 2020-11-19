@@ -52,6 +52,7 @@
     "extra": {
         "laravel": {
             "providers": [
+                "Laramore\\Providers\\BaseProvider",
                 "Laramore\\Providers\\FieldConstraintProvider",
                 "Laramore\\Providers\\FieldProvider",
                 "Laramore\\Providers\\GrammarTypeProvider",
