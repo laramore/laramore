@@ -37,7 +37,7 @@ trait MergesConfig
      * @param  array $path
      * @return array
      */
-    protected function mergeConfig(array $original, array $merging, array $path): array
+    protected function mergeConfig(array $original, array $merging, array $path=[]): array
     {
         if (Arr::isAssoc($original) !== Arr::isAssoc($merging)
             && \count(\array_values($original)) && \count(\array_values($merging))) {
@@ -46,7 +46,7 @@ trait MergesConfig
 
         if (Arr::isAssoc($original)) {
             foreach ($original as $key => $value) {
-                if (isset($merging[$key])) {
+                if (Arr::exists($merging, $key)) {
                     if (\is_array($value) && \is_array($merging[$key])) {
                         $original[$key] = $this->mergeConfig($value, $merging[$key], \array_merge($path, [$key]));
                     } else {

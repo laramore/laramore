@@ -36,7 +36,7 @@ class TypeElement extends Element
         if ($this->has('parent') && $this->inherited === false) {
             $parentType = Type::get($this->get('parent'));
 
-            $this->values = $this->mergeConfig($parentType->inherit()->toArray(), $this->values, []);
+            $this->values = $this->mergeConfig($parentType->inherit()->toArray(), $this->values);
             $this->inherited = true;
         }
 
