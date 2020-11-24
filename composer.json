@@ -5,12 +5,12 @@
     "license": "MIT",
     "config": {
        "platform": {
-           "php": "7.0.8"
+           "php": "7.3"
        }
    },
     "require": {
-        "php": ">=7.0.8",
-        "laravel/framework": ">=5.5",
+        "php": "^7.3|^8.0",
+        "laravel/framework": ">=8.12",
         "nastuzzi-samy/reflection-namespace": "^1.0"
     },
     "authors": [
