@@ -123,6 +123,8 @@ return [
         ],
         Decimal::class => [
             'type' => 'decimal',
+            'total_digits' => 8,
+            'decimal_digits' => 2,
             'types' =>  [
                 'big' => 'big_decimal',
                 'small' => 'small_decimal',

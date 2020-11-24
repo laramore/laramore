@@ -4,7 +4,7 @@
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
- * @copyright Copyright (c) 2020
+ * @copydecimalDigits Copyright (c) 2020
  * @license MIT
  */
 
@@ -16,25 +16,25 @@ class Decimal extends BaseAttribute
 {
     use NumberInteraction;
 
-    protected $leftPrecision;
-    protected $rightPrecision;
+    protected $totalDigits;
+    protected $decimalDigits;
 
     /**
      * Define the precision of this float field.
      *
-     * @param integer $left
-     * @param integer $right
+     * @param integer $totalDigits
+     * @param integer $decimalDigits
      * @return self
      */
-    public function precision(int $left=null, int $right=null)
+    public function digits(int $totalDigits=null, int $decimalDigits=null)
     {
         $this->needsToBeUnlocked();
 
         if (\func_num_args() === 1) {
-            $this->rightPrecision = $left;
+            $this->decimalDigitsPrecision = $totalDigits;
         } else {
-            $this->leftPrecision = $left;
-            $this->rightPrecision = $right;
+            $this->totalDigits = $totalDigits;
+            $this->decimalDigits = $decimalDigits;
         }
 
         return $this;
