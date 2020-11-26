@@ -13,12 +13,15 @@ namespace Laramore\Providers;
 use Illuminate\Support\{
     ServiceProvider, Str
 };
-use Laramore\Contracts\Manager\LaramoreManager;
+use Laramore\Exceptions\ConfigException;
+use Laramore\Contracts\{
+    Manager\LaramoreManager, Eloquent\LaramoreModel
+};
 use Laramore\Elements\OperatorElement;
 use Laramore\Facades\{
     FieldConstraint, Operator, Type, Meta, Proxy, Option
 };
-use ReflectionNamespace;
+use ReflectionNamespace, ReflectionClass;
     
 class LaramoreProvider extends ServiceProvider
 {
@@ -44,6 +47,8 @@ class LaramoreProvider extends ServiceProvider
         'proxy.php',
     ];
 
+    protected static $metaManager;
+
     /**
      * During booting, add our macro.
      *
@@ -53,7 +58,7 @@ class LaramoreProvider extends ServiceProvider
     {
         foreach (static::CONFIG_TO_MERGE as $file => $config) {
             $this->mergeConfigFrom(
-                __DIR__.'/../../config'.$file, $config,
+                __DIR__.'/../../config/'.$file, $config,
             );
         }
 
@@ -61,33 +66,40 @@ class LaramoreProvider extends ServiceProvider
 
         $this->booting(function () {
             $this->addStrMethod();
+        });
+
+        $this->booted(function () {
             $this->lockManagers();
         });
     }
 
     public function setSingletons()
     {
-        $this->app->singleton('FieldConstraint', function() {
+        $this->app->singleton('field_constraint', function() {
             return static::generateConstraintManager();
         });
 
-        $this->app->singleton('Operator', function() {
+        $this->app->singleton('operator', function() {
             return static::generateOperatorManager();
         });
 
-        $this->app->singleton('Meta', function() {
-            return static::generateMetaManager();
+        $this->app->singleton('meta', function() {
+            if (!isset(static::$metaManager)) {
+                return static::generateMetaManager();
+            }
+
+            return static::$metaManager;
         });
 
-        $this->app->singleton('Option', function() {
+        $this->app->singleton('option', function() {
             return static::generateOptionManager();
         });
 
-        $this->app->singleton('Proxy', function() {
+        $this->app->singleton('proxy', function() {
             return static::generateProxyManager();
         });
 
-        $this->app->singleton('Type', function() {
+        $this->app->singleton('type', function() {
             return static::generateTypeManager();
         });
     }
@@ -106,7 +118,7 @@ class LaramoreProvider extends ServiceProvider
         }
 
         $this->publishes($toPublish);
-     
+
         Meta::setPrepared();
     }
 
@@ -130,7 +142,7 @@ class LaramoreProvider extends ServiceProvider
         $class = config('option.manager');
 
         $manager = new $class();
-        $manager->set(static::getOperatorDefaults());
+        $manager->set(static::getOptionDefaults());
         $manager->define('adds', []);
         $manager->define('removes', []);
 
@@ -217,11 +229,10 @@ class LaramoreProvider extends ServiceProvider
     {
         $class = config('meta.manager');
 
-        $manager = new $class(static::getMetaDefaults());
+        static::$metaManager = new $class(static::getMetaDefaults());
+        static::$metaManager->setPreparing();
 
-        $manager->setPreparing();
-
-        return $manager;
+        return static::$metaManager;
     }
 
     /**
@@ -324,13 +335,13 @@ class LaramoreProvider extends ServiceProvider
      *
      * @return void
      */
-    public function lockManager()
+    public function lockManagers()
     {
         Option::lock();
         Operator::lock();
         Type::lock();
-        Proxy::lock();
         Meta::lock();
+        Proxy::lock();
         FieldConstraint::lock();
     }
 }

@@ -87,4 +87,21 @@ interface LaramoreMeta extends Prepared, FieldsOwner
      * @return self
      */
     public function unique($constrainted, string $name=null);
+    
+    /**
+     * Add default timestamp fields.
+     *
+     * @param boolean $autoUpdated
+     * @return self
+     */
+    public function useTimestamps(bool $autoUpdated=false);
+
+    /**
+     * Add default soft delete field.
+     *
+     * @param boolean $useTimestamps
+     * @param boolean $autoUpdated
+     * @return self
+     */
+    public function useDeleteTimestamp(bool $useTimestamps=false, bool $autoUpdated=false);
 }
