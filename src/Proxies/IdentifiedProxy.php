@@ -11,7 +11,6 @@
 namespace Laramore\Proxies;
 
 use Illuminate\Support\Str;
-use Illuminate\Container\Container;
 
 class IdentifiedProxy extends Proxy
 {
@@ -42,13 +41,11 @@ class IdentifiedProxy extends Proxy
     public function __construct(string $identifier, string $methodName, bool $static=false, bool $allowMulti=true,
                                 string $nameTemplate=null, string $multiNameTemplate=null)
     {
-        $config = Container::getInstance()->config;
-
         $this->setIdentifier($identifier);
         $this->setMethodName($methodName);
 
-        $nameTemplate = $nameTemplate ?: $config->get('proxy.templates.name');
-        $multiNameTemplate = $multiNameTemplate ?: $config->get('proxy.templates.multi_name');
+        $nameTemplate = $nameTemplate ?: config('proxy.templates.name');
+        $multiNameTemplate = $multiNameTemplate ?: config('proxy.templates.multi_name');
 
         parent::__construct($this->parseName($nameTemplate), $methodName, $static, $allowMulti);
 

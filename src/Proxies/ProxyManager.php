@@ -10,7 +10,6 @@
 
 namespace Laramore\Proxies;
 
-use Illuminate\Container\Container;
 use Illuminate\Support\Arr;
 use Laramore\Contracts\{
     Manager\LaramoreManager, Configured, Proxied
@@ -85,7 +84,7 @@ class ProxyManager extends BaseManager implements LaramoreManager, Configured
      */
     public function getConfig(string $path=null, $default=null)
     {
-        return Container::getInstance()->config->get($this->getConfigPath($path), $default);
+        return config($this->getConfigPath($path), $default);
     }
 
     /**

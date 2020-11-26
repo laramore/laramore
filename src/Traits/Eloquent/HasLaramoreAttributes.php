@@ -35,7 +35,7 @@ trait HasLaramoreAttributes
      *
      * @return void
      */
-    protected function updateTimestamps()
+    public function updateTimestamps()
     {
         $time = $this->freshTimestamp();
 

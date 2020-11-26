@@ -10,7 +10,6 @@
 
 namespace Laramore\Proxies;
 
-use Illuminate\Container\Container;
 use Laramore\Contracts\Configured;
 use Laramore\Observers\{
     BaseHandler, BaseObserver

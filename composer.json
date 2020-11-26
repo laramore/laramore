@@ -52,19 +52,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Laramore\\Providers\\BaseProvider",
-                "Laramore\\Providers\\FieldConstraintProvider",
-                "Laramore\\Providers\\FieldProvider",
-                "Laramore\\Providers\\GrammarTypeProvider",
-                "Laramore\\Providers\\MetaProvider",
-                "Laramore\\Providers\\OperatorProvider",
-                "Laramore\\Providers\\OptionProvider",
-                "Laramore\\Providers\\ProxyProvider",
-                "Laramore\\Providers\\TypeProvider"
+                "Laramore\\Providers\\LaramoreProvider",
             ],
             "aliases": {
                 "FieldConstraint": "Laramore\\Facades\\FieldConstraint",
-                "GrammarType": "Laramore\\Facades\\GrammarType",
                 "Meta": "Laramore\\Facades\\Meta",
                 "Operator": "Laramore\\Facades\\Operator",
                 "Option": "Laramore\\Facades\\Option",
