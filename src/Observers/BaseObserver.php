@@ -127,7 +127,7 @@ abstract class BaseObserver
     {
         $this->needsToBeUnlocked();
 
-        if (!\is_callable($callback) && !is_null($callback)) {
+        if (!\is_callable($callback) && !\is_string($callback) && !is_null($callback)) {
             throw new \Exception('Expecting a valid callable object.');
         }
 
