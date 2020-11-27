@@ -21,10 +21,13 @@ use Laramore\Elements\OperatorElement;
 use Laramore\Facades\{
     FieldConstraint, Operator, Type, Meta, Proxy, Option
 };
+use Laramore\Traits\Provider\MergesConfig;
 use ReflectionNamespace, ReflectionClass;
     
 class LaramoreProvider extends ServiceProvider
 {
+    use MergesConfig;
+
     const CONFIG_TO_MERGE = [
         'meta.php' => 'meta',
         'option.php' => 'option',
