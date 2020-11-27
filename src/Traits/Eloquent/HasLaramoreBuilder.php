@@ -154,7 +154,7 @@ trait HasLaramoreBuilder
 
             if (\count($parts) === 2) {
                 [$table, $attname] = $parts;
-                $meta = Meta::getMetaForTableName($table);
+                $meta = Meta::getForTableName($table);
                 $model = $meta->getModelClass();
             } else {
                 $attname = $key;
@@ -186,7 +186,7 @@ trait HasLaramoreBuilder
         if (\count($parts) === 2) {
             [$table, $attname] = $parts;
 
-            $meta = Meta::getMetaForTableName($table);
+            $meta = Meta::getForTableName($table);
         } else {
             $meta = $this->getModel()::getMeta();
         }

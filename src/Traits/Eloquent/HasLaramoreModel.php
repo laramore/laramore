@@ -51,12 +51,6 @@ trait HasLaramoreModel
     {
         $this->exists = $this->fetchingDatabase = $fetchingDatabase;
 
-        if (\version_compare(app()::VERSION, '5.7.0', '<')) {
-            $this->bootIfNotBooted();
-
-            $this->initializeHasLaramore();
-        }
-
         parent::__construct($attributes);
     }
 
@@ -66,7 +60,7 @@ trait HasLaramoreModel
      *
      * @return void
      */
-    protected function initializeHasLaramore()
+    protected function initializeHasLaramoreModel()
     {
         $meta = static::getMeta();
 
