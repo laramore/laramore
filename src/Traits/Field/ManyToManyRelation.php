@@ -16,6 +16,7 @@ use Laramore\Facades\Operator;
 use Laramore\Contracts\{
     Field\AttributeField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder, Eloquent\LaramoreCollection
 };
+use Laramore\Facades\Option;
 
 trait ManyToManyRelation
 {
@@ -36,6 +37,22 @@ trait ManyToManyRelation
     public function getReversedPivotName()
     {
         return $this->getReversedField()->getPivotName();
+    }
+
+    /**
+     * Required option is not available for M2M relations.
+     *
+     * @return void
+     */
+    protected function checkOptions()
+    {
+        parent::checkOptions();
+
+        $name = $this->getQualifiedName();
+
+        if ($this->hasOption(Option::required())) {
+            throw new \LogicException("The field `$name` cannot be required as it is a m2m relation");
+        }
     }
 
     /**

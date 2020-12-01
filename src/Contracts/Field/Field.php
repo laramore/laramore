@@ -14,20 +14,11 @@ use Illuminate\Support\Collection;
 use Laramore\Contracts\{
     Locked, Owned, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder
 };
-use Laramore\Elements\{
-    TypeElement, OperatorElement
-};
+use Laramore\Elements\OperatorElement;
 use Laramore\Fields\Constraint\FieldConstraintHandler;
 
 interface Field extends Locked, Owned
 {
-    /**
-     * Return the type object of the field.
-     *
-     * @return TypeElement
-     */
-    public function getType(): TypeElement;
-
     /**
      * Return the native value of this field.
      * Commonly, its name.

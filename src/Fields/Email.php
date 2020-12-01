@@ -25,6 +25,13 @@ class Email extends Char implements PatternField, FixableField
     protected $allowedDomains;
 
     /**
+     * All patterns defined for this field.
+     *
+     * @var array
+     */
+    protected $patterns;
+
+    /**
      * Define the allowed domains.
      *
      * @param array $allowedDomains
@@ -35,7 +42,7 @@ class Email extends Char implements PatternField, FixableField
         $this->needsToBeUnlocked();
 
         foreach ($allowedDomains as $allowedDomain) {
-            if (!\preg_match($this->getConfig('patterns.domain'), $allowedDomain)) {
+            if (!\preg_match($this->patterns['domain'], $allowedDomain)) {
                 throw new \Exception("`$allowedDomain` is not a right domain");
             }
         }
@@ -64,7 +71,7 @@ class Email extends Char implements PatternField, FixableField
      */
     public function getUsernamePattern(): string
     {
-        return $this->getConfig('patterns.username');
+        return $this->patterns['username'];
     }
 
     /**
@@ -74,7 +81,7 @@ class Email extends Char implements PatternField, FixableField
      */
     public function getDomainPattern(): string
     {
-        return $this->getConfig('patterns.domain');
+        return $this->patterns['domain'];
     }
 
     /**
@@ -84,7 +91,7 @@ class Email extends Char implements PatternField, FixableField
      */
     public function getPattern(): string
     {
-        return $this->getConfig('patterns.email');
+        return $this->patterns['email'];
     }
 
     /**
@@ -94,7 +101,7 @@ class Email extends Char implements PatternField, FixableField
      */
     public function getPatternFlags()
     {
-        return $this->getConfig('patterns.flags');
+        return $this->patterns['flags'];
     }
 
     /**
@@ -164,6 +171,6 @@ class Email extends Char implements PatternField, FixableField
             return $value;
         }
 
-        return $value.$this->getConfig('patterns.separator').$this->getMainDomain();
+        return $value.$this->patterns['separator'].$this->getMainDomain();
     }
 }

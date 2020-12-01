@@ -13,12 +13,9 @@ namespace Laramore\Fields;
 use Illuminate\Support\{
     Arr, Str, Facades\Event
 };
-use Laramore\Elements\TypeElement;
-use Laramore\Facades\{
-    Option, Type
-};
+use Laramore\Facades\Option;
 use Laramore\Contracts\{
-    Eloquent\LaramoreMeta, Field\Field, Configured
+    Eloquent\LaramoreMeta, Field\Field
 };
 use Laramore\Contracts\Field\{
     RelationField, ExtraField
@@ -27,9 +24,8 @@ use Laramore\Traits\{
     IsOwned, IsLocked, HasProperties, HasOptions, HasLockedMacros
 };
 use Laramore\Fields\Constraint\FieldConstraintHandler;
-use Laramore\Exceptions\ConfigException;
 
-abstract class BaseField implements Field, Configured
+abstract class BaseField implements Field
 {
     use IsOwned, IsLocked, HasLockedMacros, HasProperties, HasOptions {
         ownedBy as protected ownedByFromTrait;
@@ -70,10 +66,8 @@ abstract class BaseField implements Field, Configured
      */
     protected function __construct(array $properties=[])
     {
-        $this->addOptions($this->getType()->getDefaultOptions());
-
         $this->initProperties(\array_merge(
-            $this->getConfig(),
+            config('field.configurations.'.static::class, []),
             $properties
         ));
 
@@ -102,29 +96,6 @@ abstract class BaseField implements Field, Configured
     }
 
     /**
-     * Return the configuration path for this field.
-     *
-     * @param string $path
-     * @return mixed
-     */
-    public function getConfigPath(string $path=null)
-    {
-        return 'field.configurations.'.static::class.(\is_null($path) ? '' : '.'.$path);
-    }
-
-    /**
-     * Return the configuration for this field.
-     *
-     * @param string $path
-     * @param mixed  $default
-     * @return mixed
-     */
-    public function getConfig(string $path=null, $default=null)
-    {
-        return config($this->getConfigPath($path), $default);
-    }
-
-    /**
      * Define all options for this field.
      *
      * @param array $options
@@ -141,32 +112,6 @@ abstract class BaseField implements Field, Configured
     }
 
     /**
-     * Return the type derived of this field.
-     *
-     * @return TypeElement
-     */
-    protected function resolveType(): TypeElement
-    {
-        $type = $this->getConfig('type');
-
-        if (\is_null($type)) {
-            throw new ConfigException($this->getConfigPath('type'), \array_keys(Type::all()), null);
-        }
-
-        return Type::get($type);
-    }
-
-    /**
-     * Return the type object of the field.
-     *
-     * @return TypeElement
-     */
-    public function getType(): TypeElement
-    {
-        return $this->resolveType();
-    }
-
-    /**
      * Return a property by its name.
      *
      * @param  string $key
@@ -175,9 +120,7 @@ abstract class BaseField implements Field, Configured
      */
     public function getProperty(string $key)
     {
-        if ($key === 'type') {
-            return \call_user_func([$this, 'getType']);
-        } else if ($key === 'native' || $key === 'attname') {
+        if ($key === 'native' || $key === 'attname') {
             return \call_user_func([$this, 'getNative']);
         } else if ($key === 'reversed' && \method_exists($this, 'getReversed')) {
             return \call_user_func([$this, 'getReversed']);
@@ -509,8 +452,8 @@ abstract class BaseField implements Field, Configured
     {
         $proxyHandler = $this->getMeta()->getProxyHandler();
 
-        $class = $this->getConfig('proxy.class') ?: config('field.proxy.class');
-        $proxies = \array_merge(config('field.proxy.configurations'), $this->getConfig('proxy.configurations', []));
+        $class = Arr::get($this->properties, 'proxy.class', config('field.proxy.class'));
+        $proxies = \array_merge(config('field.proxy.configurations'), Arr::get($this->properties, 'proxy.configurations', []));
 
         foreach ($proxies as $methodName => $data) {
             if (\is_null($data)) {

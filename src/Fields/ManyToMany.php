@@ -65,6 +65,13 @@ class ManyToMany extends BaseComposed implements ManyRelationField
     protected $pivotClass;
 
     /**
+     * Pivot namespace.
+     *
+     * @var string
+     */
+    protected $pivotNamespace;
+
+    /**
      * Unique relation.
      *
      * @var bool
@@ -205,7 +212,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
         $offMeta = $this->getMeta();
         $offName = Str::snake($offMeta->getModelClassName());
         $onName = Str::snake(Str::singular($this->getName()));
-        $namespaceName = $this->getConfig('pivot_namespace');
+        $namespaceName = $this->pivotNamespace;
         $pivotClassName = ucfirst($offName).ucfirst($onName);
         $pivotClass = "$namespaceName\\$pivotClassName";
 

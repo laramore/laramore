@@ -63,6 +63,17 @@ class ElementManager
     }
 
     /**
+     * Indicate if an element exists with the given name.
+     *
+     * @param  string $name
+     * @return boolean
+     */
+    public function hasNative(string $name): bool
+    {
+        return \array_key_exists($name, $this->elements);
+    }
+
+    /**
      * Return the first existant element with the given native value.
      *
      * @param  string $native

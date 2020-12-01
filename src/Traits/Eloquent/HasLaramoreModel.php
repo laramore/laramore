@@ -309,6 +309,16 @@ trait HasLaramoreModel
     }
 
     /**
+     * Begin querying the model.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function query()
+    {
+        return (new static([], true))->newQuery();
+    }
+
+    /**
      * Create a new Eloquent query builder for the model.
      * Override the original method.
      *

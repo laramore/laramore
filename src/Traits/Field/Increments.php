@@ -15,6 +15,13 @@ use Laramore\Contracts\Eloquent\LaramoreModel;
 trait Increments
 {
     /**
+     * Incremental step.
+     *
+     * @var integer|float
+     */
+    protected $step;
+
+    /**
      * IncrementField the attribute value by the desired number (1 by default).
      *
      * @param LaramoreModel $model
@@ -24,7 +31,7 @@ trait Increments
      */
     public function increment(LaramoreModel $model, $value, $increment=null)
     {
-        return $model->setAttribute($this->getName(), ($value + $increment ?? $this->getConfig('step')));
+        return $model->setAttribute($this->getName(), ($value + $increment ?? $this->step));
     }
 
     /**
@@ -37,6 +44,6 @@ trait Increments
      */
     public function decrement(LaramoreModel $model, $value, $decrement=null)
     {
-        return $this->increment($model, $value, (-$decrement ?? $this->getConfig('step')));
+        return $this->increment($model, $value, (-$decrement ?? $this->step));
     }
 }

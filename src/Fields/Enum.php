@@ -41,8 +41,8 @@ class Enum extends BaseAttribute
     {
         parent::setProxies();
 
-        $class = $this->getConfig('elements.proxy.class', $this->getConfig('proxy.class', config('field.proxy.class')));
-        $proxies = $this->getConfig('elements.proxy.configurations', []);
+        $class = Arr::get($this->elementsProxy, 'class', Arr::get($this->proxy, 'class', config('field.proxy.class')));
+        $proxies = Arr::get($this->elementsProxy, 'configurations', []);
 
         $proxyHandler = $this->getMeta()->getProxyHandler();
         $elements = $this->getElements()->all();
@@ -213,7 +213,7 @@ class Enum extends BaseAttribute
             return $value;
         }
 
-        return $value->native;
+        return $value->name;
     }
 
     /**
@@ -224,11 +224,11 @@ class Enum extends BaseAttribute
      */
     public function hydrate($value)
     {
-        if (\is_null($value)) {
+        if (\is_null($value) || ($value instanceof EnumElement)) {
             return $value;
         }
-
-        return $this->findElement($value);
+        
+        return $this->getElement($value);
     }
 
     /**

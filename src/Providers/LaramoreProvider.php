@@ -19,7 +19,7 @@ use Laramore\Contracts\{
 };
 use Laramore\Elements\OperatorElement;
 use Laramore\Facades\{
-    FieldConstraint, Operator, Type, Meta, Proxy, Option
+    FieldConstraint, Operator, Meta, Proxy, Option
 };
 use Laramore\Traits\Provider\MergesConfig;
 use ReflectionNamespace, ReflectionClass;
@@ -32,7 +32,6 @@ class LaramoreProvider extends ServiceProvider
         'meta.php' => 'meta',
         'option.php' => 'option',
         'operator.php' => 'operator',
-        'type.php' => 'type',
         'field.php' => 'field',
         'field/constraint.php' => 'field.constraint',
         'field/proxy.php' => 'field.proxy',
@@ -43,7 +42,6 @@ class LaramoreProvider extends ServiceProvider
         'meta.php',
         'option.php',
         'operator.php',
-        'type.php',
         'field.php',
         'field/constraint.php',
         'field/proxy.php',
@@ -101,10 +99,6 @@ class LaramoreProvider extends ServiceProvider
         $this->app->singleton('proxy', function() {
             return static::generateProxyManager();
         });
-
-        $this->app->singleton('type', function() {
-            return static::generateTypeManager();
-        });
     }
 
     /**
@@ -148,32 +142,6 @@ class LaramoreProvider extends ServiceProvider
         $manager->set(static::getOptionDefaults());
         $manager->define('adds', []);
         $manager->define('removes', []);
-
-        return $manager;
-    }
-
-    /**
-     * Return the default values for the manager of this provider.
-     *
-     * @return array
-     */
-    public static function getTypeDefaults(): array
-    {
-        return \array_filter(config('type.configurations'));
-    }
-
-    /**
-     * Generate the corresponded manager.
-     *
-     * @return LaramoreManager
-     */
-    public static function generateTypeManager(): LaramoreManager
-    {
-        $class = config('type.manager');
-
-        $manager = new $class();
-        $manager->set(static::getTypeDefaults());
-        $manager->define('default_options', ['visible', 'fillable', 'required']);
 
         return $manager;
     }
@@ -281,7 +249,7 @@ class LaramoreProvider extends ServiceProvider
 
         $manager = new $class();
         $manager->set(static::getOperatorDefaults());
-        $manager->define('value_type', OperatorElement::MIXED_TYPE);
+        $manager->define('value_Field', OperatorElement::MIXED_TYPE);
         $manager->define('fallback', '=');
 
         return $manager;
@@ -342,7 +310,6 @@ class LaramoreProvider extends ServiceProvider
     {
         Option::lock();
         Operator::lock();
-        Type::lock();
         Meta::lock();
         Proxy::lock();
         FieldConstraint::lock();

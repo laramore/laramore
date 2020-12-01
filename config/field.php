@@ -33,7 +33,9 @@ return [
 
     'configurations' => [
         Reversed\BelongsToMany::class => [
-            'type' => 'reversed_relation',
+            'options' => [
+                'visible', 'fillable',
+            ],
             'proxy' => [
                 'configurations' => [
                     'retrieve' => [],
@@ -49,7 +51,9 @@ return [
             ],
         ],
         Binary::class => [
-            'type' => 'binary',
+            'options' => [
+                'fillable', 'required',
+            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -68,7 +72,9 @@ return [
             ],
         ],
         Boolean::class => [
-            'type' => 'boolean',
+            'options' => [
+                'visible', 'fillable', 'required',
+            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -89,7 +95,9 @@ return [
             ],
         ],
         Char::class => [
-            'type' => 'char',
+            'options' => [
+                'visible', 'fillable', 'required',
+            ],
             'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
             'proxy' => [
                 'configurations' => [
@@ -106,8 +114,10 @@ return [
             ],
         ],
         DateTime::class => [
-            'type' => 'date_time',
             'format' => 'Y-m-d H:i:s',
+            'options' => [
+                'visible', 'fillable', 'required',
+            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -122,15 +132,10 @@ return [
             ],
         ],
         Decimal::class => [
-            'type' => 'decimal',
             'total_digits' => 8,
             'decimal_digits' => 2,
-            'types' =>  [
-                'big' => 'big_decimal',
-                'small' => 'small_decimal',
-                'unsigned' => 'unsigned_decimal',
-                'big_unsigned' => 'big_unsigned_decimal',
-                'small_unsigned' => 'small_unsigned_decimal',
+            'options' => [
+                'visible', 'fillable', 'required',
             ],
             'proxy' => [
                 'configurations' => [
@@ -146,7 +151,6 @@ return [
             ],
         ],
         Email::class => [
-            'type' => 'email',
             'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
             'proxy' => [
                 'configurations' => [
@@ -170,17 +174,17 @@ return [
             ],
         ],
         Enum::class => [
-            'type' => 'enum',
-            'elements' => [
-                'proxy' => [
-                    'class' => \Laramore\Proxies\EnumProxy::class,
-                    'configurations' => [
-                        'is' => [
-                            'templates' => [
-                                'name' => '-{methodname}-^{elementname}',
-                            ],
-                            'needs_value' => true,
-                        ]
+            'options' => [
+                'visible', 'fillable', 'required',
+            ],
+            'elements_proxy' => [
+                'class' => \Laramore\Proxies\EnumProxy::class,
+                'configurations' => [
+                    'is' => [
+                        'templates' => [
+                            'name' => '-{methodname}-^{elementname}',
+                        ],
+                        'needs_value' => true,
                     ],
                 ],
             ],
@@ -214,7 +218,9 @@ return [
             ],
         ],
         Reversed\HasMany::class => [
-            'type' => 'reversed_relation',
+            'options' => [
+                'visible', 'fillable',
+            ],
             'proxy' => [
                 'configurations' => [
                     'retrieve' => [],
@@ -230,7 +236,9 @@ return [
             ],
         ],
         Reversed\HasOne::class => [
-            'type' => 'reversed_relation',
+            'options' => [
+                'visible', 'fillable',
+            ],
             'proxy' => [
                 'configurations' => [
                     'retrieve' => [],
@@ -246,7 +254,6 @@ return [
             ],
         ],
         Increment::class => [
-            'type' => 'increment',
             'step' => 1,
             'proxy' => [
                 'configurations' => [
@@ -264,13 +271,8 @@ return [
             ],
         ],
         Integer::class => [
-            'type' => 'integer',
-            'types' =>  [
-                'big' => 'big_integer',
-                'small' => 'small_integer',
-                'unsigned' => 'unsigned_integer',
-                'big_unsigned' => 'big_unsigned_integer',
-                'small_unsigned' => 'small_unsigned_integer',
+            'options' => [
+                'visible', 'fillable', 'required',
             ],
             'proxy' => [
                 'configurations' => [
@@ -286,7 +288,9 @@ return [
             ],
         ],
         Json::class => [
-            'type' => 'json',
+            'options' => [
+                'visible', 'fillable', 'required',
+            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -301,7 +305,9 @@ return [
             ],
         ],
         ManyToMany::class => [
-            'type' => 'relation',
+            'options' => [
+                'visible', 'fillable',
+            ],
             'pivot_namespace' => 'App\\Pivots',
             'fields' => [
                 'reversed' => Reversed\BelongsToMany::class,
@@ -323,10 +329,12 @@ return [
             ],
         ],
         ManyToOne::class => [
-            'type' => 'relation',
             'fields' => [
                 'id' => Integer::class,
                 'reversed' => Reversed\HasMany::class,
+            ],
+            'options' => [
+                'visible', 'fillable', 'required',
             ],
             'templates' => [
                 'id' => '${name}_${identifier}',
@@ -348,10 +356,12 @@ return [
             ],
         ],
         OneToOne::class => [
-            'type' => 'relation',
             'fields' => [
                 'id' => UniqueId::class,
                 'reversed' => Reversed\HasOne::class,
+            ],
+            'options' => [
+                'visible', 'fillable', 'required',
             ],
             'templates' => [
                 'id' => '${name}_${identifier}',
@@ -373,9 +383,11 @@ return [
             ],
         ],
         Password::class => [
-            'type' => 'password',
             'max_length' => 60, // Length required for hashs.
             'min_length' => 8, // Min length of any password.
+            'options' => [
+                'fillable', 'required', 'need_lowercase', 'need_uppercase', 'need_number'
+            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -405,7 +417,9 @@ return [
             ]
         ],
         PrimaryId::class => [
-            'type' => 'primary_id',
+            'options' => [
+                'visible', 'fillable', 'required',
+            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -420,14 +434,6 @@ return [
             ],
         ],
         UniqueId::class => [
-            'type' => 'integer',
-            'types' =>  [
-                'big' => 'big_integer',
-                'small' => 'small_integer',
-                'unsigned' => 'unsigned_integer',
-                'big_unsigned' => 'big_unsigned_integer',
-                'small_unsigned' => 'small_unsigned_integer',
-            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -442,7 +448,9 @@ return [
             ],
         ],
         Text::class => [
-            'type' => 'text',
+            'options' => [
+                'visible', 'fillable', 'required', 'not_blank',
+            ],
             'proxy' => [
                 'configurations' => [
                     'dry' => [
@@ -457,7 +465,6 @@ return [
             ],
         ],
         Timestamp::class => [
-            'type' => 'timestamp',
             'format' => 'timestamp',
             'proxy' => [
                 'configurations' => [
@@ -473,7 +480,6 @@ return [
             ],
         ],
         Uri::class => [
-            'type' => 'uri',
             'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
             'proxy' => [
                 'configurations' => [
@@ -485,7 +491,6 @@ return [
                         'static' => true,
                         'allow_multi' => false,
                     ],
-                    'fix' => [],
                 ],
             ],
             'patterns' => [

@@ -138,8 +138,8 @@ class HasMany extends BaseField implements ManyRelationField
         }
 
         $modelClass = $this->getTargetModel();
-
-        $foreignField = $this->getTargetAttribute()->getAttribute();
+        dd($this->getTarget()->getAttribute());
+        $foreignField = $this->getTarget()->getAttribute();
         $foreignAttname = $foreignField->getNative();
 
         $primaryField = $modelClass::getMeta()->getPrimary()->getAttribute();

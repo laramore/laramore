@@ -25,6 +25,13 @@ class Uri extends Char implements PatternField, FixableField
     protected $allowedProtocols;
 
     /**
+     * All patterns defined for this field.
+     *
+     * @var array
+     */
+    protected $patterns;
+
+    /**
      * Define the allowed protocols.
      *
      * @param array $allowedProtocols
@@ -35,7 +42,7 @@ class Uri extends Char implements PatternField, FixableField
         $this->needsToBeUnlocked();
 
         foreach ($allowedProtocols as $allowedProtocol) {
-            if (!\preg_match($this->getConfig('patterns.protocol'), $allowedProtocol)) {
+            if (!\preg_match($this->patterns['protocol'], $allowedProtocol)) {
                 throw new \Exception("`$allowedProtocol` is not a right protocol");
             }
         }
@@ -64,7 +71,7 @@ class Uri extends Char implements PatternField, FixableField
      */
     public function getProtocolPattern(): string
     {
-        return $this->getConfig('patterns.protocol');
+        return $this->patterns['protocol'];
     }
 
     /**
@@ -74,7 +81,7 @@ class Uri extends Char implements PatternField, FixableField
      */
     public function getIdentifierPattern(): string
     {
-        return $this->getConfig('patterns.identifier');
+        return $this->patterns['identifier'];
     }
 
     /**
@@ -84,7 +91,7 @@ class Uri extends Char implements PatternField, FixableField
      */
     public function getPattern(): string
     {
-        return $this->getConfig('patterns.uri');
+        return $this->patterns['uri'];
     }
 
     /**
@@ -94,7 +101,7 @@ class Uri extends Char implements PatternField, FixableField
      */
     public function getPatternFlags()
     {
-        return $this->getConfig('patterns.flags');
+        return $this->patterns['flags'];
     }
 
     /**

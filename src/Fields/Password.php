@@ -16,7 +16,19 @@ use Laramore\Contracts\Field\PatternField;
 
 class Password extends Char implements PatternField
 {
+    /**
+     * Min length for a password.
+     *
+     * @var int
+     */
     protected $minLength;
+
+    /**
+     * All patterns defined for this field.
+     *
+     * @var array
+     */
+    protected $patterns;
 
     /**
      * Return the pattern to match.
@@ -46,27 +58,26 @@ class Password extends Char implements PatternField
     protected function getRegexOptions(): array
     {
         $options = [];
-        $patterns = $this->getConfig('patterns');
 
         if (!\is_null($this->minLength) || !\is_null($this->maxLength)) {
             $lengths = [$this->minLength ?: '', $this->maxLength ?: ''];
-            $options[] = str_replace(['$min', '$max'], $lengths, $patterns['min_max_part']);
+            $options[] = str_replace(['$min', '$max'], $lengths, $this->patterns['min_max_part']);
         }
 
         if ($this->hasOption(Option::needLowercase())) {
-            $options[] = $patterns['one_lowercase_part'];
+            $options[] = $this->patterns['one_lowercase_part'];
         }
 
         if ($this->hasOption(Option::needUppercase())) {
-            $options[] = $patterns['one_uppercase_part'];
+            $options[] = $this->patterns['one_uppercase_part'];
         }
 
         if ($this->hasOption(Option::needNumber())) {
-            $options[] = $patterns['one_number_part'];
+            $options[] = $this->patterns['one_number_part'];
         }
 
         if ($this->hasOption(Option::needSpecial())) {
-            $options[] = $patterns['one_special_part'];
+            $options[] = $this->patterns['one_special_part'];
         }
 
         return $options;

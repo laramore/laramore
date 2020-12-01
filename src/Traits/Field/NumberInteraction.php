@@ -10,37 +10,10 @@
 
 namespace Laramore\Traits\Field;
 
-use Laramore\Elements\TypeElement;
-use Laramore\Facades\{
-    Option, Type
-};
+use Laramore\Facades\Option;
 
 trait NumberInteraction
 {
-    /**
-     * Return the type of the field.
-     *
-     * @return TypeElement
-     */
-    public function getType(): TypeElement
-    {
-        if ($this->hasOption(Option::unsigned())) {
-            if ($this->hasOption(Option::bigNumber())) {
-                return Type::get($this->getConfig('types.big_unsigned'));
-            } else if ($this->hasOption(Option::smallNumber())) {
-                return Type::get($this->getConfig('types.small_unsigned'));
-            }
-
-            return Type::get($this->getConfig('types.unsigned'));
-        } else if ($this->hasOption(Option::bigNumber())) {
-            return Type::get($this->getConfig('types.big'));
-        } else if ($this->hasOption(Option::smallNumber())) {
-            return Type::get($this->getConfig('types.small'));
-        }
-
-        return $this->resolveType();
-    }
-
     /**
      * Force the value to be unsigned or not, positive or not.
      *
