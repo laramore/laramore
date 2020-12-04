@@ -15,6 +15,34 @@ use Laramore\Facades\Option;
 trait NumberInteraction
 {
     /**
+     * Indicate that this field has a big number.
+     *
+     * @return self
+     */
+    public function big()
+    {
+        $this->needsToBeUnlocked();
+
+        $this->addOption(Option::bigNumber());
+
+        return $this;
+    }
+
+    /**
+     * Indicate that this field has a small number.
+     *
+     * @return self
+     */
+    public function small()
+    {
+        $this->needsToBeUnlocked();
+
+        $this->addOption(Option::smallNumber());
+
+        return $this;
+    }
+    
+    /**
      * Force the value to be unsigned or not, positive or not.
      *
      * @param boolean $unsigned

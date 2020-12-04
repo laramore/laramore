@@ -10,9 +10,11 @@
 
 namespace Laramore\Fields;
 
+use Laramore\Contracts\Field\NumericField;
 use Laramore\Traits\Field\NumberInteraction;
 
-class Decimal extends BaseAttribute
+
+class Decimal extends BaseAttribute implements NumericField
 {
     use NumberInteraction;
 
