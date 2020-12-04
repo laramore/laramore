@@ -202,7 +202,9 @@ trait HasLaramoreBuilder
      */
     public function insertGetId($values)
     {
+        $this->getModel()->fetchingDatabase = true;
         $this->getModel()->fill($values);
+        $this->getModel()->fetchingDatabase = false;
 
         return $this->toBase()->insertGetId($this->dryValues($this->getModel()->getAttributes()));
     }
