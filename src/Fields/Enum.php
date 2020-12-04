@@ -174,7 +174,13 @@ class Enum extends BaseAttribute
      */
     public function getDefaultValue()
     {
-        return $this->getDefault()->name;
+        $default = $this->getDefault();
+
+        if ($default instanceof EnumElement) {
+            return $default->name;
+        }
+
+        return $default;
     }
 
     /**

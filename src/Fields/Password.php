@@ -93,7 +93,7 @@ class Password extends Char implements PatternField
     {
         $value = parent::cast($value);
 
-        if (\is_null($value)) {
+        if (\is_null($value) || !Hash::needsRehash($value)) {
             return $value;
         }
 
