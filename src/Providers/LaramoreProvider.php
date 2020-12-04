@@ -33,6 +33,7 @@ class LaramoreProvider extends ServiceProvider
         'option.php' => 'option',
         'operator.php' => 'operator',
         'field.php' => 'field',
+        'field/properties.php' => 'field.properties',
         'field/constraint.php' => 'field.constraint',
         'field/proxy.php' => 'field.proxy',
         'proxy.php' => 'proxy',
@@ -42,7 +43,7 @@ class LaramoreProvider extends ServiceProvider
         'meta.php',
         'option.php',
         'operator.php',
-        'field.php',
+        'field/properties.php',
         'field/constraint.php',
         'field/proxy.php',
         'proxy.php',
@@ -249,7 +250,7 @@ class LaramoreProvider extends ServiceProvider
 
         $manager = new $class();
         $manager->set(static::getOperatorDefaults());
-        $manager->define('value_Field', OperatorElement::MIXED_TYPE);
+        $manager->define('value_type', OperatorElement::MIXED_TYPE);
         $manager->define('fallback', '=');
 
         return $manager;
