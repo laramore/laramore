@@ -10,6 +10,7 @@
 
 namespace Laramore\Fields;
 
+use Closure;
 use Illuminate\Support\{
     Arr, Str, Facades\Event
 };
@@ -20,6 +21,7 @@ use Laramore\Contracts\{
 use Laramore\Contracts\Field\{
     RelationField, ExtraField
 };
+use Laramore\Elements\Element;
 use Laramore\Traits\{
     IsOwned, IsLocked, HasProperties, HasOptions, HasLockedMacros
 };
@@ -67,7 +69,7 @@ abstract class BaseField implements Field
     protected function __construct(array $properties=[])
     {
         $this->initProperties(\array_merge(
-            config('field.configurations.'.static::class, []),
+            config('field.properties.'.static::class, []),
             $properties
         ));
 
@@ -240,7 +242,9 @@ abstract class BaseField implements Field
             $this->addOption(Option::nullable());
         }
 
-        $this->defineProperty('default', $this->cast($value));
+        $this->defineProperty('default', 
+            \is_callable($value) && !\is_string($value) ? $value : $this->cast($value)
+        );
 
         return $this;
     }
@@ -256,10 +260,12 @@ abstract class BaseField implements Field
 
         if (\is_object($value)) {
             return clone $value;
-        }
+        } else if (\is_callable($value) && !\is_string($value) && !($value instanceof Element)) {
+            if ($value instanceof Closure) {
+                $value = $value->bindTo($this);
+            }
 
-        if (\is_callable($value)) {
-            return $value($this);
+            return $this->cast($value($this));
         }
 
         return $value;

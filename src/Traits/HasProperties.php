@@ -14,8 +14,6 @@ use Illuminate\Support\Str;
 
 trait HasProperties
 {
-    protected $properties = [];
-
     /**
      * Indicate if a property exists.
      *
@@ -45,8 +43,6 @@ trait HasProperties
             }
 
             return $this->$key;
-        } else if (\array_key_exists($key, $this->properties)) {
-            return $this->properties[$key];
         }
     }
 
@@ -106,8 +102,6 @@ trait HasProperties
 
             if (\property_exists($this, $key)) {
                 $this->setProperty($key, $value);
-            } else {
-                $this->properties[$key] = $value;
             }
         }
 
