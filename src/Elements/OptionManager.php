@@ -12,7 +12,33 @@ namespace Laramore\Elements;
 
 use Laramore\Contracts\Manager\LaramoreManager;
 
-class OptionManager extends ElementManager implements LaramoreManager
+
+class OptionManager extends LazyElementManager implements LaramoreManager
 {
+    /**
+     * Option element class.
+     *
+     * @var string
+     */
     protected $elementClass = OptionElement::class;
+
+    /**
+     * Path to load operators.
+     *
+     * @var string
+     */
+    protected $configPath = 'option.properties';
+
+    /**
+     * All option value names.
+     * Default definitions.
+     *
+     * @var array<string>
+     */
+    protected $definitions = [
+        'description' => null,
+        'propagate' => true,
+        'add' => [],
+        'remove' => [],
+    ];
 }
