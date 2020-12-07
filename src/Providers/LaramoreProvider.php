@@ -13,39 +13,31 @@ namespace Laramore\Providers;
 use Illuminate\Support\{
     ServiceProvider, Str
 };
-use Laramore\Exceptions\ConfigException;
-use Laramore\Contracts\{
-    Manager\LaramoreManager, Eloquent\LaramoreModel
-};
-use Laramore\Elements\OperatorElement;
+use Laramore\Elements\OperatorManager;
+use Laramore\Elements\OptionManager;
+use Laramore\Eloquent\MetaManager;
 use Laramore\Facades\{
     FieldConstraint, Operator, Meta, Proxy, Option
 };
+use Laramore\Fields\Constraint\ConstraintManager;
+use Laramore\Proxies\ProxyManager;
 use Laramore\Traits\Provider\MergesConfig;
-use ReflectionNamespace, ReflectionClass;
-    
+
 class LaramoreProvider extends ServiceProvider
 {
     use MergesConfig;
 
     const CONFIG_TO_MERGE = [
-        'meta.php' => 'meta',
-        'option.php' => 'option',
-        'operator.php' => 'operator',
-        'field.php' => 'field',
+        'option/properties.php' => 'option.properties',
+        'operator/properties.php' => 'operator.properties',
         'field/properties.php' => 'field.properties',
-        'field/constraint.php' => 'field.constraint',
-        'field/proxy.php' => 'field.proxy',
         'proxy.php' => 'proxy',
     ];
 
     const CONFIG_TO_PUBLISH = [
-        'meta.php',
-        'option.php',
-        'operator.php',
+        'option/properties.php',
+        'operator/properties.php',
         'field/properties.php',
-        'field/constraint.php',
-        'field/proxy.php',
         'proxy.php',
     ];
 
@@ -75,6 +67,11 @@ class LaramoreProvider extends ServiceProvider
         });
     }
 
+    /**
+     * Define all Laramore singletons.
+     *
+     * @return void
+     */
     public function setSingletons()
     {
         $this->app->singleton('field_constraint', function() {
@@ -87,7 +84,8 @@ class LaramoreProvider extends ServiceProvider
 
         $this->app->singleton('meta', function() {
             if (!isset(static::$metaManager)) {
-                return static::generateMetaManager();
+                return static::generateMetaManager()
+                    ->setPreparing();
             }
 
             return static::$metaManager;
@@ -121,161 +119,57 @@ class LaramoreProvider extends ServiceProvider
     }
 
     /**
-     * Return the default values for the manager of this provider.
+     * Generate option manager.
      *
-     * @return array
+     * @return OptionManager
      */
-    public static function getOptionDefaults(): array
+    public static function generateOptionManager(): OptionManager
     {
-        return \array_filter(config('option.configurations'));
-    }
-
-    /**
-     * Generate the corresponded manager.
-     *
-     * @return LaramoreManager
-     */
-    public static function generateOptionManager(): LaramoreManager
-    {
-        $class = config('option.manager');
-
-        $manager = new $class();
-        $manager->set(static::getOptionDefaults());
-        $manager->define('adds', []);
-        $manager->define('removes', []);
+        $manager = new OptionManager();
 
         return $manager;
     }
 
     /**
-     * Return the default values for the manager of this provider.
+     * Generate meta manager.
      *
-     * @return array
+     * @return MetaManager
      */
-    public static function getMetaDefaults(): array
+    public static function generateMetaManager(): MetaManager
     {
-        $classes = config('meta.configurations');
-
-        switch ($classes) {
-            case 'automatic':
-                $modelClasses = (new ReflectionNamespace(config('meta.models_namespace')))->getClassNames();
-                $modelClasses = \array_filter($modelClasses, function ($class) {
-                    return (new ReflectionClass($class))->implementsInterface(LaramoreModel::class);
-                });
-
-                $pivotClasses = (new ReflectionNamespace(config('meta.pivots_namespace')))->getClassNames();
-                $pivotClasses = \array_filter($pivotClasses, function ($class) {
-                    return (new ReflectionClass($class))->implementsInterface(LaramoreModel::class);
-                });
-
-                $classes = \array_merge($modelClasses, $pivotClasses);
-
-                app('config')->set('meta.configurations', $classes);
-
-                return $classes;
-
-            case 'disabled':
-                app('config')->set('meta.configurations', []);
-
-                return [];
-
-            default:
-                if (\is_array($classes)) {
-                    return $classes;
-                }
-        }
-
-        throw new ConfigException(
-            'meta.configurations',
-            ["'automatic'", "'base'", "'disabled'", 'array of class names'],
-            $classes
-        );
-    }
-
-    /**
-     * Generate the corresponded manager.
-     *
-     * @return LaramoreManager
-     */
-    public static function generateMetaManager(): LaramoreManager
-    {
-        $class = config('meta.manager');
-
-        static::$metaManager = new $class(static::getMetaDefaults());
-        static::$metaManager->setPreparing();
+        static::$metaManager = new MetaManager;
 
         return static::$metaManager;
     }
 
     /**
-     * Return the default values for the manager of this provider.
+     * Generate field constraint manager.
      *
-     * @return array
+     * @return ConstraintManager
      */
-    public static function getConstraintDefaults(): array
+    public static function generateConstraintManager(): ConstraintManager
     {
-        return config('field.constraint.configurations');
+        return new ConstraintManager();
+    }
+
+    /**
+     * Generate operator manager.
+     *
+     * @return OperatorManager
+     */
+    public static function generateOperatorManager(): OperatorManager
+    {
+        return new OperatorManager();
     }
 
     /**
      * Generate the corresponded manager.
      *
-     * @return LaramoreManager
+     * @return ProxyManager
      */
-    public static function generateConstraintManager(): LaramoreManager
+    public static function generateProxyManager(): ProxyManager
     {
-        $class = config('field.constraint.manager');
-
-        return new $class(static::getConstraintDefaults());
-    }
-
-    /**
-     * Return the default values for the manager of this provider.
-     *
-     * @return array
-     */
-    public static function getOperatorDefaults(): array
-    {
-        return \array_filter(config('operator.configurations'));
-    }
-
-    /**
-     * Generate the corresponded manager.
-     *
-     * @return LaramoreManager
-     */
-    public static function generateOperatorManager(): LaramoreManager
-    {
-        $class = config('operator.manager');
-
-        $manager = new $class();
-        $manager->set(static::getOperatorDefaults());
-        $manager->define('value_type', OperatorElement::MIXED_TYPE);
-        $manager->define('fallback', '=');
-
-        return $manager;
-    }
-    
-    /**
-     * Return the default values for the manager of this provider.
-     *
-     * @return array
-     */
-    public static function getProxyDefaults(): array
-    {
-        return config('proxy.configurations');
-    }
-
-    /**
-     * Generate the corresponded manager.
-     *
-     * @return LaramoreManager
-     */
-    public static function generateProxyManager(): LaramoreManager
-    {
-        $class = config('proxy.manager');
-
-        return new $class(static::getProxyDefaults());
+        return new ProxyManager(config('proxy.configurations'));
     }
 
     /**

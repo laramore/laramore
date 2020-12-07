@@ -15,8 +15,10 @@ return [
 
     'class' => \Laramore\Proxies\Proxy::class,
 
+    'field_class' => \Laramore\Proxies\FieldProxy::class,
+
     'multi_class' => \Laramore\Proxies\MultiProxy::class,
-    
+
     'templates' => [
         'name' => '-{methodname}-^{identifier}',
         'multi_name' => '-{methodname}',
