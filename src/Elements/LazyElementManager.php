@@ -42,7 +42,10 @@ abstract class LazyElementManager extends ElementManager
                 throw new ConfigException($path, ['array of values']);
             }
 
+            $lastLockState = $this->locked;
+            $this->locked = false;
             $this->create($name, config($path));
+            $this->locked = $lastLockState;
         }
 
         return $this->elements[$name];

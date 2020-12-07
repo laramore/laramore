@@ -123,6 +123,8 @@ class ElementManager
      */
     public function set($element): self
     {
+        $this->needsToBeUnlocked();
+
         if ($element instanceof $this->elementClass) {
             $name = $element->getName();
 
