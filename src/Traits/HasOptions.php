@@ -22,19 +22,6 @@ trait HasOptions
      */
     protected $options = [];
 
-    public function options(array $options)
-    {
-        $this->needsToBeUnlocked();
-
-        $this->options = [];
-
-        foreach ($options as $option) {
-            $this->addOption($option);
-        }
-
-        return $this;
-    }
-
     /**
      * Indicate if the resource has a option.
      *
@@ -63,11 +50,11 @@ trait HasOptions
         if (!$this->hasOption($option)) {
             $this->options[$option->getName()] = $option;
 
-            foreach ($option->adds as $add) {
+            foreach ($option->add as $add) {
                 $this->addOption($add);
             }
 
-            foreach ($option->removes as $remove) {
+            foreach ($option->remove as $remove) {
                 $this->removeOption($remove);
             }
         }

@@ -41,7 +41,7 @@ class Enum extends BaseAttribute
     {
         parent::setProxies();
 
-        $class = Arr::get($this->elementsProxy, 'class', Arr::get($this->proxy, 'class', config('field.proxy.class')));
+        $class = Arr::get($this->elementsProxy, 'class', Arr::get($this->proxy, 'class', config('proxy.field_class')));
         $proxies = Arr::get($this->elementsProxy, 'configurations', []);
 
         $proxyHandler = $this->getMeta()->getProxyHandler();
@@ -233,7 +233,7 @@ class Enum extends BaseAttribute
         if (\is_null($value) || ($value instanceof EnumElement)) {
             return $value;
         }
-        
+
         return $this->getElement($value);
     }
 

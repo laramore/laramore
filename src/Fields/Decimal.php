@@ -4,7 +4,7 @@
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
- * @copydecimalDigits Copyright (c) 2020
+ * @copyright Copyright (c) 2020
  * @license MIT
  */
 

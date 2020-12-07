@@ -170,7 +170,7 @@ abstract class BaseField implements Field
      */
     public static function parseName(string $name): string
     {
-        return Str::replaceInTemplate(config('field.templates.name'), compact('name'));
+        return Str::replaceInTemplate(config('app.field_templates.name', '_{name}'), compact('name'));
     }
 
     /**
@@ -242,7 +242,7 @@ abstract class BaseField implements Field
             $this->addOption(Option::nullable());
         }
 
-        $this->defineProperty('default', 
+        $this->defineProperty('default',
             \is_callable($value) && !\is_string($value) ? $value : $this->cast($value)
         );
 
@@ -458,8 +458,8 @@ abstract class BaseField implements Field
     {
         $proxyHandler = $this->getMeta()->getProxyHandler();
 
-        $class = Arr::get($this->properties, 'proxy.class', config('field.proxy.class'));
-        $proxies = \array_merge(config('field.proxy.configurations'), Arr::get($this->properties, 'proxy.configurations', []));
+        $class = Arr::get($this->properties, 'proxy.class', config('proxy.field_class'));
+        $proxies = \array_merge(config('proxy.field_configurations'), Arr::get($this->properties, 'proxy.configurations', []));
 
         foreach ($proxies as $methodName => $data) {
             if (\is_null($data)) {

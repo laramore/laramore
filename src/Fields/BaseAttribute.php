@@ -41,7 +41,7 @@ abstract class BaseAttribute extends BaseField implements AttributeField
      */
     public static function parseAttname(string $attname): string
     {
-        return Str::replaceInTemplate(config('field.templates.attname'), compact('attname'));
+        return Str::replaceInTemplate(config('app.field_templates.attname', '_{attname}'), compact('attname'));
     }
 
     /**
