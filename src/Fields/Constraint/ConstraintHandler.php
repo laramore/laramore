@@ -11,7 +11,6 @@
 namespace Laramore\Fields\Constraint;
 
 use Laramore\Contracts\Eloquent\LaramoreModel;
-use Laramore\Contracts\Field\Constraint\Constraint;
 
 
 class ConstraintHandler extends BaseConstraintHandler

@@ -10,16 +10,13 @@
 
 namespace Laramore\Fields\Constraint;
 
-use Illuminate\Support\{
-    Str, Facades\Event
-};
-use Laramore\Contracts\Configured;
+use Illuminate\Support\Facades\Event;
 use Laramore\Contracts\Field\{
     AttributeField, ComposedField, Field, Constraint\Constraint
 };
 use Laramore\Observers\BaseObserver;
 
-abstract class BaseConstraint extends BaseObserver implements Constraint, Configured
+abstract class BaseConstraint extends BaseObserver implements Constraint
 {
     /**
      * An observer needs at least a name.
@@ -103,39 +100,11 @@ abstract class BaseConstraint extends BaseObserver implements Constraint, Config
     }
 
     /**
-     * Return the configuration path for this field.
-     *
-     * @param string $path
-     * @return mixed
-     */
-    public function getConfigPath(string $path=null)
-    {
-        $name = Str::snake((new \ReflectionClass($this))->getShortName());
-
-        return 'field.constraint.configurations.'.$name.(\is_null($path) ? '' : '.'.$path);
-    }
-
-    /**
-     * Return the configuration for this field.
-     *
-     * @param string $path
-     * @param mixed  $default
-     * @return mixed
-     */
-    public function getConfig(string $path=null, $default=null)
-    {
-        return config($this->getConfigPath($path), $default);
-    }
-
-    /**
      * Return the constraint name.
      *
      * @return string
      */
-    public function getConstraintType(): string
-    {
-        return $this->getConfig('type');
-    }
+    abstract public function getConstraintType(): string;
 
     /**
      * Return the default name for this constraint.

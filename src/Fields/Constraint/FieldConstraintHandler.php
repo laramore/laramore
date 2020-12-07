@@ -10,16 +10,13 @@
 
 namespace Laramore\Fields\Constraint;
 
-use Laramore\Contracts\{
-    Owned, Configured
-};
 use Laramore\Contracts\Field\{
     Field, Constraint\Constraint
 };
 use Laramore\Observers\BaseObserver;
 use Laramore\Traits\IsOwned;
 
-class FieldConstraintHandler extends BaseConstraintHandler implements Configured, Owned
+class FieldConstraintHandler extends BaseConstraintHandler
 {
     use IsOwned;
 
@@ -122,26 +119,5 @@ class FieldConstraintHandler extends BaseConstraintHandler implements Configured
                 $this->getOwner()->add($constraint);
             }
         }
-    }
-
-    /**
-     * Create a constraint and add it.
-     *
-     * @param  string|mixed       $type
-     * @param  string             $name
-     * @param  Field|array<Field> $fields
-     * @param  integer            $priority
-     * @param  string             $class
-     * @return BaseConstraint
-     */
-    public function create($type, string $name=null, $fields=[], int $priority=BaseConstraint::MEDIUM_PRIORITY,
-                           string $class=null)
-    {
-        $fields = \is_array($fields) ? $fields : [$fields];
-        $class = $class ?: $this->getConfig('classes.'.$type);
-
-        $this->add($constraint = $class::constraint($fields, $name, $priority));
-
-        return $constraint;
     }
 }

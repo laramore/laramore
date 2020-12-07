@@ -23,6 +23,6 @@ class PrimaryConstraintHandler extends FieldConstraintHandler
     {
         parent::__construct($field);
 
-        $this->create(BaseIndexableConstraint::PRIMARY, null, [$field]);
+        $this->add(Primary::constraint([$field]));
     }
 }

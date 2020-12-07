@@ -16,10 +16,9 @@ use Laramore\Observers\{
 use Laramore\Fields\Constraint\{
     Primary, BaseConstraint
 };
-use Laramore\Contracts\Configured;
 use Laramore\Exceptions\LockException;
 
-abstract class BaseConstraintHandler extends BaseHandler implements Configured
+abstract class BaseConstraintHandler extends BaseHandler
 {
     /**
      * The observer class to use to generate.
@@ -27,29 +26,6 @@ abstract class BaseConstraintHandler extends BaseHandler implements Configured
      * @var string
      */
     protected $observerClass = BaseConstraint::class;
-
-    /**
-     * Return the configuration path for this field.
-     *
-     * @param string $path
-     * @return mixed
-     */
-    public function getConfigPath(string $path=null)
-    {
-        return 'field.constraint'.(\is_null($path) ? '' : '.'.$path);
-    }
-
-    /**
-     * Return the configuration for this field.
-     *
-     * @param string $path
-     * @param mixed  $default
-     * @return mixed
-     */
-    public function getConfig(string $path=null, $default=null)
-    {
-        return config($this->getConfigPath($path), $default);
-    }
 
     /**
      * Return if an observe exists with the given name.

@@ -23,6 +23,6 @@ class IndexConstraintHandler extends FieldConstraintHandler
     {
         parent::__construct($field);
 
-        $this->create(BaseIndexableConstraint::INDEX, null, [$field]);
+        $this->add(Index::constraint([$field]));
     }
 }

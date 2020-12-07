@@ -12,4 +12,13 @@ namespace Laramore\Fields\Constraint;
 
 class Index extends BaseIndexableConstraint
 {
+    /**
+     * Return the constraint name.
+     *
+     * @return string
+     */
+    public function getConstraintType(): string
+    {
+        return static::INDEX;
+    }
 }
