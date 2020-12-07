@@ -11,8 +11,6 @@ return [
     |
     */
 
-    'class' => \Laramore\Proxies\FieldProxy::class,
-
     'configurations' => [
         'cast' => [
             'static' => true,
