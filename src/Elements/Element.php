@@ -44,13 +44,25 @@ class Element implements Locked, Arrayable
     /**
      * Create the element with a specific name and a native element value.
      *
-     * @param string $name
-     * @param string $native
+     * @param string       $name
+     * @param string|array $native
      */
-    public function __construct(string $name, string $native)
+    public function __construct(string $name, $native=[])
     {
         $this->name = $name;
-        $this->native = $native;
+
+        if (\is_array($native)) {
+            if (isset($native['native'])) {
+                $this->native = $native['native'];
+                unset($native['native']);
+            } else {
+                $this->native = $name;
+            }
+
+            $this->values = $native;
+        } else {
+            $this->native = $native;
+        }
     }
 
     /**

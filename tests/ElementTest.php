@@ -9,16 +9,25 @@ final class ElementTest extends TestCase
 {
     public function testElementNoArgs()
     {
-        $this->expectException(\version_compare(PHP_VERSION, '7.1.0', '>=') ? ArgumentCountError::class : TypeError::class);
+        $this->expectException(ArgumentCountError::class);
 
         new Element();
     }
 
     public function testElementOneArg()
     {
-        $this->expectException(\version_compare(PHP_VERSION, '7.1.0', '>=') ? ArgumentCountError::class : TypeError::class);
+        $element = new Element('name');
 
-        new Element('name');
+        $this->assertEquals($element->getName(), 'name');
+        $this->assertEquals($element->get('name'), 'name');
+        $this->assertEquals($element->name, 'name');
+
+        $this->assertEquals($element->getNative(), 'name');
+        $this->assertEquals($element->get('name'), 'name');
+        $this->assertEquals($element->native, 'name');
+        $this->assertEquals((string) $element, 'name');
+        $this->assertEquals($element->__toString(), 'name');
+        $this->assertEquals($element(), 'name');
     }
 
     public function testSimpleElement()

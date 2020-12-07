@@ -63,17 +63,6 @@ class ElementManager
     }
 
     /**
-     * Indicate if an element exists with the given name.
-     *
-     * @param  string $name
-     * @return boolean
-     */
-    public function hasNative(string $name): bool
-    {
-        return \array_key_exists($name, $this->elements);
-    }
-
-    /**
      * Return the first existant element with the given native value.
      *
      * @param  string $native
@@ -135,7 +124,15 @@ class ElementManager
     public function set($element): self
     {
         if ($element instanceof $this->elementClass) {
-            $this->elements[$element->getName()] = $element;
+            $name = $element->getName();
+
+            foreach ($this->definitions as $keyName => $valueName) {
+                if (!$element->has($keyName)) {
+                    $element->set($keyName, ($valueName ?? $name));
+                }
+            }
+
+            $this->elements[$name] = $element;
         } else if (\is_array($element)) {
             if (Arr::isAssoc($element)) {
                 foreach ($element as $key => $value) {
@@ -240,12 +237,6 @@ class ElementManager
     protected function locking()
     {
         foreach ($this->all() as $name => $element) {
-            foreach ($this->definitions as $keyName => $valueName) {
-                if (!$element->has($keyName)) {
-                    $element->set($keyName, ($valueName ?? $name));
-                }
-            }
-
             $element->lock();
         }
     }
