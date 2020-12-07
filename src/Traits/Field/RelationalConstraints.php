@@ -13,7 +13,7 @@ namespace Laramore\Traits\Field;
 use Laramore\Contracts\Field\{
     Field, Constraint\IndexableConstraint
 };
-use Laramore\Fields\Constraint\BaseRelationalConstraint;
+use Laramore\Fields\Constraint\Foreign;
 
 trait RelationalConstraints
 {
@@ -36,10 +36,10 @@ trait RelationalConstraints
     {
         $this->needsToBeUnlocked();
 
-        $fields = \is_array($fields) ? [$this, ...$fields] : [$this, $fields];
-
-        $constraint = $this->getConstraintHandler()->create(BaseRelationalConstraint::FOREIGN, $name, $fields);
+        $constraint = Foreign::constraint(\is_array($fields) ? [$this, ...$fields] : [$this, $fields], $name);
         $constraint->setTarget($target);
+
+        $this->getConstraintHandler()->add($constraint);
         $this->sourceConstraintName = $constraint->getName();
 
         return $this;

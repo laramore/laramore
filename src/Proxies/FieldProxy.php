@@ -144,7 +144,7 @@ class FieldProxy extends IdentifiedProxy
     {
         $field = $this->getField();
         $owner = $field->getOwner();
-        $methodOwnerName = $this->parseMethodOwnerName(config('field.templates.method_owner'));
+        $methodOwnerName = $this->parseMethodOwnerName(config('app.field_templates.method_owner', '-{methodname}FieldValue'));
 
         $this->callback = function (...$args) use ($owner, $field, $methodOwnerName) {
             return \call_user_func([$owner, $methodOwnerName], $field, ...$args);

@@ -12,6 +12,9 @@ namespace Laramore\Traits\Field;
 
 use Laramore\Contracts\Field\Field;
 use Laramore\Fields\Constraint\BaseIndexableConstraint;
+use Laramore\Fields\Constraint\Index;
+use Laramore\Fields\Constraint\Primary;
+use Laramore\Fields\Constraint\Unique;
 
 trait IndexableConstraints
 {
@@ -26,9 +29,9 @@ trait IndexableConstraints
     {
         $this->needsToBeUnlocked();
 
-        $fields = \is_array($fields) ? [$this, ...$fields] : [$this, $fields];
-
-        $this->getConstraintHandler()->create(BaseIndexableConstraint::PRIMARY, $name, $fields);
+        $this->getConstraintHandler()->add(
+            Primary::constraint(\is_array($fields) ? [$this, ...$fields] : [$this, $fields], $name)
+        );
 
         return $this;
     }
@@ -44,9 +47,9 @@ trait IndexableConstraints
     {
         $this->needsToBeUnlocked();
 
-        $fields = \is_array($fields) ? [$this, ...$fields] : [$this, $fields];
-
-        $this->getConstraintHandler()->create(BaseIndexableConstraint::INDEX, $name, $fields);
+        $this->getConstraintHandler()->add(
+            Index::constraint(\is_array($fields) ? [$this, ...$fields] : [$this, $fields], $name)
+        );
 
         return $this;
     }
@@ -62,9 +65,9 @@ trait IndexableConstraints
     {
         $this->needsToBeUnlocked();
 
-        $fields = \is_array($fields) ? [$this, ...$fields] : [$this, $fields];
-
-        $this->getConstraintHandler()->create(BaseIndexableConstraint::UNIQUE, $name, $fields);
+        $this->getConstraintHandler()->add(
+            Unique::constraint(\is_array($fields) ? [$this, ...$fields] : [$this, $fields], $name)
+        );
 
         return $this;
     }

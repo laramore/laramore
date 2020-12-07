@@ -41,7 +41,7 @@ trait NumberInteraction
 
         return $this;
     }
-    
+
     /**
      * Force the value to be unsigned or not, positive or not.
      *
