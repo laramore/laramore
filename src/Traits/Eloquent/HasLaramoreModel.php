@@ -10,7 +10,6 @@
 
 namespace Laramore\Traits\Eloquent;
 
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Laramore\Facades\{
@@ -20,6 +19,9 @@ use Laramore\Contracts\Field\IncrementField;
 use Laramore\Exceptions\PrepareException;
 use Laramore\Fields\Constraint\Primary;
 use Laramore\Contracts\Eloquent\LaramoreMeta;
+use Laramore\Eloquent\Builder;
+use Laramore\Eloquent\Meta;
+use Laramore\Eloquent\ModelCollection;
 
 trait HasLaramoreModel
 {
@@ -222,6 +224,16 @@ trait HasLaramoreModel
     abstract public static function meta(LaramoreMeta $meta);
 
     /**
+     * Return the meta class to use.
+     *
+     * @return string
+     */
+    public static function getMetaClass(): string
+    {
+        return Meta::class;
+    }
+
+    /**
      * Generate one time the model meta.
      *
      * @return void
@@ -235,16 +247,6 @@ trait HasLaramoreModel
         }
 
         $meta->setPreparing();
-    }
-
-    /**
-     * Return the meta class to use.
-     *
-     * @return string
-     */
-    public static function getMetaClass(): string
-    {
-        return config('meta.class');
     }
 
     /**
@@ -299,16 +301,6 @@ trait HasLaramoreModel
     }
 
     /**
-     * Return the builder class.
-     *
-     * @return string
-     */
-    public static function getEloquentBuilderClass(): string
-    {
-        return config('meta.builder_class');
-    }
-
-    /**
      * Begin querying the model.
      *
      * @return \Illuminate\Database\Eloquent\Builder
@@ -327,19 +319,7 @@ trait HasLaramoreModel
      */
     public function newEloquentBuilder($query)
     {
-        $class = static::getEloquentBuilderClass();
-
-        return new $class($query);
-    }
-
-    /**
-     * Return the collection class.
-     *
-     * @return string
-     */
-    public static function getCollectionClass(): string
-    {
-        return config('meta.collection_class');
+        return new Builder($query);
     }
 
     /**
@@ -350,9 +330,7 @@ trait HasLaramoreModel
      */
     public function newCollection(array $models=[])
     {
-        $class = static::getCollectionClass();
-
-        return new $class($models);
+        return new ModelCollection($models);
     }
 
     /**

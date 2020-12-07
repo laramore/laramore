@@ -76,7 +76,6 @@ abstract class BaseManager
         }
 
         if (in_array($observableClass, array_keys($this->handlers))) {
-            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS); dd();
             throw new \Exception("A handler already exists for `$observableClass`");
         }
 

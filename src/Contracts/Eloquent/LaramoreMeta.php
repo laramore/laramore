@@ -87,7 +87,7 @@ interface LaramoreMeta extends Prepared, FieldsOwner
      * @return self
      */
     public function unique($constrainted, string $name=null);
-    
+
     /**
      * Add default timestamp fields.
      *

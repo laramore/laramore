@@ -10,6 +10,9 @@
 
 namespace Laramore\Traits\Eloquent;
 
+use Laramore\Eloquent\PivotMeta;
+
+
 trait HasLaramorePivot
 {
     use HasLaramoreModel {
@@ -23,6 +26,6 @@ trait HasLaramorePivot
      */
     public static function getMetaClass(): string
     {
-        return config('meta.pivot_class');
+        return PivotMeta::class;
     }
 }

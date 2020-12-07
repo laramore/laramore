@@ -16,6 +16,8 @@ use Laramore\Contracts\{
 use Laramore\Traits\{
     IsLocked, IsPrepared
 };
+use ReflectionClass;
+use ReflectionNamespace;
 
 class MetaManager implements Prepared, LaramoreManager
 {
@@ -30,12 +32,22 @@ class MetaManager implements Prepared, LaramoreManager
 
     /**
      * Define all models.
-     *
-     * @param array<string> $models
      */
-    public function __construct(array $models)
+    public function __construct()
     {
-        $this->metas = \array_fill_keys($models, null);
+        $modelClasses = (new ReflectionNamespace(config('app.models_namespace', 'App\\Models')))->getClassNames();
+        $modelClasses = \array_filter($modelClasses, function ($class) {
+            return (new ReflectionClass($class))->implementsInterface(LaramoreModel::class);
+        });
+
+        $pivotClasses = (new ReflectionNamespace(config('app.pivots_namespace', 'App\\Pivots')))->getClassNames();
+        $pivotClasses = \array_filter($pivotClasses, function ($class) {
+            return (new ReflectionClass($class))->implementsInterface(LaramoreModel::class);
+        });
+
+        $this->metas = \array_fill_keys(
+            \array_merge($modelClasses, $pivotClasses), null
+        );
     }
 
     /**
