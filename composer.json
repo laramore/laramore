@@ -52,15 +52,14 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Laramore\\Providers\\LaramoreProvider",
+                "Laramore\\Providers\\LaramoreProvider"
             ],
             "aliases": {
                 "FieldConstraint": "Laramore\\Facades\\FieldConstraint",
                 "Meta": "Laramore\\Facades\\Meta",
                 "Operator": "Laramore\\Facades\\Operator",
                 "Option": "Laramore\\Facades\\Option",
-                "Proxy": "Laramore\\Facades\\Proxy",
-                "Type": "Laramore\\Facades\\Type"
+                "Proxy": "Laramore\\Facades\\Proxy"
             }
         }
     }
