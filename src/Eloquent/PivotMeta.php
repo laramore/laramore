@@ -53,7 +53,7 @@ class PivotMeta extends Meta implements LaramorePivotMeta
     protected function locking()
     {
         if (count($this->pivots) !== 2) {
-            throw new LaramoreException($this, 'You need to specify in your pivot __meta function, the two pivot attributes');
+            throw new LaramoreException('You need to specify in your pivot __meta function, the two pivot attributes');
         }
 
         parent::locking();

@@ -13,6 +13,7 @@ namespace Laramore\Eloquent;
 use Laramore\Contracts\{
     Prepared, Manager\LaramoreManager, Eloquent\LaramoreModel
 };
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Laramore\Traits\{
     IsLocked, IsPrepared
 };
@@ -29,6 +30,20 @@ class MetaManager implements Prepared, LaramoreManager
      * @var array
      */
     protected $metas = [];
+
+    /**
+     * Meta class.
+     *
+     * @var string
+     */
+    protected static $metaClass = Meta::class;
+
+    /**
+     * Pivot meta class.
+     *
+     * @var string
+     */
+    protected static $pivotMetaClass = PivotMeta::class;
 
     /**
      * Define all models.
@@ -114,6 +129,19 @@ class MetaManager implements Prepared, LaramoreManager
     }
 
     /**
+     * Define meta used.
+     *
+     * @param  Meta $meta
+     * @return boolean
+     */
+    public function set(Meta $meta)
+    {
+        $this->needsToBeUnlocked();
+
+        return $this->metas[$meta->getModelClass()] = $meta;
+    }
+
+    /**
      * Return all metas.
      *
      * @return array
@@ -163,11 +191,11 @@ class MetaManager implements Prepared, LaramoreManager
             throw new \LogicException("Cannot create a meta from a non LaramoreModel. `$modelClass` given.");
         }
 
-        $metaClass = $modelClass::getMetaClass();
+        $this->metas[$modelClass] = $meta = \is_subclass_of($modelClass, Pivot::class)
+            ? new PivotMeta($modelClass)
+            : new Meta($modelClass);
 
-        $this->metas[$modelClass] = $meta = new $metaClass($modelClass);
-
-        $modelClass::prepareMeta();
+        $modelClass::prepareMeta($meta);
 
         return $meta;
     }

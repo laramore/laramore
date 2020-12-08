@@ -31,9 +31,10 @@ interface LaramoreModel extends Proxied, ArrayAccess, Arrayable, Jsonable, JsonS
     /**
      * Generate one time the model meta.
      *
+     * @param  LaramoreMeta $meta
      * @return void
      */
-    public static function prepareMeta();
+    public static function prepareMeta(LaramoreMeta $meta);
 
     /**
      * Return the meta class to use.

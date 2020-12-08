@@ -238,7 +238,7 @@ trait HasLaramoreModel
      *
      * @return void
      */
-    public static function prepareMeta()
+    public static function prepareMeta(LaramoreMeta $meta)
     {
         $meta = static::getMeta();
 
@@ -334,42 +334,6 @@ trait HasLaramoreModel
     }
 
     /**
-     * Call a proxy by its name.
-     *
-     * @param mixed $name
-     * @param mixed $args
-     * @return mixed
-     */
-    public function __proxy($name, $args)
-    {
-        $proxy = static::getMeta()->getProxyHandler()->get($name);
-
-        if ($proxy->isStatic()) {
-            throw new \BadMethodCallException("The proxy `{$proxy->getName()}` must be called statically.");
-        }
-
-        return $proxy->__invoke($this, ...$args);
-    }
-
-    /**
-     * Return a static proxy by its name.
-     *
-     * @param mixed $name
-     * @param mixed $args
-     * @return mixed
-     */
-    public static function __proxyStatic($name, $args)
-    {
-        $proxy = static::getMeta()->getProxyHandler()->get($name);
-
-        if (!$proxy->isStatic()) {
-            throw new \BadMethodCallException("The proxy `{$proxy->getName()}` cannot be called statically.");
-        }
-
-        return $proxy->__invoke(static::class, ...$args);
-    }
-
-    /**
      * Dynamically retrieve attributes on the model.
      *
      * @param  string|mixed $key
@@ -416,45 +380,5 @@ trait HasLaramoreModel
     public function __unset($key)
     {
         parent::__unset(Str::snake($key));
-    }
-
-    /**
-     * Dynamically call attribute proxies on the model.
-     *
-     * @param  string|mixed $methodName
-     * @param  mixed        $args
-     * @return mixed
-     */
-    public function __call($methodName, $args)
-    {
-        $methodName = Str::camel($methodName);
-
-        if (static::getMeta()->getProxyHandler()->has($methodName)) {
-            return $this->__proxy($methodName, $args);
-        }
-
-        return parent::__call($methodName, $args);
-    }
-
-    /**
-     * Dynamically call attribute proxies on the model.
-     *
-     * @param  string|mixed $methodName
-     * @param  mixed        $args
-     * @return mixed
-     */
-    public static function __callStatic($methodName, $args)
-    {
-        $methodName = Str::camel($methodName);
-
-        if (static::getMeta()->getProxyHandler()->has($methodName)) {
-            return static::__proxyStatic($methodName, $args);
-        }
-
-        if (\in_array($methodName, ['increment', 'decrement'])) {
-            return parent::__callStatic($methodName, $args);
-        }
-
-        return (new static([], true))->newQuery()->$methodName(...$args);
     }
 }
