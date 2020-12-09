@@ -12,11 +12,16 @@ namespace Laramore\Eloquent;
 
 use Laramore\Contracts\Eloquent\LaramoreModel;
 use Laramore\Traits\Eloquent\HasLaramoreModel;
-use Illuminate\Database\Eloquent\Model as BaseModel;
+use Illuminate\Database\Eloquent\Model as Model;
 
-abstract class Model extends BaseModel implements LaramoreModel
+abstract class BaseModel extends Model implements LaramoreModel
 {
     use HasLaramoreModel;
 
+     /**
+     * The name of the "deleted_at at" column.
+     *
+     * @var string|null
+     */
     const DELETED_AT = 'deleted_at';
 }

@@ -12,7 +12,7 @@ namespace Laramore\Eloquent;
 
 use Laramore\Contracts\Eloquent\LaramoreMeta;
 
-class FakePivot extends Pivot
+class FakePivot extends BasePivot
 {
     /**
      * Allow the user to define all meta data for the current pivot.

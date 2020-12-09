@@ -14,9 +14,7 @@ use Illuminate\Support\{
     Str, Facades\Event
 };
 use Laramore\Exceptions\MetaException;
-use Laramore\Facades\{
-    Proxy, FieldConstraint
-};
+use Laramore\Facades\FieldConstraint;
 use Laramore\Fields\{
     DateTime, Constraint\ConstraintHandler, Constraint\Primary
 };
@@ -26,7 +24,6 @@ use Laramore\Contracts\{
 use Laramore\Traits\{
     IsPrepared, IsLocked, HasLockedMacros, Eloquent\HasFields, Eloquent\HasFieldsConstraints
 };
-use Laramore\Proxies\ProxyHandler;
 
 class Meta implements LaramoreMeta
 {
@@ -84,7 +81,6 @@ class Meta implements LaramoreMeta
         Event::dispatch('meta.creating', static::class, \func_get_args());
 
         $this->setModelClass($modelClass);
-        $this->setProxyHandler();
         $this->setConstraintHandler();
 
         Event::dispatch('meta.created', $this);
@@ -103,16 +99,6 @@ class Meta implements LaramoreMeta
         $this->description = $this->description ?: $this->modelClassName;
 
         $this->tableName = $this->getDefaultTableName();
-    }
-
-    /**
-     * Create a Validation handler for this meta.
-     *
-     * @return void
-     */
-    protected function setProxyHandler()
-    {
-        Proxy::createHandler($this->getModelClass());
     }
 
     /**
@@ -143,16 +129,6 @@ class Meta implements LaramoreMeta
     public function getModelClassName(): string
     {
         return $this->modelClassName;
-    }
-
-    /**
-     * Return the validation handler for this meta.
-     *
-     * @return ProxyHandler
-     */
-    public function getProxyHandler(): ProxyHandler
-    {
-        return Proxy::getHandler($this->getModelClass());
     }
 
     /**

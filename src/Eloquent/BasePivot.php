@@ -10,11 +10,11 @@
 
 namespace Laramore\Eloquent;
 
-use Illuminate\Database\Eloquent\Relations\Pivot as BasePivot;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Laramore\Contracts\Eloquent\LaramoreModel;
-use Laramore\Traits\Eloquent\HasLaramorePivot;
+use Laramore\Traits\Eloquent\HasLaramoreModel;
 
-abstract class Pivot extends BasePivot implements LaramoreModel
+abstract class BasePivot extends Pivot implements LaramoreModel
 {
-    use HasLaramorePivot;
+    use HasLaramoreModel;
 }
