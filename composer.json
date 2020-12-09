@@ -58,8 +58,7 @@
                 "FieldConstraint": "Laramore\\Facades\\FieldConstraint",
                 "Meta": "Laramore\\Facades\\Meta",
                 "Operator": "Laramore\\Facades\\Operator",
-                "Option": "Laramore\\Facades\\Option",
-                "Proxy": "Laramore\\Facades\\Proxy"
+                "Option": "Laramore\\Facades\\Option"
             }
         }
     }

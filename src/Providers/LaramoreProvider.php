@@ -17,10 +17,9 @@ use Laramore\Elements\OperatorManager;
 use Laramore\Elements\OptionManager;
 use Laramore\Eloquent\MetaManager;
 use Laramore\Facades\{
-    FieldConstraint, Operator, Meta, Proxy, Option
+    FieldConstraint, Operator, Meta, Option
 };
 use Laramore\Fields\Constraint\ConstraintManager;
-use Laramore\Proxies\ProxyManager;
 use Laramore\Traits\Provider\MergesConfig;
 
 class LaramoreProvider extends ServiceProvider
@@ -31,14 +30,12 @@ class LaramoreProvider extends ServiceProvider
         'option/properties.php' => 'option.properties',
         'operator/properties.php' => 'operator.properties',
         'field/properties.php' => 'field.properties',
-        'proxy.php' => 'proxy',
     ];
 
     const CONFIG_TO_PUBLISH = [
         'option/properties.php',
         'operator/properties.php',
         'field/properties.php',
-        'proxy.php',
     ];
 
     protected static $metaManager;
@@ -93,10 +90,6 @@ class LaramoreProvider extends ServiceProvider
 
         $this->app->singleton('option', function() {
             return static::generateOptionManager();
-        });
-
-        $this->app->singleton('proxy', function() {
-            return static::generateProxyManager();
         });
     }
 
@@ -163,16 +156,6 @@ class LaramoreProvider extends ServiceProvider
     }
 
     /**
-     * Generate the corresponded manager.
-     *
-     * @return ProxyManager
-     */
-    public static function generateProxyManager(): ProxyManager
-    {
-        return new ProxyManager(config('proxy.configurations'));
-    }
-
-    /**
      * Add macro.
      *
      * @return void
@@ -206,7 +189,6 @@ class LaramoreProvider extends ServiceProvider
         Option::lock();
         Operator::lock();
         Meta::lock();
-        Proxy::lock();
         FieldConstraint::lock();
     }
 }

@@ -170,7 +170,7 @@ abstract class BaseField implements Field
      */
     public static function parseName(string $name): string
     {
-        return Str::replaceInTemplate(config('app.field_templates.name', '_{name}'), compact('name'));
+        return Str::snake($name);
     }
 
     /**
@@ -408,7 +408,6 @@ abstract class BaseField implements Field
     protected function locking()
     {
         $this->checkOptions();
-        $this->setProxies();
     }
 
     /**
@@ -446,35 +445,6 @@ abstract class BaseField implements Field
 
         if (($this->hasOption(Option::with()) || $this->hasOption(Option::withCount())) && !($this instanceof RelationField)) {
             throw new \LogicException("The field `$name` cannot be autoloaded if it is not a relation field");
-        }
-    }
-
-    /**
-     * Define all proxies for this field.
-     *
-     * @return void
-     */
-    protected function setProxies()
-    {
-        $proxyHandler = $this->getMeta()->getProxyHandler();
-
-        $class = Arr::get($this->properties, 'proxy.class', config('proxy.field_class'));
-        $proxies = \array_merge(config('proxy.field_configurations'), Arr::get($this->properties, 'proxy.configurations', []));
-
-        foreach ($proxies as $methodName => $data) {
-            if (\is_null($data)) {
-                continue;
-            }
-
-            $templates = Arr::get($data, 'templates', []);
-
-            $proxyHandler->add(new $class(
-                $this, $methodName,
-                Arr::get($data, 'static', false),
-                Arr::get($data, 'allow_multi', true),
-                Arr::get($data, 'needs_value', false),
-                Arr::get($templates, 'name'), Arr::get($templates, 'multi_name')
-            ));
         }
     }
 

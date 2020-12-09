@@ -33,36 +33,6 @@ class Enum extends BaseAttribute
     protected $enumManagerClass = EnumManager::class;
 
     /**
-     * Define all proxies for this field.
-     *
-     * @return void
-     */
-    protected function setProxies()
-    {
-        parent::setProxies();
-
-        $class = Arr::get($this->elementsProxy, 'class', Arr::get($this->proxy, 'class', config('proxy.field_class')));
-        $proxies = Arr::get($this->elementsProxy, 'configurations', []);
-
-        $proxyHandler = $this->getMeta()->getProxyHandler();
-        $elements = $this->getElements()->all();
-
-        foreach ($proxies as $methodName => $data) {
-            if (\is_null($data)) {
-                continue;
-            }
-
-            foreach ($elements as $element) {
-                $proxyHandler->add(new $class(
-                    $this, $element, $methodName,
-                    Arr::get($data, 'static', false), Arr::get($data, 'needs_value', false),
-                    Arr::get($data, 'templates.name'), Arr::get($data, 'templates.multi_name')
-                ));
-            }
-        }
-    }
-
-    /**
      * Define all elements for this enum field.
      *
      * @param array<string>|array<EnumElement>|EnumManager $elements

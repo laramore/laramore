@@ -10,9 +10,8 @@
 
 namespace Laramore\Contracts\Eloquent;
 
-use Laramore\Contracts\Proxied;
 
-interface LaramoreBuilder extends Proxied
+interface LaramoreBuilder
 {
     /**
      * Get the underlying query builder instance.

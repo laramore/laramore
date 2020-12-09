@@ -15,7 +15,7 @@ use Illuminate\Support\{
 };
 use Laramore\Facades\Operator;
 use Laramore\Contracts\{
-	Proxied, Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel
+	Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder, 
 };
 use Laramore\Contracts\Field\AttributeField;
 use Laramore\Elements\OperatorElement;
@@ -188,13 +188,13 @@ trait HasFields
      * Return generally a Builder after adding to it a condition.
      *
      * @param Field                $field
-     * @param Proxied              $builder
+     * @param LaramoreBuilder      $builder
      * @param Operator|string|null $operator
      * @param mixed                $value
      * @param mixed                ...$args
      * @return mixed
      */
-    public function whereFieldValue(Field $field, Proxied $builder, $operator, $value=null, ...$args)
+    public function whereFieldValue(Field $field, LaramoreBuilder $builder, $operator, $value=null, ...$args)
     {
         if (func_num_args() === 3) {
             [$operator, $value] = [Operator::equal(), $operator];

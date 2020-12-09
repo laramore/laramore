@@ -13,7 +13,6 @@ namespace Laramore\Contracts\Eloquent;
 use Laramore\Contracts\{
     Prepared, Field\FieldsOwner, Field\Field
 };
-use Laramore\Proxies\ProxyHandler;
 use Laramore\Fields\Constraint\ConstraintHandler;
 
 interface LaramoreMeta extends Prepared, FieldsOwner
@@ -46,13 +45,6 @@ interface LaramoreMeta extends Prepared, FieldsOwner
      * @return string|null
      */
     public function getModelClassName();
-
-    /**
-     * Return the proxy handler for this meta.
-     *
-     * @return ProxyHandler
-     */
-    public function getProxyHandler(): ProxyHandler;
 
     /**
      * Return the relation handler for this meta.
