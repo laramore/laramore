@@ -11,13 +11,12 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\{
-    Str, Arr, Facades\Event
+    Str, Facades\Event
 };
 use Laramore\Elements\OptionElement;
-use Laramore\Exceptions\ConfigException;
 use Laramore\Facades\Option;
-use Laramore\Contracts\{
-    Proxied, Eloquent\LaramoreModel
+use Laramore\Contracts\Eloquent\{
+    LaramoreModel, LaramoreBuilder
 };
 use Laramore\Contracts\Field\{
     Field, ComposedField, AttributeField, RelationField, ExtraField
@@ -390,13 +389,13 @@ abstract class BaseComposed extends BaseField implements ComposedField
      * Return generally a Builder after adding to it a condition.
      *
      * @param Field                $field
-     * @param Proxied              $builder
+     * @param LaramoreBuilder      $builder
      * @param Operator|string|null $operator
      * @param mixed                $value
      * @param mixed                ...$args
      * @return mixed
      */
-    public function whereFieldValue(Field $field, Proxied $builder, $operator, $value=null, ...$args)
+    public function whereFieldValue(Field $field, LaramoreBuilder $builder, $operator, $value=null, ...$args)
     {
         if (func_num_args() === 3) {
             return $this->getOwner()->whereFieldValue($field, $builder, $operator);

@@ -10,9 +10,7 @@
 
 namespace Laramore\Traits\Eloquent;
 
-use Illuminate\Support\{
-    Str, Collection
-};
+use Illuminate\Support\Collection;
 use Laramore\Facades\Operator;
 use Laramore\Contracts\{
 	Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder, 

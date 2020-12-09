@@ -10,8 +10,10 @@
 
 namespace Laramore\Traits\Eloquent;
 
-use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
+use Illuminate\Support\{
+    Arr, Str
+};
+use Illuminate\Support\Traits\Macroable;
 use Laramore\Facades\{
     Meta as MetaManager, Operator
 };
@@ -19,13 +21,17 @@ use Laramore\Contracts\Field\IncrementField;
 use Laramore\Exceptions\PrepareException;
 use Laramore\Fields\Constraint\Primary;
 use Laramore\Contracts\Eloquent\LaramoreMeta;
+use Laramore\Contracts\Field\RelationField;
 use Laramore\Eloquent\Builder;
 use Laramore\Eloquent\Meta;
 use Laramore\Eloquent\ModelCollection;
 
 trait HasLaramoreModel
 {
-    use HasLaramoreAttributes;
+    use Macroable, HasLaramoreAttributes {
+        Macroable::__call as public __callMacro;
+        Macroable::__callStatic as public __callStaticMacro;
+    }
 
     /**
      * List all required fields.
@@ -380,5 +386,43 @@ trait HasLaramoreModel
     public function __unset($key)
     {
         parent::__unset(Str::snake($key));
+    }
+
+    /**
+     * Handle dynamic method calls into the model.
+     *
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        if (static::getMeta()->hasField(Str::snake($method), RelationField::class)) {
+            $field = static::getMeta()->getField(Str::snake($method));
+
+            return $field->getOwner()->relateFieldValue($field, $this);
+        }
+
+        if (static::hasMacro($method)) {
+            return static::__callMacro($method, $parameters);
+        }
+
+        return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Handle dynamic static method calls into the model.
+     *
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
+     */
+    public static function __callStatic($method, $parameters)
+    {
+        if (static::hasMacro($method)) {
+            return static::__callStaticMacro($method, $parameters);
+        }
+
+        return parent::__callStatic($method, $parameters);
     }
 }

@@ -41,7 +41,7 @@ abstract class BaseAttribute extends BaseField implements AttributeField
      */
     public static function parseAttname(string $attname): string
     {
-        return Str::replaceInTemplate(config('app.field_templates.attname', '_{attname}'), compact('attname'));
+        return Str::snake($attname);
     }
 
     /**
@@ -155,7 +155,9 @@ abstract class BaseAttribute extends BaseField implements AttributeField
     public function whereIn(LaramoreBuilder $builder, Collection $value=null,
                             string $boolean='and', bool $notIn=false): LaramoreBuilder
     {
-        return $this->addBuilderOperation($builder, 'whereIn', $this->dry($value), $boolean, $notIn);
+        return $this->addBuilderOperation($builder, 'whereIn', $value->map(function ($subValue) {
+            return $this->dry($subValue);
+        }), $boolean, $notIn);
     }
 
     /**

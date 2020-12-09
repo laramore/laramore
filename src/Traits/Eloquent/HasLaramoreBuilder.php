@@ -135,9 +135,17 @@ trait HasLaramoreBuilder
             }
         }
 
+        $meta = $this->getModel()::getMeta();
+
         $args = \func_get_args();
         \array_shift($args);
 
+        if ($meta->hasField($column)) {
+            $field = $meta->getField($column);
+
+            return $field->getOwner()->whereFieldValue($field, $this, ...$args);
+        }
+        
         return \call_user_func([$this, 'where'.Str::studly($column)], ...$args);
     }
 
@@ -286,52 +294,52 @@ trait HasLaramoreBuilder
 
                     // Detect via proxies a whereFieldName method.
                     // By doing that, we can extract the possible operator, which is by default '='.
-                    if ($this->getModel()::getMeta()->getProxyHandler()->has('scope'.\ucfirst($method))) {
-                        if (\count($operatorParts)) {
-                            $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
+                    // if ($this->getModel()::getMeta()->getProxyHandler()->has('scope'.\ucfirst($method))) {
+                    //     if (\count($operatorParts)) {
+                    //         $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
 
-                            if (Operator::has($opName)) {
-                                $operator = Operator::get($opName);
-                            } else if (Str::startsWith($opName, 'is_') && Operator::has($subOpName = substr($opName, 3))) {
-                                $operator = Operator::get($subOpName);
-                            } else if (Str::startsWith($opName, 'are_') && Operator::has($subOpName = substr($opName, 4))) {
-                                $operator = Operator::get(substr($opName, 4));
-                            } else {
-                                throw new \Exception("Operator `$opName` not identified");
-                            }
-                        } else {
-                            $operator = Operator::equal();
-                        }
+                    //         if (Operator::has($opName)) {
+                    //             $operator = Operator::get($opName);
+                    //         } else if (Str::startsWith($opName, 'is_') && Operator::has($subOpName = substr($opName, 3))) {
+                    //             $operator = Operator::get($subOpName);
+                    //         } else if (Str::startsWith($opName, 'are_') && Operator::has($subOpName = substr($opName, 4))) {
+                    //             $operator = Operator::get(substr($opName, 4));
+                    //         } else {
+                    //             throw new \Exception("Operator `$opName` not identified");
+                    //         }
+                    //     } else {
+                    //         $operator = Operator::equal();
+                    //     }
 
-                        if ($operator->needs(OperatorElement::NULL_TYPE)) {
-                            $value = null;
-                        } else {
-                            if (!isset($parameters[$index])) {
-                                throw new \Exception("Missing value for operator `{$operator->getName()}`");
-                            }
+                    //     if ($operator->needs(OperatorElement::NULL_TYPE)) {
+                    //         $value = null;
+                    //     } else {
+                    //         if (!isset($parameters[$index])) {
+                    //             throw new \Exception("Missing value for operator `{$operator->getName()}`");
+                    //         }
 
-                            // Only one parameter used.
-                            $value = $parameters[$index++];
-                        }
+                    //         // Only one parameter used.
+                    //         $value = $parameters[$index++];
+                    //     }
 
-                        $params = [$operator, $value, $connector];
+                    //     $params = [$operator, $value, $connector];
 
-                        if (\count($nameParts) === 0) {
-                            if (\is_null($lastMethod)) {
-                                $format = '`where{field name}{(operator)}`';
-                                throw new \Exception('A dynamic where condition is composed like this: '.$format);
-                            }
+                    //     if (\count($nameParts) === 0) {
+                    //         if (\is_null($lastMethod)) {
+                    //             $format = '`where{field name}{(operator)}`';
+                    //             throw new \Exception('A dynamic where condition is composed like this: '.$format);
+                    //         }
 
-                            $method = $lastMethod;
-                            $nameParts[] = $lastMethod;
-                        } else {
-                            $lastMethod = $method;
-                        }
+                    //         $method = $lastMethod;
+                    //         $nameParts[] = $lastMethod;
+                    //     } else {
+                    //         $lastMethod = $method;
+                    //     }
 
-                        $this->__proxy($method, $params);
+                    //     $this->__proxy($method, $params);
 
-                        break;
-                    }
+                    //     break;
+                    // }
                 } while ($operatorParts[] = \array_pop($nameParts));
 
                 if (\count($nameParts)) {
@@ -397,89 +405,6 @@ trait HasLaramoreBuilder
                     $this->where($attname, $operator, $value, $boolean);
                 }
             }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Call a proxy by its name.
-     * All proxies are handled in models.
-     * Query builders only calls methods from models via 'scope' names.
-     *
-     * @param mixed $name
-     * @param mixed $args
-     * @return mixed
-     */
-    public function __proxy($name, $args)
-    {
-        return $this->getModel()::getMeta()->getProxyHandler()->get('scope'.\ucfirst($name))->__invoke($this, ...$args);
-    }
-
-    /**
-     * Return a static proxy by its name.
-     *
-     * @param mixed $name
-     * @param mixed $args
-     * @return mixed
-     */
-    public static function __proxyStatic($name, $args)
-    {
-        throw new \BadMethodCallException("The proxy `$name` cannot be called statically.");
-    }
-
-    /**
-     * Dynamically handle calls into the query instance.
-     *
-     * @param  string|mixed $method
-     * @param  array|mixed  $parameters
-     * @return mixed
-     */
-    public function __call($method, $parameters)
-    {
-        if ($method === 'macro') {
-            $this->localMacros[$parameters[0]] = $parameters[1];
-
-            return;
-        }
-
-        if (isset($this->localMacros[$method])) {
-            array_unshift($parameters, $this);
-
-            return $this->localMacros[$method](...$parameters);
-        }
-
-        if (isset(static::$macros[$method])) {
-            if (static::$macros[$method] instanceof Closure) {
-                return call_user_func_array(static::$macros[$method]->bindTo($this, static::class), $parameters);
-            }
-
-            return call_user_func_array(static::$macros[$method], $parameters);
-        }
-
-        $method = Str::camel($method);
-        $scope = 'scope'.ucfirst($method);
-
-        if (method_exists($this->model, $scope)) {
-            return $this->callScope([$this->model, $scope], $parameters);
-        }
-
-        if ($this->getModel()::getMeta()->getProxyHandler()->has($scope)) {
-            return $this->__proxy($method, $parameters);
-        }
-
-        if (in_array($method, $this->passthru)) {
-            return $this->toBase()->{$method}(...$parameters);
-        }
-
-        if (Str::startsWith($method, ['where', 'orWhere', 'andWhere']) && !\method_exists($this->getQuery(), $method)) {
-            return $this->dynamicWhere($method, $parameters);
-        }
-
-        if (\version_compare(app()::VERSION, '5.7.0', '<')) {
-            $this->query->{$method}(...$parameters);
-        } else {
-            $this->forwardCallTo($this->getQuery(), $method, $parameters);
         }
 
         return $this;
