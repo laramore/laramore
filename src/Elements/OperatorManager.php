@@ -13,7 +13,7 @@ namespace Laramore\Elements;
 use Laramore\Contracts\Manager\LaramoreManager;
 
 
-class OperatorManager extends LazyElementManager implements LaramoreManager
+class OperatorManager extends ConfigElementManager implements LaramoreManager
 {
     /**
      * Operator element class.

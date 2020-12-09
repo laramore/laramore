@@ -13,7 +13,7 @@ namespace Laramore\Elements;
 use Laramore\Contracts\Manager\LaramoreManager;
 
 
-class OptionManager extends LazyElementManager implements LaramoreManager
+class OptionManager extends ConfigElementManager implements LaramoreManager
 {
     /**
      * Option element class.
