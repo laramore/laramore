@@ -13,11 +13,9 @@ namespace Laramore\Eloquent;
 use Laramore\Contracts\{
     Prepared, Manager\LaramoreManager, Eloquent\LaramoreModel
 };
-use Illuminate\Database\Eloquent\Relations\Pivot;
 use Laramore\Traits\{
     IsLocked, IsPrepared
 };
-use ReflectionClass;
 use ReflectionNamespace;
 
 class MetaManager implements Prepared, LaramoreManager
@@ -52,12 +50,12 @@ class MetaManager implements Prepared, LaramoreManager
     {
         $modelClasses = (new ReflectionNamespace(config('app.models_namespace', 'App\\Models')))->getClassNames();
         $modelClasses = \array_filter($modelClasses, function ($class) {
-            return (new ReflectionClass($class))->implementsInterface(LaramoreModel::class);
+            return \is_subclass_of($class, BaseModel::class);
         });
 
         $pivotClasses = (new ReflectionNamespace(config('app.pivots_namespace', 'App\\Pivots')))->getClassNames();
         $pivotClasses = \array_filter($pivotClasses, function ($class) {
-            return (new ReflectionClass($class))->implementsInterface(LaramoreModel::class);
+            return \is_subclass_of($class, BasePivot::class);
         });
 
         $this->metas = \array_fill_keys(
@@ -191,7 +189,7 @@ class MetaManager implements Prepared, LaramoreManager
             throw new \LogicException("Cannot create a meta from a non LaramoreModel. `$modelClass` given.");
         }
 
-        $this->metas[$modelClass] = $meta = \is_subclass_of($modelClass, Pivot::class)
+        $this->metas[$modelClass] = $meta = \is_subclass_of($modelClass, BasePivot::class)
             ? new PivotMeta($modelClass)
             : new Meta($modelClass);
 
