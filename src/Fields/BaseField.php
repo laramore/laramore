@@ -12,7 +12,7 @@ namespace Laramore\Fields;
 
 use Closure;
 use Illuminate\Support\{
-    Arr, Str, Facades\Event
+    Str, Facades\Event
 };
 use Laramore\Facades\Option;
 use Laramore\Contracts\{
@@ -60,6 +60,13 @@ abstract class BaseField implements Field
     protected $constraintHandler;
 
     /**
+     * Config keys to load.
+     *
+     * @var array
+     */
+    public static $configKeys = [];
+
+    /**
      * Create a new field with basic properties.
      * The constructor is protected so the field is created writing left to right.
      * ex: Char::field()->maxLength(255) insteadof (new Char)->maxLength(255).
@@ -69,7 +76,7 @@ abstract class BaseField implements Field
     protected function __construct(array $properties=[])
     {
         $this->initProperties(\array_merge(
-            config('field.properties.'.static::class, []),
+            $this->getConfigProperties(),
             $properties
         ));
 
@@ -111,6 +118,27 @@ abstract class BaseField implements Field
         $this->addOptions($options);
 
         return $this;
+    }
+
+    protected function getConfigProperties(): array
+    {
+        $properties = config('field.properties.'.static::class, []);
+
+        foreach (static::$configKeys as $key) {
+            if (!isset($properties[$key])) {
+                $properties[$key] = [];
+            }
+
+            $keyProperties = config('field.'.$key.'.'.static::class);
+
+            if (\is_null($keyProperties)) {
+                throw new \Exception("No `$key` value where defined for field: ".static::class);
+            }
+
+            $properties[$key] = \array_merge($properties[$key], $keyProperties);
+        }
+
+        return $properties;
     }
 
     /**

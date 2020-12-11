@@ -18,6 +18,16 @@ abstract class ConfigElementManager extends ElementManager
      */
     public function __construct()
     {
-        parent::__construct(config($this->configPath));
+        $elements = config($this->configPath.'.elements', []);
+
+        foreach (static::$configKeys as $key) {
+            if (!isset($elements[$key])) {
+                $elements[$key] = [];
+            }
+            dump($elements);
+            $elements[$key] = \array_merge($elements[$key], config($this->configPath.'.'.$key.'.', []));
+        }
+
+        parent::__construct($elements);
     }
 }

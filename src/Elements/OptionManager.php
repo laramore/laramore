@@ -27,7 +27,7 @@ class OptionManager extends ConfigElementManager implements LaramoreManager
      *
      * @var string
      */
-    protected $configPath = 'option.properties';
+    protected $configPath = 'option';
 
     /**
      * All option value names.
@@ -41,4 +41,11 @@ class OptionManager extends ConfigElementManager implements LaramoreManager
         'add' => [],
         'remove' => [],
     ];
+
+    /**
+     * Config keys to load.
+     *
+     * @var array
+     */
+    public static $configKeys = [];
 }

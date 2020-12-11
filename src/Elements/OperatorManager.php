@@ -40,4 +40,11 @@ class OperatorManager extends ConfigElementManager implements LaramoreManager
         'value_type' => OperatorElement::MIXED_TYPE,
         'fallback' => '=',
     ];
+
+    /**
+     * Config keys to load.
+     *
+     * @var array
+     */
+    public static $configKeys = [];
 }

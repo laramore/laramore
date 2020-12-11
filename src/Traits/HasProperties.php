@@ -15,6 +15,13 @@ use Illuminate\Support\Str;
 trait HasProperties
 {
     /**
+     * Properties added form config.
+     *
+     * @var array
+     */
+    protected $properties = [];
+
+    /**
      * Indicate if a property exists.
      *
      * @param  string $key
@@ -43,6 +50,8 @@ trait HasProperties
             }
 
             return $this->$key;
+        } else if (\array_key_exists($this->properties, $key)) {
+            return $this->properties[$key];
         }
     }
 
@@ -102,6 +111,8 @@ trait HasProperties
 
             if (\property_exists($this, $key)) {
                 $this->setProperty($key, $value);
+            } else {
+                $this->properties[$key] = $value;
             }
         }
 
