@@ -262,108 +262,139 @@ trait HasLaramoreBuilder
      */
     public function dynamicWhere(string $where, array $parameters)
     {
-        $connector = 'and';
+        $boolean = 'and';
 
         if (Str::startsWith($where, 'orWhere')) {
-            $finder = \substr($where, 7);
-            $connector = 'or';
+            $boolean = 'or';
+            $method = \substr($where, 7);
         } else if (Str::startsWith($where, 'andWhere')) {
-            $finder = \substr($where, 8);
+            $method = \substr($where, 8);
         } else {
-            $finder = \substr($where, 5);
+            $method = \substr($where, 5);
         }
 
-        $index = 0;
-        $lastMethod = null;
-        $nameParts = [];
-        $operatorParts = [];
-        $segments = \explode('_', Str::title(Str::snake($finder)));
+        $meta = $this->getModel()::getMeta();
+        $columns = [];
+        $operators = [];
+        $booleans = [];
 
-        foreach ($segments as $i => $segment) {
-            // We will stack every segment until we think that we got all of them to understand:
-            // - the where part,
-            // - the attribute name part,
-            // - the operator part (if existant else it is equal to '=').
-            if ($segment === 'And' || $segment === 'Or' || $i === (\count($segments) - 1)) {
-                if ($i === (\count($segments) - 1)) {
-                    $nameParts[] = $segment;
-                }
+        $parts = \explode('_', Str::lower(Str::snake($method)));
+        $nextParts = [];
 
-                do {
-                    $method = 'where'.\implode('', $nameParts);
+        if (\count($parts) === 1 && \count($parameters) && Operator::has($parts[0])) {
+            return $this->where(\array_shift($parameters), $parts[0], \array_shift($parameters) ?? null, $boolean);
+        }
 
-                    // Detect via proxies a whereFieldName method.
-                    // By doing that, we can extract the possible operator, which is by default '='.
-                    // if ($this->getModel()::getMeta()->getProxyHandler()->has('scope'.\ucfirst($method))) {
-                    //     if (\count($operatorParts)) {
-                    //         $opName = Str::snake(\implode('', \array_reverse($operatorParts)));
+        do {
+            $name = implode('_', $parts);
 
-                    //         if (Operator::has($opName)) {
-                    //             $operator = Operator::get($opName);
-                    //         } else if (Str::startsWith($opName, 'is_') && Operator::has($subOpName = substr($opName, 3))) {
-                    //             $operator = Operator::get($subOpName);
-                    //         } else if (Str::startsWith($opName, 'are_') && Operator::has($subOpName = substr($opName, 4))) {
-                    //             $operator = Operator::get(substr($opName, 4));
-                    //         } else {
-                    //             throw new \Exception("Operator `$opName` not identified");
-                    //         }
-                    //     } else {
-                    //         $operator = Operator::equal();
-                    //     }
+            if ($meta->hasField($name)) {
+                $operator = null;
+                $operatorParts = $nextParts;
+                $nextParts = [];
 
-                    //     if ($operator->needs(OperatorElement::NULL_TYPE)) {
-                    //         $value = null;
-                    //     } else {
-                    //         if (!isset($parameters[$index])) {
-                    //             throw new \Exception("Missing value for operator `{$operator->getName()}`");
-                    //         }
+                do {                    
+                    $operatorName = implode('_', $operatorParts);
 
-                    //         // Only one parameter used.
-                    //         $value = $parameters[$index++];
-                    //     }
-
-                    //     $params = [$operator, $value, $connector];
-
-                    //     if (\count($nameParts) === 0) {
-                    //         if (\is_null($lastMethod)) {
-                    //             $format = '`where{field name}{(operator)}`';
-                    //             throw new \Exception('A dynamic where condition is composed like this: '.$format);
-                    //         }
-
-                    //         $method = $lastMethod;
-                    //         $nameParts[] = $lastMethod;
-                    //     } else {
-                    //         $lastMethod = $method;
-                    //     }
-
-                    //     $this->__proxy($method, $params);
-
-                    //     break;
-                    // }
-                } while ($operatorParts[] = \array_pop($nameParts));
-
-                if (\count($nameParts)) {
-                    $nameParts = [];
-                    $operatorParts = [];
-
-                    $connector = \strtolower($segment);
-                } else if (\count($operatorParts)) {
-                    $operatorName = Str::camel(\implode('', \array_reverse($operatorParts)));
-
+                    dump($operatorName);
                     if (Operator::has($operatorName)) {
-                        $this->where(
-                            $parameters[$index++],
-                            Operator::get($operatorName),
-                            ($parameters[$index++] ?? null)
-                        );
+                        $operator = Operator::get($operatorName);
 
-                        return $this;
+                        break;
                     }
-                } else {
-                    throw new \Exception("Where method `$where` is invalid");
+
+                    $subPart = \array_pop($operatorParts);
+                    if (!\is_null($subPart)) {
+                        \array_unshift($nextParts, $subPart);
+                    }
+                } while ($subPart);
+
+                if (\is_null($operator)) {
+                    if (\count($nextParts) && !\in_array($nextParts[0], ['or', 'and'])) {
+                        $operator = \implode('_', $nextParts);
+
+                        throw new \Exception("The operator `$operator` was not recognized for field `$name`.");
+                    }
+
+                    $operator = Operator::equal();
                 }
-            } else {
-                $nameParts[] = $segment;
+
+                $columns[] = $name;
+                $operators[] = $operator;
+                $booleans[] = $boolean;
+
+                if (\count($nextParts) === 1) {
+                    throw new \Exception("Cannot end dynamic where with `{$nextParts[0]}`");
+                }
+
+                // Prepare next boolean connector.
+                $boolean = \array_shift($nextParts) ?: 'and';
+
+                if (!\in_array($boolean, ['or', 'and'])) {
+                    throw new \Exception("The value `$boolean` is not a boolean for `$name` where.");
+                }
+
+                $parts = $nextParts;
+                $nextParts = [];
+                $part = true; // Indicate that we continue.
+
+                continue;
+            }
+
+            $part = \array_pop($parts);
+            if (!\is_null($part)) {
+                \array_unshift($nextParts, $part);
+            }
+        } while ($part);
+
+        if (\count($nextParts)) {
+            $part = implode('_', $nextParts);
+
+            throw new \Exception("Dynamic where was not able to understand `$part`");
+        }
+        
+        if (\count($columns) !== \count($parameters)) {
+            throw new \Exception('They are more values than columns in dynamic where.');
+        }
+
+        return $this->multiWhere($columns, $operators, $parameters, $booleans);
+    }
+
+    /**
+     * Multiple where conditions
+     *
+     * @param array        $column
+     * @param string|array $operator
+     * @param string|array $value
+     * @param string|array $boolean
+     * @return self
+     */
+    public function multiWhere(array $column, $operator=null, $value=null, $boolean='and')
+    {
+        if (Arr::isAssoc($column)) {
+            return $this->multiWhere(\array_keys($column), $operator, \array_values($value), $boolean);
+        }
+    
+        if (\func_num_args() === 2) {
+            [$operator, $value] = [$value, $operator];
+        }
+
+        if (\is_array($value) && !\is_object($value)) {
+            $valuesAssoc = Arr::isAssoc($value);
+
+            foreach ($column as $index => $attname) {
+                $subValue = $valuesAssoc ? $value[$attname] : $value[$index];
+                $subOperator = \is_array($operator) ? $operator[$index] : $operator;
+                $subBoolean = \is_array($boolean) ? $boolean[$index] : $boolean;
+
+                $this->where($attname, $subOperator, $subValue, $subBoolean);
+            }
+        } else {
+            foreach ($column as $index => $attname) {
+                $subOperator = \is_array($operator) ? $operator[$index] : $operator;
+                $subBoolean = \is_array($boolean) ? $boolean[$index] : $boolean;
+
+                $this->where($attname, $subOperator, $value, $subBoolean);
             }
         }
 
@@ -371,41 +402,49 @@ trait HasLaramoreBuilder
     }
 
     /**
-     * Multiple where conditions
+     * Dynamically handle calls into the query instance.
      *
-     * @param array        $column
-     * @param mixed        $operator
-     * @param mixed        $value
-     * @param string|mixed $boolean
-     * @return self
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
      */
-    public function multiWhere(array $column, $operator=null, $value=null, $boolean='and')
+    public function __call($method, $parameters)
     {
-        if (Arr::isAssoc($column)) {
-            foreach ($column as $attname => $value) {
-                $this->where($attname, $operator, $value);
-            }
-        } else {
-            if (\func_num_args() === 2) {
-                [$operator, $value] = [$value, $operator];
+        if ($method === 'macro') {
+            $this->localMacros[$parameters[0]] = $parameters[1];
+
+            return;
+        }
+
+        if ($this->hasMacro($method)) {
+            array_unshift($parameters, $this);
+
+            return $this->localMacros[$method](...$parameters);
+        }
+
+        if (static::hasGlobalMacro($method)) {
+            $callable = static::$macros[$method];
+
+            if ($callable instanceof Closure) {
+                $callable = $callable->bindTo($this, static::class);
             }
 
-            if (\is_array($value) && !\is_object($value)) {
-                if (Arr::isAssoc($value)) {
-                    foreach ($column as $attname) {
-                        $this->where($attname, $operator, $value[$attname], $boolean);
-                    }
-                } else {
-                    foreach ($column as $index => $attname) {
-                        $this->where($attname, $operator, $value[$index], $boolean);
-                    }
-                }
-            } else {
-                foreach ($column as $attname) {
-                    $this->where($attname, $operator, $value, $boolean);
-                }
-            }
+            return $callable(...$parameters);
         }
+
+        if ($this->hasNamedScope($method)) {
+            return $this->callNamedScope($method, $parameters);
+        }
+
+        if (in_array($method, $this->passthru)) {
+            return $this->toBase()->{$method}(...$parameters);
+        }
+
+        if (Str::startsWith($method, ['where', 'orWhere', 'andWhere'])) {
+            return $this->dynamicWhere($method, $parameters);
+        }
+
+        $this->forwardCallTo($this->query, $method, $parameters);
 
         return $this;
     }
