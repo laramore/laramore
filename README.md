@@ -32,6 +32,8 @@ In a regular `User` model, it is hard to detect all the fields, the relations, w
 ```php
 <?php
 
+namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Uuid;
@@ -109,15 +111,15 @@ The examples use all possible Laramore packages.
 ```php
 <?php
 
-use Laramore\Traits\Model\HasLaramore;
+namespace App\Models;
+
+use Laramore\Eloquent\BaseUser;
 use Laramore\Fields\{
     PrimaryUuid, Name, Email, Increment, Boolean, ManyToOne, Password
 };
 
-class User extends Model 
+class User extends BaseUser 
 {
-    use HasLaramore;
-
     public function meta($meta) {
         // Auto generate uuid, no params required.
         $meta->id = PrimaryUuid::field(); 
@@ -132,7 +134,7 @@ class User extends Model
         $meta->admin = Boolean::field()->default(false)
                                        ->hidden();
         // Incremental score.
-        $meta->number = Increment::field()->default(0);
+        $meta->score = Increment::field()->default(0);
         // Foreign field. Relation defined in both sides. Eager loaded.
         $meta->group = ManyToOne::field()->to(Group::class)
                                          ->with()
@@ -154,13 +156,56 @@ Laravel has a powerfull migration management. Unfortunately, they are no way to 
 
 You need to create yourself all migration files and be carefull that your models follows your database schema.
 
+```php
+use Laramore\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+class CreateUsersTable extends Migration
+{
+	/**
+	 * Run the migrations.
+	 *
+	 * @return  void
+	 */
+	public function up()
+	{
+		Schema::create("users", function (Blueprint $table) {
+			$table->uuid("id");
+			$table->char("lastname");
+			$table->char("firstname");
+			$table->char("email")->unique();
+			$table->char("password")->length(60);
+			$table->boolean("admin")->default(false);
+			$table->integer("score")->default(0);
+
+            $table->timestamps();
+		});
+	}
+
+	/**
+	 * Reverse the migrations.
+	 *
+	 * @return  void
+	 */
+	public function down()
+	{
+        // Most of devs let this empty, not anymore with Laramore.
+		Schema::dropIfExists("users"); 
+	}
+}
+
+```
+
 ### After, with Laravel + Laramore
 
 Laramore follows your model meta configuration. Each time you edit your models, run this following commands to update your migrations:
 
+It will generate the diff between your current models and what are migrated.
+
 ```bash
 php artisan migrate:generate
-php artisan migrate
+php artisan migrate:fresh
 ```
 
 ## Model interaction
@@ -178,7 +223,7 @@ $user = new User();
 $user->lastname = 'NaStUZzi'; // "NASTUZZI" (uppercased via setter).
 $user->firstname = 'SAMY'; // "Samy" (titled via setter).
 $user->email = 'email@example.org'; // "email@example.org".
-$user->password = Illuminate\Support\Facades\Hash::make('password'); // Generated hash.
+$user->password = \Illuminate\Support\Facades\Hash::make('password'); // Generated hash.
 $user->admin = false; // false (required only if not set as default in database).
 $user->score = 0; // 0 (required only if not set as default in database).
 $user->group_id = Group::first()->id; // 1.
@@ -197,23 +242,29 @@ $user->password = Illuminate\Support\Facades\Hash::make('password'); // true (fa
 $user->score += 1; // 1.
 
 // Check if the user created its account before now:
-new \Carbon\Carbon($user->created_at)->before(now());
+(new \Carbon\Carbon($user->created_at))->before(now()); // true
 
 // Search by name:
 User::where('lastname', 'NASTUZZI')->where('firstname', 'Samy')->first();
 
 // Search by score:
 User::where('score', '>', 50)->first();
+User::whereScore( '>', 50)->first(); // With dynamic where.
 
 // Search by group:
 User::where('group_id', $group->id)->first();
+User::whereGroupId($group->id)->first(); // With dynamic where.
+
+// Search by score and group:
+User::where('score', '>', 50)->where('group_id', $group->id)->first();
+User::whereScore('>', 50)->whereGroup($group->id)->first(); // With dynamic where
 
 // Retrieve reversed relation, supposing it is defined in the reversed side.
 // We suppose we have two users. Only the first one is linked to our group.
 $group->users; // The first user.
 
 // To link all users to the first group and save them in the database:
-User::update(['group_id' => $group->id]);
+User::update(['group_id' => $group->id]); // Still the best solution for performance.
 
 // Let's fetch the users relation:
 $users = $group->users; // The users relation was fetched in the database.
@@ -264,9 +315,13 @@ User::whereScoreSup(50)->first(); // Operators can be dynamically added.
 User::where('group', $group)->first(); // Use relations !
 User::whereGroup($group)->first(); // Again simpler.
 
+// Search by score and group:
+User::whereScore('>', 50)->whereGroup($group)->first(); // With half dynamic where.
+User::whereScoreSupAndGroup(50, $group)->first(); // With total dynamic where.
+
 // Retrieve reversed relation, reversed side auto defined.
 // We suppose we have two users. Only the first one is linked to our group.
-$group->users; // The first user.
+$group->users; // [The first user].
 
 // To link all users to the first group and save them in the database:
 // The users relation is auto set we values.
@@ -278,31 +333,75 @@ $users = $group->users; // As users was already fetched, return users we had fet
 ?>
 ```
 
-## Model generation
+## Model factory
 
 Laravel brings a great bundle to make factories simple. But with Laramore, it is again quicker.
 
 ### Before, with Laravel
 
 You have to define each factory for each model in a separated files in `factories` directory.
+`HasFactory` trait could be implemented to access directly from models.
+
+By default, this is the user factory:
+
+```php
+<?php
+
+namespace Database\Factories;
+
+use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\User;
+
+class UserFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = User::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return null
+     */
+    public function definition()
+    {
+        return [
+            'email' => $this->faker->unique()->safeEmail,
+        ];
+    }
+}
+
+```
+
 
 ```php
 <?php
 
 // Access to the User factory:
-factory(User::class);
+new Database\Factories\UserFactory();
+User::factory(); // with trait.
 
 // Make a new model:
-factory(User::class)->make();
+User::factory()->make();
+// only email is defined.
 
 // Create a new model:
-factory(User::class)->create();
+User::factory()->create();
+// id and email are defined but cannot be saved in database (missing required fields).
 
 // Make multiple models:
-factory(User::class, 3)->make();
+User::factory(3)->make();
+// email is defined (in 3 models) but cannot be saved in database (missing required fields).
 
 // Create multiple models:
-factory(User::class, 5)->create();
+User::factory(5)->create();
+// id and email are defined (in 3 models) but cannot be saved in database (missing required fields).
+
+// Add group factory.
+User::factory()->has(Group::factory()->count(3), 'group');
 
 ?>
 ```
@@ -320,19 +419,26 @@ User::factory();
 
 // Make a new model:
 factory(User::class)->make();
-User::make(); // Simplier
+User::generate(); // Simplier
+// Make all required fields (id, name, email, password, admin, number).
 
 // Create a new model:
 factory(User::class)->create();
-User::generate(); // Simplier
+User::new(); // Simplier
+// Save all required fields (id, name, email, password, admin, number).
 
 // Make multiple models:
 factory(User::class, 3)->make();
-User::make(3); // Simplier
+User::generate(3); // Simplier
+// Make 3 times all required fields (id, name, email, password, admin, number).
 
 // Create multiple models:
 factory(User::class, 5)->create();
-User::generate(5); // Simplier
+User::new(5); // Simplier
+// Save 3 times all required fields (id, name, email, password, admin, number).
+
+// Add group factory (by default it generates 5 times).
+User::factory()->with('group');
 
 ?>
 ```
