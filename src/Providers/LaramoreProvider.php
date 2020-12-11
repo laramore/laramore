@@ -27,14 +27,14 @@ class LaramoreProvider extends ServiceProvider
     use MergesConfig;
 
     const CONFIG_TO_MERGE = [
-        'option/properties.php' => 'option.properties',
-        'operator/properties.php' => 'operator.properties',
+        'option/elements.php' => 'option.elements',
+        'operator/elements.php' => 'operator.elements',
         'field/properties.php' => 'field.properties',
     ];
 
     const CONFIG_TO_PUBLISH = [
-        'option/properties.php',
-        'operator/properties.php',
+        'option/elements.php',
+        'operator/elements.php',
         'field/properties.php',
     ];
 

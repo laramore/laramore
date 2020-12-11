@@ -140,6 +140,7 @@ return [
         'options' => [
             'visible', 'fillable', 'required', 'unsigned',
         ],
+        'step' => 1,
     ],
     Reversed\BelongsToMany::class => [
         'options' => [
