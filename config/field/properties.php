@@ -167,12 +167,6 @@ return [
             'visible', 'fillable', 'required', 'not_blank',
         ],
     ],
-    Timestamp::class => [
-        'options' => [
-            'visible', 'fillable', 'required',
-        ],
-        'format' => 'timestamp',
-    ],
     Uri::class => [
         'options' => [
             'visible', 'fillable', 'required',
