@@ -19,7 +19,7 @@ trait HasProperties
      *
      * @var array
      */
-    protected $properties = [];
+    protected $config = [];
 
     /**
      * Indicate if a property exists.
@@ -40,9 +40,10 @@ trait HasProperties
      * Return a property by its name.
      *
      * @param  string $key
+     * @param  mixed  $default
      * @return mixed
      */
-    public function getProperty(string $key)
+    public function getProperty(string $key, $default=null)
     {
         if ($this->hasProperty($key)) {
             if (\method_exists($this, $method = 'get'.\ucfirst($key))) {
@@ -50,9 +51,11 @@ trait HasProperties
             }
 
             return $this->$key;
-        } else if (\array_key_exists($this->properties, $key)) {
-            return $this->properties[$key];
+        } else if (\array_key_exists($this->config, $key)) {
+            return $this->config[$key];
         }
+        
+        return $default;
     }
 
     /**
@@ -112,7 +115,7 @@ trait HasProperties
             if (\property_exists($this, $key)) {
                 $this->setProperty($key, $value);
             } else {
-                $this->properties[$key] = $value;
+                $this->config[$key] = $value;
             }
         }
 

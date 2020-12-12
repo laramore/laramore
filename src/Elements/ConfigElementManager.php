@@ -21,11 +21,19 @@ abstract class ConfigElementManager extends ElementManager
         $elements = config($this->configPath.'.elements', []);
 
         foreach (static::$configKeys as $key) {
-            if (!isset($elements[$key])) {
-                $elements[$key] = [];
+            $keyElements = config($this->configPath.'.'.$key);
+
+            foreach (\array_keys($elements) as $element) {
+                if (isset($elements[$element][$key])) {
+                    continue;
+                } 
+
+                if (!isset($keyElements[$element])) {
+                    throw new \Exception("No `$key` value were defined for {$this->configPath}: $element");
+                }
+
+                $elements[$element][$key] = $keyElements[$element];
             }
-            dump($elements);
-            $elements[$key] = \array_merge($elements[$key], config($this->configPath.'.'.$key.'.', []));
         }
 
         parent::__construct($elements);
