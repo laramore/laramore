@@ -31,6 +31,15 @@ abstract class BaseIndexableConstraint extends BaseConstraint implements Indexab
     const MORPH_INDEX = 'morph_index';
 
     /**
+     * Define migrable constraints.
+     *
+     * @var array
+     */
+    public static $migrable = [
+        self::PRIMARY, self::INDEX, self::UNIQUE,
+    ];
+
+    /**
      * Return the model class used for this constraint.
      *
      * @return string

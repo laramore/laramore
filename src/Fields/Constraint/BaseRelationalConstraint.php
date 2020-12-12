@@ -32,6 +32,15 @@ abstract class BaseRelationalConstraint extends BaseConstraint implements Relati
     protected $target;
 
     /**
+     * Define migrable constraints.
+     *
+     * @var array
+     */
+    public static $migrable = [
+        self::FOREIGN,
+    ];
+
+    /**
      * Return indexable constraint.
      *
      * @param IndexableConstraint $target
