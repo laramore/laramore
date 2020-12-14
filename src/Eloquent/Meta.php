@@ -449,9 +449,7 @@ class Meta implements LaramoreMeta
         }
 
         if (!$this->hasDeletedTimestamp()) {
-            $key = \defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at';
-
-            $this->hasDeletedTimestamp = $this->hasField($key);
+            $this->hasDeletedTimestamp = $this->hasField($this->modelClass::DELETED_AT);
         }
     }
 
@@ -516,16 +514,18 @@ class Meta implements LaramoreMeta
             $this->useTimestamps($autoUpdated);
         }
 
-        $deletedName = \defined("{$this->getModelClass()}::DELETED_AT") ? $this->modelClass::DELETED_AT : 'deleted_at';
+        $deletedName = $this->modelClass::DELETED_AT;
 
         if ($this->hasField($deletedName)) {
-            throw new MetaException($this, "The deleted field `$deletedName` already exists and can't be set as a timestamp.");
+            if (!$this->hasField($deletedName, DateTime::class)) {
+                throw new MetaException($this, "The deleted field `$deletedName` already exists and can't be set as a timestamp.");
+            }
+        } else {
+            $this->setField(
+                $deletedName,
+                DateTime::field()->options(['nullable', 'visible'])
+            );
         }
-
-        $this->setField(
-            $deletedName,
-            DateTime::field()->options(['nullable', 'visible'])
-        );
 
         $this->hasDeletedTimestamp = true;
 
