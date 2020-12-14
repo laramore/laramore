@@ -10,13 +10,16 @@
 
 namespace Laramore\Eloquent;
 
+use Illuminate\Support\{
+    Str, Facades\File
+};
 use Laramore\Contracts\{
     Prepared, Manager\LaramoreManager, Eloquent\LaramoreModel
 };
 use Laramore\Traits\{
     IsLocked, IsPrepared
 };
-use ReflectionNamespace, ReflectionClass;
+use ReflectionClass;
 
 class MetaManager implements Prepared, LaramoreManager
 {
@@ -34,33 +37,60 @@ class MetaManager implements Prepared, LaramoreManager
      *
      * @var string
      */
-    protected static $metaClass = Meta::class;
+    public static $metaClass = Meta::class;
 
     /**
      * Pivot meta class.
      *
      * @var string
      */
-    protected static $pivotMetaClass = PivotMeta::class;
+    public static $pivotMetaClass = PivotMeta::class;
+
+    /**
+     * Models path.
+     *
+     * @var string
+     */
+    public static $modelsPaths = [
+        'app/Models', 'app/Pivots',
+    ];
 
     /**
      * Define all models.
      */
     public function __construct()
     {
-        $modelClasses = (new ReflectionNamespace(config('app.models_namespace', 'App\\Models')))->getClassNames();
-        $modelClasses = \array_filter($modelClasses, function ($class) {
+        $this->metas = \array_fill_keys(
+            \array_merge(
+                ...\array_map(function ($path) {
+                    return $this->resolveLaramoreClasses($path);
+                }, static::$modelsPaths)
+            ), null
+        );
+    }
+
+    /**
+     * Resolve Laramore classes in a specific directory.
+     *
+     * @param string $dir
+     * @return void
+     */
+    protected function resolveLaramoreClasses(string $dir)
+    {
+        $namespace = \str_replace('/', '\\', Str::title($dir));
+        $path = base_path($dir);
+
+        $classes = \array_map(function ($file) use ($path, $namespace) {
+            return \str_replace(
+                [$path, '/', '.php'],
+                [$namespace, '\\', ''],
+                $file->getRealPath()
+            );
+        }, File::allFiles($dir));
+
+        return \array_filter($classes, function ($class) {
             return \is_subclass_of($class, BaseModel::class) && !(new ReflectionClass($class))->isAbstract();
         });
-
-        $pivotClasses = (new ReflectionNamespace(config('app.pivots_namespace', 'App\\Pivots')))->getClassNames();
-        $pivotClasses = \array_filter($pivotClasses, function ($class) {
-            return \is_subclass_of($class, BasePivot::class) && !(new ReflectionClass($class))->isAbstract();
-        });
-
-        $this->metas = \array_fill_keys(
-            \array_merge($modelClasses, $pivotClasses), null
-        );
     }
 
     /**
