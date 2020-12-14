@@ -118,9 +118,7 @@ class LaramoreProvider extends ServiceProvider
      */
     public static function generateOptionManager(): OptionManager
     {
-        $manager = new OptionManager();
-
-        return $manager;
+        return new OptionManager();
     }
 
     /**
@@ -130,9 +128,7 @@ class LaramoreProvider extends ServiceProvider
      */
     public static function generateMetaManager(): MetaManager
     {
-        static::$metaManager = new MetaManager;
-
-        return static::$metaManager;
+        return static::$metaManager = new MetaManager;
     }
 
     /**

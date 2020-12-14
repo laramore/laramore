@@ -129,7 +129,7 @@ abstract class BaseField implements Field
                 $properties[$key] = [];
             }
 
-            $keyProperties = config('field.'.$key.'.'.static::class, []);
+            $keyProperties = config('field.'.$key.'.'.static::class);
 
             if (\is_null($keyProperties)) {
                 throw new \Exception("No `$key` value were defined for field: ".static::class);
