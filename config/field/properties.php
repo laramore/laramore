@@ -86,6 +86,7 @@ return [
         'fields' => [
             'reversed' => Reversed\BelongsToMany::class,
         ],
+        'pivot_field' => ManyToOne::class,
         'templates' => [
             'reversed' => '+{modelname}',
             'pivot' => 'pivot',

@@ -30,6 +30,13 @@ class ManyToMany extends BaseComposed implements ManyRelationField
     protected $targetModel;
 
     /**
+     * Field to generate pivot meta.
+     *
+     * @var string
+     */
+    protected $pivotField;
+
+    /**
      * Pivot meta name.
      *
      * @var \Larmore\Contracts\Eloquent\LaramoreMeta
@@ -235,10 +242,10 @@ class ManyToMany extends BaseComposed implements ManyRelationField
 
             $this->pivotMeta->setField(
                 $offName,
-                $offField = ManyToOne::field()->on($this->getMeta()->getModelClass())
+                $offField = $this->pivotField::field()->on($this->getMeta()->getModelClass())
             );
 
-            $onField = ManyToOne::field()->on($this->getTargetModel());
+            $onField = $this->pivotField::field()->on($this->getTargetModel());
 
             if ($this->isOnSelf()) {
                 $onField->reversedName($this->templates['self_reversed_pivot']);
