@@ -21,7 +21,7 @@ abstract class ConfigElementManager extends ElementManager
         $elements = config($this->configPath.'.elements', []);
 
         foreach (static::$configKeys as $key) {
-            $keyElements = config($this->configPath.'.'.$key);
+            $keyElements = config($this->configPath.'.'.$key, []);
 
             foreach (\array_keys($elements) as $element) {
                 if (isset($elements[$element][$key])) {

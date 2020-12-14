@@ -27,7 +27,7 @@ class OperatorManager extends ConfigElementManager implements LaramoreManager
      *
      * @var string
      */
-    protected $configPath = 'operator.properties';
+    protected $configPath = 'operator';
 
     /**
      * All operator value names.
