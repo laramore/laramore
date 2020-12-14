@@ -17,24 +17,24 @@ interface LaramorePivot extends LaramoreModel
     /**
      * Create a new pivot model instance.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $parent
-     * @param  array  $attributes
-     * @param  string  $table
-     * @param  bool  $exists
+     * @param  \Illuminate\Database\Eloquent\Model $parent
+     * @param  array|mixed                         $attributes
+     * @param  string|mixed                        $table
+     * @param  boolean|mixed                       $exists
      * @return static
      */
-    public static function fromAttributes(Model $parent, $attributes, $table, $exists = false);
+    public static function fromAttributes(Model $parent, $attributes, $table, $exists=false);
 
     /**
      * Create a new pivot model from raw values returned from a query.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $parent
-     * @param  array  $attributes
-     * @param  string  $table
-     * @param  bool  $exists
+     * @param  \Illuminate\Database\Eloquent\Model $parent
+     * @param  array|mixed                         $attributes
+     * @param  string|mixed                        $table
+     * @param  boolean|mixed                       $exists
      * @return static
      */
-    public static function fromRawAttributes(Model $parent, $attributes, $table, $exists = false);
+    public static function fromRawAttributes(Model $parent, $attributes, $table, $exists=false);
 
     /**
      * Get the foreign key column name.
@@ -60,8 +60,8 @@ interface LaramorePivot extends LaramoreModel
     /**
      * Set the key names for the pivot model instance.
      *
-     * @param  string  $foreignKey
-     * @param  string  $relatedKey
+     * @param  string|mixed $foreignKey
+     * @param  string|mixed $relatedKey
      * @return $this
      */
     public function setPivotKeys($foreignKey, $relatedKey);
@@ -69,10 +69,10 @@ interface LaramorePivot extends LaramoreModel
     /**
      * Determine if the pivot model or given attributes has timestamp attributes.
      *
-     * @param  array|null  $attributes
-     * @return bool
+     * @param  array|null $attributes
+     * @return boolean
      */
-    public function hasTimestampAttributes($attributes = null);
+    public function hasTimestampAttributes($attributes=null);
 
     /**
      * Get the name of the "created at" column.
@@ -98,7 +98,7 @@ interface LaramorePivot extends LaramoreModel
     /**
      * Get a new query to restore one or more models by their queueable IDs.
      *
-     * @param  int[]|string[]|string  $ids
+     * @param  int[]|string[]|string $ids
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function newQueryForRestoration($ids);

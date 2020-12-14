@@ -245,6 +245,7 @@ abstract class BaseModel extends Model implements LaramoreModel
     /**
      * Generate one time the model meta.
      *
+     * @param  LaramoreMeta $meta
      * @return void
      */
     public static function prepareMeta(LaramoreMeta $meta)
@@ -394,8 +395,8 @@ abstract class BaseModel extends Model implements LaramoreModel
     /**
      * Handle dynamic method calls into the model.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param  string|mixed $method
+     * @param  array|mixed  $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -416,8 +417,8 @@ abstract class BaseModel extends Model implements LaramoreModel
     /**
      * Handle dynamic static method calls into the model.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param  string|mixed $method
+     * @param  array|mixed  $parameters
      * @return mixed
      */
     public static function __callStatic($method, $parameters)

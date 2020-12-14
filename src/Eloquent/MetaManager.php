@@ -189,9 +189,7 @@ class MetaManager implements Prepared, LaramoreManager
             throw new \LogicException("Cannot create a meta from a non LaramoreModel. `$modelClass` given.");
         }
 
-        $this->metas[$modelClass] = $meta = \is_subclass_of($modelClass, BasePivot::class)
-            ? new PivotMeta($modelClass)
-            : new Meta($modelClass);
+        $this->metas[$modelClass] = $meta = \is_subclass_of($modelClass, BasePivot::class) ? new PivotMeta($modelClass) : new Meta($modelClass);
 
         $modelClass::prepareMeta($meta);
 

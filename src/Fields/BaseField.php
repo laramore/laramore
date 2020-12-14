@@ -120,6 +120,11 @@ abstract class BaseField implements Field
         return $this;
     }
 
+    /**
+     * Return config properties.
+     *
+     * @return array
+     */
     protected function getConfigProperties(): array
     {
         $properties = config('field.properties.'.static::class, []);

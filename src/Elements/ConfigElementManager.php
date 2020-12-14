@@ -26,7 +26,7 @@ abstract class ConfigElementManager extends ElementManager
             foreach (\array_keys($elements) as $element) {
                 if (isset($elements[$element][$key])) {
                     continue;
-                } 
+                }
 
                 if (!isset($keyElements[$element])) {
                     throw new \Exception("No `$key` value were defined for {$this->configPath}: $element");

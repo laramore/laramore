@@ -145,7 +145,7 @@ trait HasLaramoreBuilder
 
             return $field->getOwner()->whereFieldValue($field, $this, ...$args);
         }
-        
+
         return \call_user_func([$this, 'where'.Str::studly($column)], ...$args);
     }
 
@@ -282,7 +282,7 @@ trait HasLaramoreBuilder
         $nextParts = [];
 
         if (\count($parts) === 1 && \count($parameters) && Operator::has($parts[0])) {
-            return $this->where(\array_shift($parameters), $parts[0], \array_shift($parameters) ?? null, $boolean);
+            return $this->where(\array_shift($parameters), $parts[0], (\array_shift($parameters) ?? null), $boolean);
         }
 
         do {
@@ -293,7 +293,7 @@ trait HasLaramoreBuilder
                 $operatorParts = $nextParts;
                 $nextParts = [];
 
-                do {                    
+                do {
                     $operatorName = implode('_', $operatorParts);
 
                     dump($operatorName);
@@ -336,7 +336,8 @@ trait HasLaramoreBuilder
 
                 $parts = $nextParts;
                 $nextParts = [];
-                $part = true; // Indicate that we continue.
+                $part = true;
+                // Indicate that we continue.
 
                 continue;
             }
@@ -352,7 +353,7 @@ trait HasLaramoreBuilder
 
             throw new \Exception("Dynamic where was not able to understand `$part`");
         }
-        
+
         if (\count($columns) !== \count($parameters)) {
             throw new \Exception('They are more values than columns in dynamic where.');
         }
@@ -374,7 +375,7 @@ trait HasLaramoreBuilder
         if (Arr::isAssoc($column)) {
             return $this->multiWhere(\array_keys($column), $operator, \array_values($value), $boolean);
         }
-    
+
         if (\func_num_args() === 2) {
             [$operator, $value] = [$value, $operator];
         }
@@ -404,8 +405,8 @@ trait HasLaramoreBuilder
     /**
      * Dynamically handle calls into the query instance.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param  string|mixed $method
+     * @param  array|mixed  $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

@@ -13,7 +13,7 @@ namespace Laramore\Traits\Eloquent;
 use Illuminate\Support\Collection;
 use Laramore\Facades\Operator;
 use Laramore\Contracts\{
-	Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder, 
+	Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder,
 };
 use Laramore\Contracts\Field\AttributeField;
 use Laramore\Elements\OperatorElement;

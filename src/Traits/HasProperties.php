@@ -54,7 +54,7 @@ trait HasProperties
         } else if (\array_key_exists($this->config, $key)) {
             return $this->config[$key];
         }
-        
+
         return $default;
     }
 
