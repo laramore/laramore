@@ -443,7 +443,7 @@ trait HasLaramoreBuilder
             return $this->toBase()->{$method}(...$parameters);
         }
 
-        if (Str::startsWith($method, ['where', 'orWhere', 'andWhere'])) {
+        if (Str::startsWith($method, ['where', 'orWhere', 'andWhere']) && !Str::endsWith($method, 'hereIntegerInRaw')) {
             return $this->dynamicWhere($method, $parameters);
         }
 

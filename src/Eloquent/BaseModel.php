@@ -19,7 +19,9 @@ use Laramore\Facades\{
     Meta as MetaManager, Operator
 };
 use Laramore\Contracts\Eloquent\LaramoreModel;
-use Laramore\Contracts\Field\IncrementField;
+use Laramore\Contracts\Field\{
+    IncrementField, NumericField
+};
 use Laramore\Exceptions\PrepareException;
 use Laramore\Fields\Constraint\Primary;
 use Laramore\Contracts\Eloquent\LaramoreMeta;
@@ -90,6 +92,7 @@ abstract class BaseModel extends Model implements LaramoreModel
         // Define all model metas.
         if ($primary = $meta->getPrimary()) {
             $this->setIncrementing(!$primary->isComposed() && $primary->getAttribute() instanceof IncrementField);
+            $this->setKeyType($primary->getAttribute() && $primary->getAttribute() instanceof NumericField ? 'int' : 'string');
         }
 
         $this->setTable($meta->getTableName());
