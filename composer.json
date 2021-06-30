@@ -10,7 +10,8 @@
    },
     "require": {
         "php": "^7.3|^8.0",
-        "laravel/framework": "^8.49"
+        "laravel/framework": ">=8.49",
+        "league/flysystem": ">=1.1.4"
     },
     "authors": [
         {
