@@ -17,6 +17,18 @@ trait SoftDeletes
     use BaseSoftDeletes;
 
     /**
+     * Initialize the soft deleting trait for an instance.
+     *
+     * @return void
+     */
+    public function initializeSoftDeletes()
+    {
+        if (isset($this->casts[$this->getDeletedAtColumn()])) {
+            unset($this->casts[$this->getDeletedAtColumn()]);
+        }
+    }
+
+    /**
      * Perform the actual delete query on this model instance.
      *
      * @return void

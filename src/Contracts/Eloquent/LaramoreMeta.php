@@ -40,11 +40,18 @@ interface LaramoreMeta extends Prepared, FieldsOwner
     public function getModelClass(): string;
 
     /**
+     * Get the model group name.
+     *
+     * @return string|null
+     */
+    public function getModelGroup(): ?string;
+
+    /**
      * Get the model short name.
      *
      * @return string|null
      */
-    public function getModelClassName();
+    public function getModelName();
 
     /**
      * Return the relation handler for this meta.

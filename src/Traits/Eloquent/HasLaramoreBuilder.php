@@ -18,7 +18,6 @@ use Laramore\Facades\{
 use Closure;
 use Illuminate\Support\Arr;
 use Laramore\Contracts\Field\AttributeField;
-use Laramore\Elements\OperatorElement;
 
 trait HasLaramoreBuilder
 {
@@ -282,7 +281,7 @@ trait HasLaramoreBuilder
         $nextParts = [];
 
         if (\count($parts) === 1 && \count($parameters) && Operator::has($parts[0])) {
-            return $this->where(\array_shift($parameters), $parts[0], (\array_shift($parameters) ?? null), $boolean);
+            return $this->where(\array_shift($parameters), Operator::get($parts[0]), (\array_shift($parameters) ?? null), $boolean);
         }
 
         do {
@@ -296,7 +295,6 @@ trait HasLaramoreBuilder
                 do {
                     $operatorName = implode('_', $operatorParts);
 
-                    dump($operatorName);
                     if (Operator::has($operatorName)) {
                         $operator = Operator::get($operatorName);
 
@@ -350,6 +348,10 @@ trait HasLaramoreBuilder
 
         if (\count($nextParts)) {
             $part = implode('_', $nextParts);
+
+            if (\count($columns) === 0 && Operator::has($part)) {
+                return $this->where(\array_shift($parameters), Operator::get($part), (\array_shift($parameters) ?? null), $boolean);
+            }
 
             throw new \Exception("Dynamic where was not able to understand `$part`");
         }

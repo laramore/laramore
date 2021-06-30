@@ -263,7 +263,8 @@ abstract class BaseComposed extends BaseField implements ComposedField
     protected function replaceInFieldTemplate(string $template, string $fieldname)
     {
         $keyValues = [
-            'modelname' => static::parseName($this->getMeta()->getModelClassName()),
+            'modelgroup' => static::parseName($this->getMeta()->getModelGroup() ?: ''),
+            'modelname' => static::parseName($this->getMeta()->getModelName()),
             'identifier' => $fieldname,
             'name' => $this->getName(),
         ];

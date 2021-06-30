@@ -16,6 +16,7 @@ use Illuminate\Support\{
 use Laramore\Contracts\{
     Prepared, Manager\LaramoreManager, Eloquent\LaramoreModel
 };
+use Laramore\Contracts\Eloquent\LaramorePivot;
 use Laramore\Traits\{
     IsLocked, IsPrepared
 };
@@ -86,7 +87,7 @@ class MetaManager implements Prepared, LaramoreManager
                 [$namespace, '\\', ''],
                 $file->getRealPath()
             );
-        }, File::allFiles($dir));
+        }, File::allFiles($path));
 
         return \array_filter($classes, function ($class) {
             return \is_subclass_of($class, BaseModel::class) && !(new ReflectionClass($class))->isAbstract();
@@ -219,7 +220,7 @@ class MetaManager implements Prepared, LaramoreManager
             throw new \LogicException("Cannot create a meta from a non LaramoreModel. `$modelClass` given.");
         }
 
-        $this->metas[$modelClass] = $meta = \is_subclass_of($modelClass, BasePivot::class) ? new PivotMeta($modelClass) : new Meta($modelClass);
+        $this->metas[$modelClass] = $meta = \is_a($modelClass, LaramorePivot::class, true) ? new PivotMeta($modelClass) : new Meta($modelClass);
 
         $modelClass::prepareMeta($meta);
 

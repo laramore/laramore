@@ -104,6 +104,10 @@ class DateTime extends BaseAttribute
             return $value->getTimestamp();
         }
 
+        if (is_string($value)) {
+            dd(debug_backtrace());
+        }
+
         return $value->format($this->getFormat());
     }
 }

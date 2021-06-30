@@ -217,7 +217,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
     protected function loadPivotMeta()
     {
         $offMeta = $this->getMeta();
-        $offName = Str::snake($offMeta->getModelClassName());
+        $offName = Str::snake($offMeta->getModelName());
         $onName = Str::snake(Str::singular($this->getName()));
         $namespaceName = $this->pivotNamespace;
         $pivotClassName = ucfirst($offName).ucfirst($onName);

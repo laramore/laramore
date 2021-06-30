@@ -21,6 +21,7 @@ use Laramore\Fields\{
 use Laramore\Contracts\{
     Eloquent\LaramoreMeta, Field\Field
 };
+use Laramore\Facades\Meta as MetaManager;
 use Laramore\Traits\{
     IsPrepared, IsLocked, HasLockedMacros, Eloquent\HasFields, Eloquent\HasFieldsConstraints
 };
@@ -38,7 +39,10 @@ class Meta implements LaramoreMeta
      * @var string
      */
     protected $modelClass;
-    protected $modelClassName;
+    protected $modelGroup;
+    protected $modelName;
+
+
     protected $description;
     protected $tableName;
     protected $connectionName;
@@ -81,24 +85,41 @@ class Meta implements LaramoreMeta
         Event::dispatch('meta.creating', static::class, \func_get_args());
 
         $this->setModelClass($modelClass);
+        
+        $this->description = $this->description ?: $this->modelName;
+        $this->tableName = $this->getDefaultTableName();
+
         $this->setConstraintHandler();
 
         Event::dispatch('meta.created', $this);
     }
 
     /**
-     * Define the model class name for this meta.
+     * Set model class and generate model group and name. 
      *
      * @param string $modelClass
      * @return void
      */
-    protected function setModelClass(string $modelClass)
+    public function setModelClass(string $modelClass)
     {
         $this->modelClass = $modelClass;
-        $this->modelClassName = Str::snake(\class_basename($modelClass));
-        $this->description = $this->description ?: $this->modelClassName;
 
-        $this->tableName = $this->getDefaultTableName();
+        foreach (MetaManager::getFacadeRoot()::$modelsPaths as $path) {
+            $namespace = \str_replace('/', '\\', Str::title($path)).'\\';
+            
+            if (Str::startsWith($this->modelClass, $namespace)) {
+                $base = Str::replaceFirst($namespace, '', $this->modelClass);
+                $elements = explode('\\', $base);
+                
+                $this->modelName = Str::snake(\array_pop($elements));
+                $this->modelGroup = \count($elements) === 0 ? null : Str::snake(implode('_', $elements));
+
+                return;
+            }
+        }
+
+        $this->modelGroup = null;
+        $this->modelName = Str::snake(\class_basename($this->modelClass));
     }
 
     /**
@@ -122,13 +143,23 @@ class Meta implements LaramoreMeta
     }
 
     /**
-     * Get the model short name.
+     * Get the model group name.
      *
      * @return string|null
      */
-    public function getModelClassName(): string
+    public function getModelGroup(): ?string
     {
-        return $this->modelClassName;
+        return $this->modelGroup;
+    }
+
+    /**
+     * Get the model short name.
+     *
+     * @return string
+     */
+    public function getModelName(): string
+    {
+        return $this->modelName;
     }
 
     /**
@@ -160,7 +191,10 @@ class Meta implements LaramoreMeta
     {
         return \implode('_', \array_map(function ($element) {
             return Str::plural($element);
-        }, \explode(' ', Str::snake($this->modelClassName, ' '))));
+        }, \array_merge(
+            \is_null($this->modelGroup) ? [] : \explode('_', $this->modelGroup),
+            \explode('_', $this->modelName),
+        )));
     }
 
     /**
@@ -264,7 +298,7 @@ class Meta implements LaramoreMeta
         $name = $field->getName();
 
         if ($this->hasField($name)) {
-            throw new \LogicException("The field `$name` is already defined.");
+            throw new \LogicException("The field `$name` is already defined for model `{$this->modelClass}`.");
         }
 
         $this->fields[$name] = $field;

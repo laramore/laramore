@@ -103,6 +103,25 @@ trait HasProperties
     }
 
     /**
+     * Manage the definition of many properties.
+     *
+     * @param string $key
+     * @param mixed  $value
+     * @return self
+     * @throws \ErrorException If no property exists with this name.
+     */
+    public function setConfig(string $key, $value)
+    {
+        if (!isset($this->config[$key])) {
+            throw new \Exception("The config key `$key` does not exist");
+        }
+
+        $this->config[$key] = $value;
+
+        return $this;
+    }
+
+    /**
      * Init all properties with a set of properties.
      * @param array $properties
      * @return self
