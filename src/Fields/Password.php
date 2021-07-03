@@ -91,7 +91,12 @@ class Password extends Char implements PatternField
      */
     public function cast($value)
     {
+        // Do not cast with max length for passwords !
+        $maxLength = $this->maxLength;
+        $this->maxLength = null;
+
         $value = parent::cast($value);
+        $this->maxLength = $maxLength;
 
         if (\is_null($value) || !Hash::needsRehash($value)) {
             return $value;
