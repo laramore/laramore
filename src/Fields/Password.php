@@ -102,7 +102,23 @@ class Password extends Char implements PatternField
             return $value;
         }
 
-        return $this->hash($value);
+        return $value;
+    }
+
+    /**
+     * Set the value for the field.
+     *
+     * @param LaramoreModel|array|\ArrayAccess $model
+     * @param  mixed                            $value
+     * @return mixed
+     */
+    public function set($model, $value)
+    {
+        if (!$model->fetchingDatabase) {
+            $value = $this->hash($value);
+        }
+
+        return parent::set($model, $value);
     }
 
     /**
