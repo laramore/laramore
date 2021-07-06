@@ -45,6 +45,21 @@ trait HasLaramoreBuilder
     }
 
     /**
+     * Add a where clause on the primary key to the query.
+     *
+     * @param  mixed  $id
+     * @return $this
+     */
+    public function whereKey($id)
+    {
+        if ($this->model::getMeta()->hasField('key')) {
+            return $this->dynamicWhere('whereKey', \func_get_args());
+        }
+
+        return parent::whereKey($id);
+    }
+
+    /**
      * Execute the query as a "select" statement.
      *
      * @param  array|mixed $columns
