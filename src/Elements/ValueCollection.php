@@ -1,19 +1,71 @@
 <?php
 /**
- * Define a specific json field element.
+ * Define a specific field element collection.
  *
  * @author Samy Nastuzzi <samy@nastuzzi.fr>
  *
- * @copyright Copyright (c) 2019
+ * @copyright Copyright (c) 2021
  * @license MIT
  */
 
 namespace Laramore\Elements;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
-class JsonCollection extends Collection
+
+class ValueCollection extends Collection
 {
+    const ANY_COLLECTION = 0;
+    const LIST_COLLECTION = 1;
+    const OBJECT_COLLECTION = 2;
+
+    protected $type;
+
+    /**
+     * Create a new collection.
+     *
+     * @param  mixed  $items
+     * @return void
+     */
+    public function __construct($items = [], int $type=self::ANY_COLLECTION)
+    {
+        parent::__construct($items);
+
+        $this->type = $type;
+
+        $this->checkItems();
+    }
+
+    protected function checkItems()
+    {
+        if (empty($this->items)) return;
+
+        if ($this->type === static::LIST_COLLECTION) {
+            if (Arr::isAssoc($this->items)) {
+                throw new \ValueError('List expected, got object: '.json_encode($this->items));
+            }
+        } else if ($this->type === static::OBJECT_COLLECTION) {
+            if (!Arr::isAssoc($this->items)) {
+                throw new \ValueError('Object expected, got list: '.json_encode($this->items));
+            }
+        }
+    }
+
+    /**
+     * Convert the object into something JSON serializable.
+     *
+     * @return array
+     */
+    public function jsonSerialize()
+    {
+        if (empty($this->items) && $this->type === static::OBJECT_COLLECTION) {
+            return (object) $this->items;
+        }
+
+        return parent::jsonSerialize();
+    }
+
     /**
      * Resolve the offset key.
      *
@@ -69,7 +121,7 @@ class JsonCollection extends Collection
 
         $value = $json[$lastKey];
 
-        if (\is_array($json) && !($json instanceof static)) {
+        if (\is_array($value) && !($value instanceof static)) {
             $value = new static($value);
 
             $json[$lastKey] = $value;

@@ -5,7 +5,7 @@ namespace Laramore\Fields;
 use Illuminate\Support\Facades\Schema;
 
 return [
-    
+
     /*
     |--------------------------------------------------------------------------
     | Default fields
@@ -74,6 +74,16 @@ return [
         ],
     ],
     Json::class => [
+        'options' => [
+            'visible', 'fillable', 'required',
+        ],
+    ],
+    JsonList::class => [
+        'options' => [
+            'visible', 'fillable', 'required',
+        ],
+    ],
+    JsonObject::class => [
         'options' => [
             'visible', 'fillable', 'required',
         ],

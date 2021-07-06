@@ -10,10 +10,12 @@
 
 namespace Laramore\Fields;
 
-use Laramore\Elements\JsonCollection;
+use Laramore\Elements\ValueCollection;
 
 class Json extends BaseAttribute
 {
+    protected $collectionType = ValueCollection::ANY_COLLECTION;
+
     /**
      * Dry the value in a simple format.
      *
@@ -41,8 +43,8 @@ class Json extends BaseAttribute
             $value = \json_decode($value, true);
         }
 
-        if (!($value instanceof JsonCollection)) {
-            return new JsonCollection($value);
+        if (!($value instanceof ValueCollection)) {
+            return new ValueCollection($value, $this->collectionType);
         }
 
         return $value;
@@ -56,19 +58,7 @@ class Json extends BaseAttribute
      */
     public function cast($value)
     {
-        if (\is_null($value)) {
-            return $value;
-        }
-
-        if (\is_string($value)) {
-            $value = \json_decode($value, true);
-        }
-
-        if (!($value instanceof JsonCollection)) {
-            return new JsonCollection($value);
-        }
-
-        return $value;
+        return $this->hydrate($value);
     }
 
     /**
