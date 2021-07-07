@@ -20,7 +20,7 @@ use Laramore\Facades\{
 };
 use Laramore\Contracts\Eloquent\LaramoreModel;
 use Laramore\Contracts\Field\{
-    IncrementField, NumericField
+    ExtraField, IncrementField, NumericField
 };
 use Laramore\Exceptions\PrepareException;
 use Laramore\Fields\Constraint\Primary;
@@ -84,9 +84,10 @@ abstract class BaseModel extends Model implements LaramoreModel
         $this->fillable = $meta->getFieldNamesWithOption('fillable');
         $this->visible = $meta->getFieldNamesWithOption('visible');
         $this->required = $meta->getFieldNamesWithOption('required');
-        $this->appends = $meta->getFieldNamesWithOption('appends');
-        $this->with = $meta->getFieldNamesWithOption('with');
+        $this->appends = $meta->getFieldNamesWithOption('with', ExtraField::class);
+        $this->with = $meta->getFieldNamesWithOption('with', RelationField::class);
         $this->withCount = $meta->getFieldNamesWithOption('with_count');
+
         $this->timestamps = $meta->hasTimestamps();
 
         // Define all model metas.

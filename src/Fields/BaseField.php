@@ -476,8 +476,11 @@ abstract class BaseField implements Field
             throw new \LogicException("The field `$name` cannot be appended if it is not an extra field");
         }
 
-        if (($this->hasOption(Option::with()) || $this->hasOption(Option::withCount())) && !($this instanceof RelationField)) {
-            throw new \LogicException("The field `$name` cannot be autoloaded if it is not a relation field");
+        if (
+            ($this->hasOption(Option::with()) || $this->hasOption(Option::withCount()))
+            && !($this instanceof RelationField) && !($this instanceof ExtraField)) {
+
+            throw new \LogicException("The field `$name` cannot be autoloaded if it is not a relation or extra field");
         }
     }
 

@@ -85,7 +85,7 @@ class Meta implements LaramoreMeta
         Event::dispatch('meta.creating', static::class, \func_get_args());
 
         $this->setModelClass($modelClass);
-        
+
         $this->description = $this->description ?: $this->modelName;
         $this->tableName = $this->getDefaultTableName();
 
@@ -95,7 +95,7 @@ class Meta implements LaramoreMeta
     }
 
     /**
-     * Set model class and generate model group and name. 
+     * Set model class and generate model group and name.
      *
      * @param string $modelClass
      * @return void
@@ -106,11 +106,11 @@ class Meta implements LaramoreMeta
 
         foreach (MetaManager::getFacadeRoot()::$modelsPaths as $path) {
             $namespace = \str_replace('/', '\\', Str::title($path)).'\\';
-            
+
             if (Str::startsWith($this->modelClass, $namespace)) {
                 $base = Str::replaceFirst($namespace, '', $this->modelClass);
                 $elements = explode('\\', $base);
-                
+
                 $this->modelName = Str::snake(\array_pop($elements));
                 $this->modelGroup = \count($elements) === 0 ? null : Str::snake(implode('_', $elements));
 
@@ -375,13 +375,14 @@ class Meta implements LaramoreMeta
      * Return all fields with a specific option.
      *
      * @param  string $option
+     * @param  string $class The field must be an instance of the class.
      * @return array
      */
-    public function getFieldsWithOption(string $option): array
+    public function getFieldsWithOption(string $option, string $class=null): array
     {
         $fields = [];
 
-        foreach ($this->getFields() as $field) {
+        foreach ($this->getFields($class) as $field) {
             if ($field->hasOption($option)) {
                 $fields[] = $field;
             }
@@ -394,13 +395,14 @@ class Meta implements LaramoreMeta
      * Return all field names with a specific option.
      *
      * @param  string $option
+     * @param  string $class The field must be an instance of the class.
      * @return array
      */
-    public function getFieldNamesWithOption(string $option): array
+    public function getFieldNamesWithOption(string $option, string $class=null): array
     {
         return \array_map(function ($field) {
             return $field->getName();
-        }, $this->getFieldsWithOption($option));
+        }, $this->getFieldsWithOption($option, $class));
     }
 
     /**
