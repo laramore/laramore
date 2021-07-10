@@ -220,15 +220,13 @@ class ManyToMany extends BaseComposed implements ManyRelationField
         $offName = Str::snake($offMeta->getModelName());
         $onName = Str::snake(Str::singular($this->getName()));
         $namespaceName = $this->pivotNamespace;
-        $pivotClassName = ucfirst($offName).ucfirst($onName);
+        $pivotClassName = ucfirst(Str::camel($offName)).ucfirst(Str::camel($onName));
         $pivotClass = "$namespaceName\\$pivotClassName";
 
         if ($this->usePivot) {
             if ($this->pivotClass) {
                 $pivotClass = $this->pivotClass;
             }
-
-            $this->setProperty('pivotMeta', $pivotClass::getMeta());
         } else {
             $this->pivotName = $this->replaceInFieldTemplate($this->templates['pivot'], $offName);
             $this->reversedPivotName = $this->replaceInFieldTemplate($this->templates['reversed_pivot'], $onName);
@@ -236,30 +234,32 @@ class ManyToMany extends BaseComposed implements ManyRelationField
             // Create dynamically the pivot class (only and first time I use eval, really).
             if (!\class_exists($pivotClass)) {
                 eval("namespace $namespaceName; class $pivotClassName extends \Laramore\Eloquent\FakePivot {}");
+
+                $meta = $pivotClass::getMeta();
+
+                $meta->setField(
+                    $offName,
+                    $offField = $this->pivotField::field()->on($this->getMeta()->getModelClass())
+                );
+
+                $onField = $this->pivotField::field()->on($this->getTargetModel());
+
+                if ($this->isOnSelf()) {
+                    $onField->reversedName($this->templates['self_reversed_pivot']);
+                }
+
+                $meta->setField(
+                    $onName,
+                    $onField
+                );
+
+                $this->reversedPivotName = $onField->getReversedField()->getName();
+
+                $meta->pivots($onField, $offField);
             }
-
-            $this->setProperty('pivotMeta', $pivotClass::getMeta());
-
-            $this->pivotMeta->setField(
-                $offName,
-                $offField = $this->pivotField::field()->on($this->getMeta()->getModelClass())
-            );
-
-            $onField = $this->pivotField::field()->on($this->getTargetModel());
-
-            if ($this->isOnSelf()) {
-                $onField->reversedName($this->templates['self_reversed_pivot']);
-            }
-
-            $this->pivotMeta->setField(
-                $onName,
-                $onField
-            );
-
-            $this->reversedPivotName = $onField->getReversedField()->getName();
-
-            $this->pivotMeta->pivots($onField, $offField);
         }
+
+        $this->setProperty('pivotMeta', $pivotClass::getMeta());
 
         [$source, $target] = $this->pivotMeta->getPivots();
 

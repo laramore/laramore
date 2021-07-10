@@ -84,9 +84,9 @@ abstract class BaseModel extends Model implements LaramoreModel
         $this->fillable = $meta->getFieldNamesWithOption('fillable');
         $this->visible = $meta->getFieldNamesWithOption('visible');
         $this->required = $meta->getFieldNamesWithOption('required');
-        $this->appends = $meta->getFieldNamesWithOption('with', ExtraField::class);
         $this->with = $meta->getFieldNamesWithOption('with', RelationField::class);
         $this->withCount = $meta->getFieldNamesWithOption('with_count');
+        $this->appends = array_values(array_diff($meta->getFieldNamesWithOption('with', ExtraField::class), $this->with));
 
         $this->timestamps = $meta->hasTimestamps();
 

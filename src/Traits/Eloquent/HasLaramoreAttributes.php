@@ -226,6 +226,22 @@ trait HasLaramoreAttributes
     }
 
     /**
+     * Get the value of an attribute using its mutator.
+     *
+     * @param  string  $key
+     * @param  mixed  $value
+     * @return mixed
+     */
+    protected function mutateAttribute($key, $value)
+    {
+        if ($this->hasGetMutator($key)) {
+            return parent::mutateAttribute($key, $value);
+        }
+
+        return static::getExtraValue($key);
+    }
+
+    /**
      * Return the attribute value from array.
      *
      * @param mixed $key
