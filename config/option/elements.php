@@ -84,6 +84,9 @@ return [
             'fillable',
         ],
     ],
+    'select' => [
+        'description' => 'Select by default in database',
+    ],
     'small_number' => [
         'description' => 'Small number value',
         'remove' => [

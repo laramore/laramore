@@ -17,36 +17,36 @@ return [
 
     Binary::class => [
         'options' => [
-            'fillable', 'required',
+            'select', 'fillable', 'required',
         ],
     ],
     Boolean::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
     ],
     Char::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
         'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
     ],
     DateTime::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
         'format' => 'Y-m-d H:i:s',
     ],
     Decimal::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
         'total_digits' => 8,
         'decimal_digits' => 2,
     ],
     Email::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
         'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
         'patterns' => [
@@ -59,18 +59,18 @@ return [
     ],
     Enum::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
     ],
     Increment::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
         'step' => 1,
     ],
     Integer::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
     ],
     Json::class => [
@@ -135,7 +135,7 @@ return [
     ],
     Password::class => [
         'options' => [
-            'fillable', 'required', 'need_lowercase', 'need_uppercase', 'need_number'
+            'select', 'fillable', 'required', 'need_lowercase', 'need_uppercase', 'need_number'
         ],
         'max_length' => 60, // Length required for hashs.
         'min_length' => 8, // Min length of any password.
@@ -149,7 +149,7 @@ return [
     ],
     PrimaryId::class => [
         'options' => [
-            'visible', 'fillable', 'required', 'unsigned',
+            'select', 'visible', 'fillable', 'required', 'unsigned',
         ],
         'step' => 1,
     ],
@@ -170,17 +170,17 @@ return [
     ],
     UniqueId::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
     ],
     Text::class => [
         'options' => [
-            'visible', 'fillable', 'required', 'not_blank',
+            'select', 'visible', 'fillable', 'required', 'not_blank',
         ],
     ],
     Uri::class => [
         'options' => [
-            'visible', 'fillable', 'required',
+            'select', 'visible', 'fillable', 'required',
         ],
         'max_length' => Schema::getFacadeRoot()::$defaultStringLength,
         'patterns' => [

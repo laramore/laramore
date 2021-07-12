@@ -67,16 +67,28 @@ trait HasLaramoreBuilder
      */
     public function get($columns=['*'])
     {
-        $builder = $this->applyScopes();
+        return parent::get($columns)->fetchingDatabase(false);
+    }
 
-        // If we actually found models we will also eager load any relationships that
-        // have been specified as needing to be eager loaded, which will solve the
-        // n+1 query issue for the developers to avoid running a lot of queries.
-        if (count($models = $builder->getModels($columns)) > 0) {
-            $models = $builder->eagerLoadRelations($models);
+    /**
+     * Get the hydrated models without eager loading.
+     *
+     * @param  array|string  $columns
+     * @return \Illuminate\Database\Eloquent\Model[]|static[]
+     */
+    public function getModels($columns=['*'])
+    {
+        $columns = Arr::wrap($columns);
+
+        foreach ($columns as $key => $column) {
+            if ($column === '*') {
+                unset($columns[$key]);
+
+                return parent::getModels(array_unique([...$this->model->select, ...$columns]));
+            }
         }
 
-        return $builder->getModel()->newCollection($models)->fetchingDatabase(false);
+        return parent::getModels($columns);
     }
 
     /**

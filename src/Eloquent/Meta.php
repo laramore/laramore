@@ -510,12 +510,12 @@ class Meta implements LaramoreMeta
 
         $this->setField(
             $createdName,
-            DateTime::field()->options(['not_nullable', 'visible', 'use_current'])
+            DateTime::field()->options(['select', 'not_nullable', 'visible', 'use_current'])
         );
 
         $this->setField(
             $updatedField,
-            $updatedField = DateTime::field()->options($autoUpdated ? ['not_nullable', 'visible'] : ['nullable', 'visible'])
+            $updatedField = DateTime::field()->options($autoUpdated ? ['select', 'not_nullable', 'visible'] : ['select', 'nullable', 'visible'])
         );
 
         if ($autoUpdated) {
@@ -559,7 +559,7 @@ class Meta implements LaramoreMeta
         } else {
             $this->setField(
                 $deletedName,
-                DateTime::field()->options(['nullable', 'visible'])
+                DateTime::field()->options(['select', 'nullable', 'visible'])
             );
         }
 

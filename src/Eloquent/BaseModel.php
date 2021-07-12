@@ -53,6 +53,13 @@ abstract class BaseModel extends Model implements LaramoreModel
     protected $required = [];
 
     /**
+     * List all selected fields.
+     *
+     * @var array
+     */
+    public $select = [];
+
+    /**
      * Indicate if the model is currently fetchingDatabase from the database.
      * Public property as the exists one it is (not a good think tbh).
      *
@@ -87,6 +94,7 @@ abstract class BaseModel extends Model implements LaramoreModel
         $this->with = $meta->getFieldNamesWithOption('with', RelationField::class);
         $this->withCount = $meta->getFieldNamesWithOption('with_count');
         $this->appends = array_values(array_diff($meta->getFieldNamesWithOption('with', ExtraField::class), $this->with));
+        $this->select = $meta->getFieldNamesWithOption('select');
 
         $this->timestamps = $meta->hasTimestamps();
 
