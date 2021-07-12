@@ -52,6 +52,7 @@ trait ModelExtra
             if (\is_object($model) || Arr::isAssoc($model)) {
                 return $model[$this->getName()];
             } else if (isset($model[0])) {
+                // TODO: Why ?
                 return $model[0];
             }
         }

@@ -197,12 +197,12 @@ trait HasLaramoreAttributes
         }
 
         // If a relation is defined with this key, return it (ex: pivot).
-        if ($this->hasRelationValue($key)) {
-            return $this->getRelationValue($key);
+        if ($this->hasRelation($key)) {
+            return $this->getRelation($key);
         }
 
         // Else, simply return the extra value.
-        return $this->getExtraValue($key);
+        return $this->getExtra($key);
     }
 
     /**
@@ -238,7 +238,7 @@ trait HasLaramoreAttributes
             return parent::mutateAttribute($key, $value);
         }
 
-        return static::getExtraValue($key);
+        return $this->getAttribute($key);
     }
 
     /**

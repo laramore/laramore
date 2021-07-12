@@ -29,11 +29,13 @@ use Laramore\Contracts\Field\RelationField;
 use Laramore\Eloquent\Builder;
 use Laramore\Eloquent\Meta;
 use Laramore\Eloquent\ModelCollection;
-use Laramore\Traits\Eloquent\HasLaramoreAttributes;
+use Laramore\Traits\Eloquent\{
+    HasLaramoreAttributes, HasLaramoreRelations
+};
 
 abstract class BaseModel extends Model implements LaramoreModel
 {
-    use Macroable, HasLaramoreAttributes {
+    use Macroable, HasLaramoreAttributes, HasLaramoreRelations {
         Macroable::__call as public __callMacro;
         Macroable::__callStatic as public __callStaticMacro;
     }
