@@ -199,32 +199,6 @@ abstract class BaseModel extends Model implements LaramoreModel
     }
 
     /**
-     * Execute a query for a single record by ID.
-     *
-     * @param  array|mixed $ids     Array of keys, like [column => value].
-     * @param  array|mixed $columns
-     * @return mixed|static
-     */
-    public static function find($ids, $columns=['*'])
-    {
-        $instance = new static;
-        $query = $instance->newQuery();
-        $ids = \is_array($ids) ? $ids : [$ids];
-
-        if ($instance->getPrimaryKey()->isComposed()) {
-            foreach ($instance->getKeyName() as $index => $attname) {
-                $query->where($attname, Operator::equal(), Arr::isAssoc($ids) ? $ids[$attname] : $ids[$index]);
-            }
-        } else {
-            $attname = $instance->getKeyName();
-
-            $query->where($attname, Operator::equal(), Arr::isAssoc($ids) ? $ids[$attname] : $ids[0]);
-        }
-
-        return $query->first($columns);
-    }
-
-    /**
      * Get the casts array.
      *
      * @return array

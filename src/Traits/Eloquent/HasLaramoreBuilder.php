@@ -34,29 +34,51 @@ trait HasLaramoreBuilder
      * @param  array|mixed $attributes
      * @return \Illuminate\Database\Eloquent\Model
      */
-    public function newModelInstance($attributes=[])
+    public function newModelInstance($attributes=[], bool $fetchingDatabase=true)
     {
-        $model = $this->model->newInstance($attributes, true)->setConnection(
+        $model = tap($this->model->newInstance($attributes, $fetchingDatabase)->setConnection(
             $this->query->getConnection()->getName()
-        );
-        $model->fetchingDatabase = false;
+        ), function ($model) {
+            $model->fetchingDatabase = false;
+        });
 
         return $model;
     }
 
     /**
+     * Save a new model and return the instance.
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model|$this
+     */
+    public function create(array $attributes = [])
+    {
+        return tap($this->newModelInstance($attributes, false), function ($instance) {
+            $instance->save();
+        });
+    }
+
+    /**
      * Add a where clause on the primary key to the query.
      *
-     * @param  mixed  $id
+     * @param  mixed  $ids
      * @return $this
      */
-    public function whereKey($id)
+    public function whereKey($ids)
     {
-        if ($this->model::getMeta()->hasField('key')) {
-            return $this->dynamicWhere('whereKey', \func_get_args());
+        $ids = \is_array($ids) ? $ids : [$ids];
+
+        if ($this->getModel()->getPrimaryKey()->isComposed()) {
+            foreach ($this->getModel()->getKeyName() as $index => $attname) {
+                $this->where($attname, Operator::equal(), Arr::isAssoc($ids) ? $ids[$attname] : $ids[$index]);
+            }
+        } else {
+            $attname = $this->getModel()->getKeyName();
+
+            $this->where($attname, Operator::equal(), Arr::isAssoc($ids) ? $ids[$attname] : $ids[0]);
         }
 
-        return parent::whereKey($id);
+        return $this;
     }
 
     /**
