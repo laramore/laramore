@@ -148,11 +148,11 @@ trait HasFields
     /**
      * Return the set value for a relation field.
      *
-     * @param ExtraField                       $field
+     * @param Field                       $field
      * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
-    public function retrieveFieldValue(ExtraField $field, $model)
+    public function retrieveFieldValue(Field $field, $model)
     {
         return $field->retrieve($model);
     }

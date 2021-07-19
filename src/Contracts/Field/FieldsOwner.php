@@ -100,11 +100,11 @@ interface FieldsOwner
     /**
      * Retrieve values from the relation field.
      *
-     * @param ExtraField                       $field
+     * @param Field                       $field
      * @param LaramoreModel|array|\ArrayAccess $model
      * @return mixed
      */
-    public function retrieveFieldValue(ExtraField $field, $model);
+    public function retrieveFieldValue(Field $field, $model);
 
     /**
      * Return the get value for a relation field.

@@ -216,13 +216,24 @@ trait HasLaramoreAttributes
         // If the attribute has a get mutator, we will call that then return what
         // it returns as the value, which is useful for transforming values on
         // retrieval from the model to a form that is more useful for usage.
-        if (static::getMeta()->hasField($key, AttributeField::class) && $this->hasGetMutator($key)) {
-            $field = static::getMeta()->getField($key);
-
-            return $this->mutateAttribute($key, $field->getOwner()->getFieldValue($field, $this));
+        if ($this->hasGetMutator($key)) {
+            return $this->mutateAttribute($key, $this->getAttributeFromArray($key));
         }
 
-        return $this->getAttributeFromArray($key);
+        // If the key already exists in the attributes array, return it.
+        if ($this->hasAttributeValue($key)) {
+            return $this->getAttributeFromArray($key);
+        }
+
+        // If the user did not set any custom methods to handle this attribute,
+        // we call the field getter.
+        if (static::getMeta()->hasField($key, AttributeField::class)) {
+            $field = static::getMeta()->getField($key, AttributeField::class);
+
+            return tap($field->getOwner()->retrieveFieldValue($field, $this), function ($results) use ($key) {
+                $this->setAttributeValue($key, $results);
+            });
+        }
     }
 
     /**
@@ -456,6 +467,7 @@ trait HasLaramoreAttributes
         // it is a relationship and will load and return results from the query
         // and hydrate the relationship's value on the "relationships" array.
         if (\method_exists($this, $key)) {
+            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             return $this->getRelationshipFromMethod($key);
         }
 

@@ -58,6 +58,22 @@ trait ModelAttribute
     }
 
     /**
+     * Retrieve values from the relation field.
+     *
+     * @param LaramoreModel|array|\ArrayAccess $model
+     * @return mixed
+     */
+    public function retrieve($model)
+    {
+        if (! $model->hasAttributeValue('id')) return;
+
+        // TODO: Must be improved
+        return $this->get(
+            $this->getModel()::find($model->id, [$this->getNative()])
+        );
+    }
+
+    /**
      * Set the value for the field.
      *
      * @param LaramoreModel|array|\ArrayAccess $model
