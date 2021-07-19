@@ -18,6 +18,7 @@ use Laramore\Facades\{
 use Closure;
 use Illuminate\Support\Arr;
 use Laramore\Contracts\Field\AttributeField;
+use Laramore\Elements\OperatorElement;
 
 trait HasLaramoreBuilder
 {
@@ -329,8 +330,14 @@ trait HasLaramoreBuilder
         $parts = \explode('_', Str::lower(Str::snake($method)));
         $nextParts = [];
 
-        if (\count($parts) === 1 && \count($parameters) && Operator::has($parts[0])) {
-            return $this->where(\array_shift($parameters), Operator::get($parts[0]), (\array_shift($parameters) ?? null), $boolean);
+        if (\count($parts) === 1 && \count($parameters)) {
+            if (Operator::has($parameters[0])) {
+                return $this->where($parts[0], Operator::get(array_shift($parameters)), (array_shift($parameters) ?? null), $boolean);
+            }
+
+            if ($parameters[0] instanceof OperatorElement) {
+                return $this->where($parts[0], array_shift($parameters), (array_shift($parameters) ?? null), $boolean);
+            }
         }
 
         do {

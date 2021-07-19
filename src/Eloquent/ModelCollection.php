@@ -27,4 +27,9 @@ class ModelCollection extends Collection implements LaramoreCollection
             $model->fetchingDatabase = $fetchingDatabase;
         });
     }
+
+    public function query()
+    {
+        return $this->toQuery();
+    }
 }
