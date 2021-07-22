@@ -10,16 +10,15 @@
 
 namespace Laramore\Traits\Eloquent;
 
+use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Laramore\Contracts\Field\{
     AttributeField, RelationField, ExtraField
 };
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Laramore\Elements\Element;
-use Laramore\Eloquent\Relations\MorphTo;
 
 trait HasLaramoreAttributes
 {
@@ -467,7 +466,6 @@ trait HasLaramoreAttributes
         // it is a relationship and will load and return results from the query
         // and hydrate the relationship's value on the "relationships" array.
         if (\method_exists($this, $key)) {
-            debug_print_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
             return $this->getRelationshipFromMethod($key);
         }
 
@@ -802,22 +800,6 @@ trait HasLaramoreAttributes
         }
 
         return Arr::get(Relation::morphMap() ?: [], $class, $class);
-    }
-
-    /**
-     * Instantiate a new MorphTo relationship.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder $query
-     * @param  \Illuminate\Database\Eloquent\Model   $parent
-     * @param  string|mixed                          $foreignKey
-     * @param  string|mixed                          $ownerKey
-     * @param  string|mixed                          $type
-     * @param  string|mixed                          $relation
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
-     */
-    protected function newMorphTo(Builder $query, Model $parent, $foreignKey, $ownerKey, $type, $relation)
-    {
-        return new MorphTo($query, $parent, $foreignKey, $ownerKey, $type, $relation);
     }
 
     /**

@@ -11,9 +11,7 @@
 namespace Laramore\Eloquent;
 
 use Illuminate\Database\Eloquent\Model as Model;
-use Illuminate\Support\{
-    Arr, Str
-};
+use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
 use Laramore\Facades\{
     Meta as MetaManager, Operator
@@ -182,6 +180,20 @@ abstract class BaseModel extends Model implements LaramoreModel
     }
 
     /**
+     * Determine if two models have the same ID and belong to the same table.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model|null  $model
+     * @return bool
+     */
+    public function is($model)
+    {
+        return ! is_null($model) &&
+               $this->getKey() == $model->getKey() &&
+               $this->getTable() === $model->getTable() &&
+               $this->getConnectionName() === $model->getConnectionName();
+    }
+
+    /**
      * Set the keys for a save update query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder|mixed $query
@@ -309,6 +321,32 @@ abstract class BaseModel extends Model implements LaramoreModel
     }
 
     /**
+     * Get a new query builder that doesn't have any global scopes or eager loading.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function newModelQuery(string $relation=null)
+    {
+        if (! is_null($relation)) {
+            return $this->newRelationQuery($relation);
+        }
+
+        return parent::newModelQuery();
+    }
+
+    /**
+     * Get a new query builder that doesn't have any global scopes or eager loading.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function newRelationQuery(string $relation)
+    {
+        $field = static::getMeta()->getField($relation, RelationField::class);
+
+        return $field->getOwner()->relateFieldValue($field, $this);
+    }
+
+    /**
      * Create a new Eloquent query builder for the model.
      * Override the original method.
      *
@@ -390,9 +428,7 @@ abstract class BaseModel extends Model implements LaramoreModel
     public function __call($method, $parameters)
     {
         if (static::getMeta()->hasField(Str::snake($method), RelationField::class)) {
-            $field = static::getMeta()->getField(Str::snake($method));
-
-            return $field->getOwner()->relateFieldValue($field, $this);
+            return $this->newRelationQuery(Str::snake($method));
         }
 
         if (static::hasMacro($method)) {

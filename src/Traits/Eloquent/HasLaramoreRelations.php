@@ -13,7 +13,9 @@ namespace Laramore\Traits\Eloquent;
 use Illuminate\Database\Eloquent\{
     Builder, Model
 };
-use Laramore\Eloquent\Relations\BelongsToMany;
+use Laramore\Eloquent\Relations\{
+    BelongsToMany, MorphTo
+};
 
 trait HasLaramoreRelations
 {
@@ -36,4 +38,19 @@ trait HasLaramoreRelations
         return new BelongsToMany($query, $parent, $table, $foreignPivotKey, $relatedPivotKey, $parentKey, $relatedKey, $relationName);
     }
 
+    /**
+     * Instantiate a new MorphTo relationship.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder $query
+     * @param  \Illuminate\Database\Eloquent\Model   $parent
+     * @param  string|mixed                          $foreignKey
+     * @param  string|mixed                          $ownerKey
+     * @param  string|mixed                          $type
+     * @param  string|mixed                          $relation
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
+    protected function newMorphTo(Builder $query, Model $parent, $foreignKey, $ownerKey, $type, $relation)
+    {
+        return new MorphTo($query, $parent, $foreignKey, $ownerKey, $type, $relation);
+    }
 }
