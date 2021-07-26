@@ -190,13 +190,13 @@ abstract class BaseComposed extends BaseField implements ComposedField
      *
      * @return array<string,array<Field>>
      */
-    public function decomposed(): array
+    public function decompose(): array
     {
         $fieldsByModels = [];
 
         foreach ($this->getFields() as $field) {
             if ($field instanceof ComposedField) {
-                \array_merge_recursive($fieldsByModels, $field->decomposed());
+                \array_merge_recursive($fieldsByModels, $field->decompose());
             } else {
                 $model = $field->getMeta()->getModelClass();
 
@@ -204,7 +204,7 @@ abstract class BaseComposed extends BaseField implements ComposedField
                     $fieldsByModels[$model] = [];
                 }
 
-                $fieldsByModels[$model][] = $field;
+                $fieldsByModels[$model][$field->getName()] = $field;
             }
         }
 

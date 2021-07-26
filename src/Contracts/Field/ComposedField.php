@@ -17,5 +17,5 @@ interface ComposedField extends ExtraField, FieldsOwner
      *
      * @return array<string,array<Field>>
      */
-    public function decomposed(): array;
+    public function decompose(): array;
 }
