@@ -19,7 +19,7 @@ use Laramore\Contracts\Eloquent\{
     LaramoreModel, LaramoreBuilder
 };
 use Laramore\Contracts\Field\{
-    Field, ComposedField, AttributeField, RelationField, ExtraField
+    Field, ComposedField, AttributeField, RelationField
 };
 
 abstract class BaseComposed extends BaseField implements ComposedField
@@ -183,6 +183,32 @@ abstract class BaseComposed extends BaseField implements ComposedField
         }
 
         return $this->fields;
+    }
+
+    /**
+     * Decompose all fields by models.
+     *
+     * @return array<string,array<Field>>
+     */
+    public function decomposed(): array
+    {
+        $fieldsByModels = [];
+
+        foreach ($this->getFields() as $field) {
+            if ($field instanceof ComposedField) {
+                \array_merge_recursive($fieldsByModels, $field->decomposed());
+            } else {
+                $model = $field->getMeta()->getModelClass();
+
+                if (! isset($fieldsByModels[$model])) {
+                    $fieldsByModels[$model] = [];
+                }
+
+                $fieldsByModels[$model][] = $field;
+            }
+        }
+
+        return $fieldsByModels;
     }
 
     /**
