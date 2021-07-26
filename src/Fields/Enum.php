@@ -10,13 +10,14 @@
 
 namespace Laramore\Fields;
 
-use Illuminate\Support\Arr;
+use Laramore\Contracts\Field\EnumField;
 use Laramore\Elements\{
     EnumElement, EnumManager
 };
+use Laramore\Exceptions\FieldException;
 use Laramore\Exceptions\LockException;
 
-class Enum extends BaseAttribute
+class Enum extends BaseAttribute implements EnumField
 {
     /**
      * All listed elements
@@ -82,6 +83,10 @@ class Enum extends BaseAttribute
      */
     public function getElement($key): EnumElement
     {
+        if (! $this->hasElement($key)) {
+            throw new FieldException($this, 'The value '.((string) $key).' does not exist');
+        }
+
         return $this->elements->get($key);
     }
 

@@ -134,6 +134,7 @@ abstract class BaseModel extends Model implements LaramoreModel
     public function getKeyName()
     {
         $primaryKey = $this->getPrimaryKey();
+        if (! $primaryKey) return;
 
         if ($primaryKey->isComposed()) {
             return \array_map(function ($attribute) {
@@ -166,7 +167,10 @@ abstract class BaseModel extends Model implements LaramoreModel
      */
     public function getKey()
     {
-        if ($this->getPrimaryKey()->isComposed()) {
+        $primaryKey = $this->getPrimaryKey();
+        if (! $primaryKey) return;
+
+        if ($primaryKey->isComposed()) {
             $values = [];
 
             foreach ($this->getKeyName() as $name) {
