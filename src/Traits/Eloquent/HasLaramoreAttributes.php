@@ -10,7 +10,6 @@
 
 namespace Laramore\Traits\Eloquent;
 
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Laramore\Contracts\Field\{
     AttributeField, RelationField, ExtraField
@@ -28,6 +27,8 @@ trait HasLaramoreAttributes
      * @var array
      */
     protected $extras = [];
+
+    protected static $recursiveRelations = [];
 
     /**
      * Update the creation and update timestamps.
@@ -274,14 +275,14 @@ trait HasLaramoreAttributes
     public function setAttribute($key, $value)
     {
         if (static::getMeta()->hasField($key)) {
-            // If the field is not fillable, throw an exception.
-            if (!$this->isFillable($key)) {
-                throw new MassAssignmentException(sprintf(
-                    'Add [%s] to fillable property to allow mass assignment on [%s].',
-                    $key,
-                    get_class($this)
-                ));
-            }
+            // // If the field is not fillable, throw an exception.
+            // if (!$this->isFillable($key)) {
+            //     throw new MassAssignmentException(sprintf(
+            //         'Add [%s] to fillable property to allow mass assignment on [%s].',
+            //         $key,
+            //         get_class($this)
+            //     ));
+            // }
 
             $field = static::getMeta()->getField($key);
 
@@ -891,12 +892,38 @@ trait HasLaramoreAttributes
     }
 
     /**
+     * Get an attribute array of all arrayable relations.
+     * Remove repeated relations.
+     *
+     * @return array
+     */
+    protected function getArrayableRelations()
+    {
+        $relations = $this->getArrayableItems($this->relations);
+
+        foreach ($relations as $key => $value) {
+            if (in_array($value, static::$recursiveRelations)) {
+                unset($relations[$key]);
+            }
+        }
+
+        return $relations;
+    }
+
+    /**
      * Convert the model's relations to an array.
+     * Recusive relations avoid models to be called recursively.
      *
      * @return array
      */
     public function relationsToArray()
     {
+        if (in_array($this, static::$recursiveRelations)) {
+            return [];
+        }
+
+        static::$recursiveRelations[] = $this;
+
         $relations = parent::relationsToArray();
 
         foreach ($relations as $key => $value) {
@@ -906,6 +933,8 @@ trait HasLaramoreAttributes
                 $relations[$key] = $field->getOwner()->serializeFieldValue($field, $value);
             }
         }
+
+        unset(static::$recursiveRelations[array_search($this, static::$recursiveRelations)]);
 
         return $relations;
     }
