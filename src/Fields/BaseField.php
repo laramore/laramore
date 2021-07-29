@@ -19,9 +19,10 @@ use Laramore\Contracts\{
     Eloquent\LaramoreMeta, Field\Field
 };
 use Laramore\Contracts\Field\{
-    RelationField, ExtraField
+    AttributeField, ExtraField
 };
 use Laramore\Elements\Element;
+use Laramore\Exceptions\FieldException;
 use Laramore\Traits\{
     IsOwned, IsLocked, HasProperties, HasOptions, HasLockedMacros
 };
@@ -407,7 +408,7 @@ abstract class BaseField implements Field
         $owner = $this->getOwner();
 
         if (!($owner instanceof LaramoreMeta) && !($owner instanceof BaseComposed)) {
-            throw new \LogicException('A field should be owned by a LaramoreMeta or a BaseComposed');
+            throw new FieldException($this, 'This should be owned by a LaramoreMeta or a BaseComposed');
         }
     }
 
@@ -450,34 +451,36 @@ abstract class BaseField implements Field
      */
     protected function checkOptions()
     {
-        $name = $this->getQualifiedName();
-
         if ($this->hasProperty('default')) {
             if (\is_null($this->getDefault())) {
                 if ($this->hasOption(Option::notNullable())) {
-                    throw new \LogicException("The field `$name` cannot be null and defined as null by default");
+                    throw new FieldException($this, "Cannot be null and defined as null by default");
                 } else if (!$this->hasOption(Option::nullable()) && !$this->hasOption(Option::required())) {
-                    throw new \LogicException("The field `$name` cannot be null, defined as null by default and not required");
+                    throw new FieldException($this, "Cannot be null, defined as null by default and not required");
                 }
             } else if ($this->hasOption(Option::required())) {
-                throw new \LogicException("The field `$name` cannot have a default value and be required");
+                throw new FieldException($this, "Cannot have a default value and be required");
             }
         }
 
         if (!$this->hasOption(Option::fillable()) && $this->hasOption(Option::required())) {
-            throw new \LogicException("The field `$name` must be fillable if it is required");
+            throw new FieldException($this, "Must be fillable if it is required");
         }
 
         if ($this->hasOption(Option::notNullable()) && $this->hasOption(Option::nullable())) {
-            throw new \LogicException("The field `$name` cannot be nullable and not nullable on the same time");
+            throw new FieldException($this, "Cannot be nullable and not nullable on the same time");
         }
 
         if ($this->hasOption(Option::append()) && !($this instanceof ExtraField)) {
-            throw new \LogicException("The field `$name` cannot be appended if it is not an extra field");
+            throw new FieldException($this, "Cannot be appended if it is not an extra field");
+        }
+
+        if ($this->hasOption(Option::select()) && !($this instanceof AttributeField)) {
+            throw new FieldException($this, "Cannot be selected if it is not an attribute field");
         }
 
         if (($this->hasOption(Option::with()) || $this->hasOption(Option::withCount())) && !($this instanceof ExtraField)) {
-            throw new \LogicException("The field `$name` cannot be autoloaded if it is not a relation or extra field");
+            throw new FieldException($this, "Cannot be autoloaded if it is not a relation or extra field");
         }
     }
 

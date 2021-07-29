@@ -10,12 +10,14 @@
 
 namespace Laramore\Fields\Reversed;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Laramore\Elements\OperatorElement;
 use Laramore\Fields\BaseField;
 use Laramore\Contracts\{
     Field\ManyRelationField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder
 };
+use Laramore\Exceptions\FieldException;
 use Laramore\Facades\Operator;
 use Laramore\Traits\Field\HasOneRelation;
 
@@ -37,11 +39,21 @@ class HasMany extends BaseField implements ManyRelationField
             return $value;
         }
 
-        if (\is_null($value) || \is_array($value)) {
-            return collect($value);
+        if (\is_null($value) || (\is_array($value) && ! Arr::isAssoc($value))) {
+            $modelClass = $this->getTargetModel();
+
+            if (is_null($value)) {
+                $value = [];
+            } else {
+                $value = array_map(function ($subValue) {
+                    return $this->castModel($subValue);
+                }, $value);
+            }
+
+            return (new $modelClass)->newCollection($value);
         }
 
-        return collect($this->castModel($value));
+        throw new FieldException($this, 'This field required a list of models or objects');
     }
 
     /**

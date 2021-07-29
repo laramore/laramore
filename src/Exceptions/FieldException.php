@@ -10,17 +10,21 @@
 
 namespace Laramore\Exceptions;
 
+use Illuminate\Support\Arr;
 use Laramore\Contracts\Field\Field;
 
 class FieldException extends LaramoreException
 {
     protected $field;
 
-    public function __construct(Field $field, string $message, int $code=400)
+    protected $errors;
+
+    public function __construct(Field $field, $errors, int $code=400)
     {
         $this->field = $field;
+        $this->errors = Arr::wrap($errors);
 
-        parent::__construct($message, $code);
+        parent::__construct("The field {$field->getQualifiedName()} excepted: ".implode('. ', $this->errors), $code);
     }
 
     /**
@@ -28,8 +32,20 @@ class FieldException extends LaramoreException
      *
      * @return Field
      */
-    public function getField(): Field
+    public function field(): Field
     {
         return $this->field;
+    }
+
+    /**
+     * Return the field that threw the exception.
+     *
+     * @return array
+     */
+    public function errors(): array
+    {
+        return [
+            $this->field->getName() => $this->errors,
+        ];
     }
 }
