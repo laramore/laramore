@@ -14,7 +14,7 @@ use Laramore\Contracts\{
     Eloquent\LaramoreModel, Field\Constraint\Constraint
 };
 
-interface RelationField extends ExtraField
+interface RelationField extends Field
 {
     /**
      * Return the relation with this field.

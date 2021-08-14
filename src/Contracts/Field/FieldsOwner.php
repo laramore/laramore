@@ -13,6 +13,7 @@ namespace Laramore\Contracts\Field;
 use Laramore\Contracts\{
     Eloquent\LaramoreBuilder, Eloquent\LaramoreModel, Field\Field, Field\AttributeField, Field\RelationField, Field\ExtraField
 };
+use Laramore\Elements\OperatorElement;
 
 interface FieldsOwner
 {
@@ -107,79 +108,14 @@ interface FieldsOwner
     public function retrieveFieldValue(Field $field, $model);
 
     /**
-     * Return the get value for a relation field.
-     *
-     * @param RelationField $field
-     * @param LaramoreModel $model
-     * @return mixed
-     */
-    public function relateFieldValue(RelationField $field, LaramoreModel $model);
-
-    /**
-     * Reverbate the relation value for a specific field.
-     *
-     * @param RelationField $field
-     * @param LaramoreModel $model
-     * @param mixed         $value
-     * @return mixed
-     */
-    public function reverbateFieldValue(RelationField $field, LaramoreModel $model, $value);
-
-    /**
      * Return generally a Builder after adding to it a condition.
      *
      * @param Field                       $field
      * @param LaramoreBuilder             $builder
-     * @param OperatorElement|string|null $operator
+     * @param OperatorElement $operator
      * @param mixed                       $value
      * @param mixed                       ...$args
      * @return mixed
      */
-    public function whereFieldValue(Field $field, LaramoreBuilder $builder, $operator, $value=null, ...$args);
-
-    /**
-     * Serialize a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function serializeFieldValue(Field $field, $value);
-
-    /**
-     * Dry a value for a specific field.
-     *
-     * @param AttributeField $field
-     * @param mixed          $value
-     * @return mixed
-     */
-    public function dryFieldValue(AttributeField $field, $value);
-
-    /**
-     * Hydrate a value for a specific field.
-     *
-     * @param AttributeField $field
-     * @param mixed          $value
-     * @return mixed
-     */
-    public function hydrateFieldValue(AttributeField $field, $value);
-
-    /**
-     * Cast a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function castFieldValue(Field $field, $value);
-
-    /**
-     * Call a field attribute method that is not basic.
-     *
-     * @param Field  $field
-     * @param string $methodName
-     * @param array  $args
-     * @return mixed
-     */
-    public function callFieldValueMethod(Field $field, string $methodName, array $args);
+    public function whereFieldValue(Field $field, LaramoreBuilder $builder, OperatorElement $operator, $value=null, ...$args);
 }

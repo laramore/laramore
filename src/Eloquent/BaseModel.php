@@ -274,6 +274,16 @@ abstract class BaseModel extends Model implements LaramoreModel
     }
 
     /**
+     * Get a model field.
+     *
+     * @return Field
+     */
+    public static function getField(string $key)
+    {
+        return static::getMeta()->getField($key);
+    }
+
+    /**
      * Create a new instance of the given model.
      *
      * @param  array|mixed   $attributes

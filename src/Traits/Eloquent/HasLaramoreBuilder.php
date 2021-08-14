@@ -17,6 +17,7 @@ use Laramore\Facades\{
 };
 use Closure;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Laramore\Contracts\Field\AttributeField;
 use Laramore\Elements\OperatorElement;
 
@@ -146,11 +147,7 @@ trait HasLaramoreBuilder
         }
 
         if ($column instanceof Expression) {
-            if (\version_compare(app()::VERSION, '5.7.0', '<')) {
-                $this->query->where(...\func_get_args());
-            } else {
-                $this->forwardCallTo($this->getQuery(), 'where', \func_get_args());
-            }
+            $this->forwardCallTo($this->getQuery(), 'where', \func_get_args());
 
             return $this;
         }
@@ -174,11 +171,7 @@ trait HasLaramoreBuilder
                 $builder = $model->newEloquentBuilder($this->getQuery())->setModel($model);
                 $builder->getQuery()->from($originalTable);
 
-                if (\version_compare(app()::VERSION, '5.7.0', '<')) {
-                    $model->registerGlobalScopes($builder)->where(...\func_get_args());
-                } else {
-                    $this->forwardCallTo($model->registerGlobalScopes($builder), 'where', \func_get_args());
-                }
+                $this->forwardCallTo($model->registerGlobalScopes($builder), 'where', \func_get_args());
 
                 return $this;
             }
@@ -186,16 +179,57 @@ trait HasLaramoreBuilder
 
         $meta = $this->getModel()::getMeta();
 
-        $args = \func_get_args();
-        \array_shift($args);
-
-        if ($meta->hasField($column)) {
-            $field = $meta->getField($column);
-
-            return $field->getOwner()->whereFieldValue($field, $this, ...$args);
+        if (! $meta->hasField($column)) {
+            throw new \Exception("The column $column is not defined as attribute");
         }
 
-        return \call_user_func([$this, 'where'.Str::studly($column)], ...$args);
+        $field = $meta->getField($column);
+
+        if (func_num_args() === 2) {
+            [$operator, $value] = [Operator::equal(), $operator];
+        }
+
+        if (!($operator instanceof OperatorElement)) {
+            $operator = Operator::find($operator ?: '=');
+        }
+
+        if ($operator->needs(OperatorElement::COLLECTION_TYPE) && !($value instanceof Collection)) {
+            $value = new Collection($value);
+        }
+
+        if ($field instanceof AttributeField) {
+            switch ($operator->valueType) {
+                case OperatorElement::NULL_TYPE:
+                    $value = null;
+                    break;
+
+                case OperatorElement::BINARY_TYPE:
+                    $value = (integer) $value;
+                    break;
+            }
+        }
+
+        if ($operator->needs(OperatorElement::COLLECTION_TYPE)) {
+            $value = $value->map(function ($sub) use ($field) {
+                return $field->cast($sub);
+            });
+        } else {
+            $value = $field->cast($value);
+        }
+
+        if (\method_exists($field, $method = $operator->getWhereMethod()) || $field::hasMacro($method)) {
+            if ($operator->needs(OperatorElement::NULL_TYPE)) {
+                return \call_user_func([$field, $method], $this, $boolean);
+            }
+
+            return \call_user_func([$field, $method], $this, $value, $boolean);
+        }
+
+        if (!\in_array($operator->native, $this->getQuery()->operators)) {
+            throw new \LogicException("The operator {$operator->native} is not available for the field {$field->getName()}");
+        }
+
+        return $field->where($this, $operator, $value, $boolean);
     }
 
     /**
@@ -259,11 +293,13 @@ trait HasLaramoreBuilder
      */
     public function insertGetId($values)
     {
-        $this->getModel()->fetchingDatabase = true;
-        $this->getModel()->fill($values);
-        $this->getModel()->fetchingDatabase = false;
+        $model = $this->getModel();
 
-        return $this->toBase()->insertGetId($this->dryValues($this->getModel()->getAttributes()));
+        $model->fetchingDatabase = true;
+        $model->fill($values);
+        $model->fetchingDatabase = false;
+
+        return $this->toBase()->insertGetId($this->dryValues($model->getAttributes()));
     }
 
     /**
@@ -274,11 +310,13 @@ trait HasLaramoreBuilder
      */
     public function insert($values)
     {
-        $this->getModel()->fetchingDatabase = true;
-        $this->getModel()->fill($values);
-        $this->getModel()->fetchingDatabase = false;
+        $model = $this->getModel();
 
-        return $this->toBase()->insert($this->dryValues($this->getModel()->getAttributes()));
+        $model->fetchingDatabase = true;
+        $model->fill($values);
+        $model->fetchingDatabase = false;
+
+        return $this->toBase()->insert($this->dryValues($model->getAttributes()));
     }
 
     /**
@@ -298,7 +336,7 @@ trait HasLaramoreBuilder
 
         return $this->toBase()->update($this->dryValues(\array_merge(
             $values,
-            $this->getModel()->getDirty()
+            $model->getDirty()
         )));
     }
 

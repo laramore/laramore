@@ -38,7 +38,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Uuid;
 
-class User extends Model 
+class User extends Model
 {
     protected $fillable = ['firstname', 'lastname', 'email', 'password', 'admin', 'score', 'group_id'];
 
@@ -64,7 +64,7 @@ class User extends Model
 
         static::creating(function ($model) {
             $model->id = $model->id ?: Uuid::generate()->string;
-        });		
+        });
     }
 
     // Group relation definition.
@@ -99,6 +99,11 @@ class User extends Model
 
         return $value;
     }
+
+    public function isPasswordCorrect($password)
+    {
+        return Hash::check($this->password, $password);
+    }
 }
 
 ?>
@@ -118,11 +123,11 @@ use Laramore\Fields\{
     PrimaryUuid, Name, Email, Increment, Boolean, ManyToOne, Password
 };
 
-class User extends BaseUser 
+class User extends BaseUser
 {
     public function meta($meta) {
         // Auto generate uuid, no params required.
-        $meta->id = PrimaryUuid::field(); 
+        $meta->id = PrimaryUuid::field();
         // Generate two attributes: firstname ("First Name" format) and lastname ("LAST NAME" format).
         // It is possible to set names directly from "name".
         $meta->name = Name::field();
@@ -142,6 +147,11 @@ class User extends BaseUser
 
         // Use timestamps.
         $meta->useTimestamps();
+    }
+
+    public function isPasswordCorrect($password)
+    {
+        return $this->meta->password->isCorrect($this->password, $password);
     }
 }
 
@@ -191,7 +201,7 @@ class CreateUsersTable extends Migration
 	public function down()
 	{
         // Most of devs let this empty, not anymore with Laramore.
-		Schema::dropIfExists("users"); 
+		Schema::dropIfExists("users");
 	}
 }
 
@@ -275,7 +285,7 @@ $users = $group->users; // The users relation was fetched in the database.
 ### After, with Laravel + Laramore
 ```php
 
-// Creating a new user does define default values: 
+// Creating a new user does define default values:
 $user = new User();
 // uuid = generated uuid
 // admin = false

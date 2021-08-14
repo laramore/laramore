@@ -28,6 +28,11 @@ trait HasLaramoreAttributes
      */
     protected $extras = [];
 
+    /**
+     * During serialization, avoid recursive relations.
+     *
+     * @var array
+     */
     protected static $recursiveRelations = [];
 
     /**
@@ -43,14 +48,18 @@ trait HasLaramoreAttributes
         $class = static::class;
 
         if (!$this->exists && !\is_null($class::CREATED_AT) && !$this->isDirty($class::CREATED_AT)) {
-            $this->setRawAttributes([$class::CREATED_AT => $time]);
+            $field = $this->getField($class::CREATED_AT);
+
+            $field->set($this, $field->cast($time));
         }
 
         // Only update the updated field if the model already exists or the field cannot be null.
         if (!\is_null($class::UPDATED_AT) && !$this->isDirty($class::UPDATED_AT) && (
             $this->exists || !static::getMeta()->getField($class::UPDATED_AT)->nullable
         )) {
-            $this->setRawAttributes([$class::UPDATED_AT => $time]);
+            $field = $this->getField($class::UPDATED_AT);
+
+            $field->set($this, $field->cast($time));
         }
     }
 
@@ -101,10 +110,10 @@ trait HasLaramoreAttributes
      */
     public function resetAttribute($key)
     {
-        if (static::getMeta()->hasField($key)) {
-            $field = static::getMeta()->getField($key);
+        $meta = static::getMeta();
 
-            $field->getOwner()->resetFieldValue($field, $this);
+        if ($meta->hasField($key)) {
+            $meta->getField($key)->reset($this);
         } else {
             $this->unsetAttribute($key);
         }
@@ -119,8 +128,10 @@ trait HasLaramoreAttributes
      */
     public function resetAttributes()
     {
-        foreach (static::getMeta()->getFields() as $field) {
-            $field->getOwner()->resetFieldValue($field, $this);
+        $meta = static::getMeta();
+
+        foreach ($meta->getFields() as $field) {
+            $field->reset($this);
         }
 
         return $this;
@@ -160,10 +171,10 @@ trait HasLaramoreAttributes
      */
     public function hasAttribute($key): bool
     {
-        if (static::getMeta()->hasField($key)) {
-            $field = static::getMeta()->getField($key);
+        $meta = static::getMeta();
 
-            return $field->getOwner()->hasFieldValue($field, $this);
+        if ($meta->hasField($key)) {
+            return $meta->getField($key)->has($this);
         }
 
         return $this->hasAttributeValue($key);
@@ -188,11 +199,13 @@ trait HasLaramoreAttributes
      */
     public function getAttribute($key)
     {
-        if (static::getMeta()->hasField($key)) {
-            $field = static::getMeta()->getField($key);
+        $meta = static::getMeta();
+
+        if ($meta->hasField($key)) {
+            $field = $meta->getField($key);
 
             if (!($field instanceof AttributeField) || !$this->hasGetMutator($key)) {
-                return $field->getOwner()->getFieldValue($field, $this);
+                return $field->get($this);
             }
         }
 
@@ -225,12 +238,14 @@ trait HasLaramoreAttributes
             return $this->getAttributeFromArray($key);
         }
 
+        $meta = static::getMeta();
+
         // If the user did not set any custom methods to handle this attribute,
         // we call the field getter.
-        if (static::getMeta()->hasField($key, AttributeField::class)) {
-            $field = static::getMeta()->getField($key, AttributeField::class);
+        if ($meta->hasField($key, AttributeField::class)) {
+            $field = $meta->getField($key, AttributeField::class);
 
-            return tap($field->getOwner()->retrieveFieldValue($field, $this), function ($results) use ($key) {
+            return tap($field->retrieve($this), function ($results) use ($key) {
                 $this->setAttributeValue($key, $results);
             });
         }
@@ -274,8 +289,10 @@ trait HasLaramoreAttributes
      */
     public function setAttribute($key, $value)
     {
-        if (static::getMeta()->hasField($key)) {
-            // // If the field is not fillable, throw an exception.
+        $meta = static::getMeta();
+
+        if ($meta->hasField($key)) {
+            // If the field is not fillable, throw an exception.
             // if (!$this->isFillable($key)) {
             //     throw new MassAssignmentException(sprintf(
             //         'Add [%s] to fillable property to allow mass assignment on [%s].',
@@ -284,9 +301,10 @@ trait HasLaramoreAttributes
             //     ));
             // }
 
-            $field = static::getMeta()->getField($key);
+            $field = $meta->getField($key);
+            $value = $meta->sanitizeFieldValue($field, $this, $value);
 
-            $field->getOwner()->setFieldValue($field, $this, $value);
+            $field->set($this, $value);
         } else {
             $this->setExtraValue($key, $value);
         }
@@ -341,10 +359,10 @@ trait HasLaramoreAttributes
      */
     public function resetRelation($key)
     {
-        if (static::getMeta()->hasField($key, RelationField::class)) {
-            $field = static::getMeta()->getField($key, RelationField::class);
+        $meta = static::getMeta();
 
-            $field->getOwner()->resetFieldValue($field, $this);
+        if ($meta->hasField($key, RelationField::class)) {
+            $meta->getField($key, RelationField::class)->reset($this);
         } else {
             $this->unsetRelation($key);
         }
@@ -360,9 +378,10 @@ trait HasLaramoreAttributes
     public function resetRelations()
     {
         $this->relations = [];
+        $meta = static::getMeta();
 
-        foreach (static::getMeta()->getFields(RelationField::class) as $field) {
-            $field->getOwner()->resetFieldValue($field, $this);
+        foreach ($meta->getFields(RelationField::class) as $field) {
+            $field->reset($this);
         }
 
         return $this;
@@ -402,10 +421,10 @@ trait HasLaramoreAttributes
      */
     public function hasRelation($key): bool
     {
-        if (static::getMeta()->hasField($key, RelationField::class)) {
-            $field = static::getMeta()->getField($key, RelationField::class);
+        $meta = static::getMeta();
 
-            return $field->getOwner()->hasFieldValue($field, $this);
+        if ($meta->hasField($key, RelationField::class)) {
+            return $meta->getField($key, RelationField::class)->has($this);
         }
 
         return $this->hasRelationValue($key) || \method_exists($this, $key);
@@ -430,7 +449,9 @@ trait HasLaramoreAttributes
      */
     public function getRelation($key)
     {
-        if (static::getMeta()->hasField($key, RelationField::class)) {
+        $meta = static::getMeta();
+
+        if ($meta->hasField($key, RelationField::class)) {
             // If the field is not fillable, throw an exception.
             if (!$this->isFillable($key)) {
                 throw new MassAssignmentException(sprintf(
@@ -440,9 +461,7 @@ trait HasLaramoreAttributes
                 ));
             }
 
-            $field = static::getMeta()->getField($key, RelationField::class);
-
-            return $field->getOwner()->getFieldValue($field, $this);
+            return $meta->getField($key, RelationField::class)->getFieldValue($this);
         }
 
         return $this->getRelationValue($key);
@@ -470,14 +489,17 @@ trait HasLaramoreAttributes
             return $this->getRelationshipFromMethod($key);
         }
 
+        $meta = static::getMeta();
+
         // If the user did not set any custom methods to handle this attribute,
         // we call the field getter.
-        if (static::getMeta()->hasField($key, RelationField::class)) {
-            $field = static::getMeta()->getField($key, RelationField::class);
-
-            return tap($field->getOwner()->retrieveFieldValue($field, $this), function ($results) use ($key) {
-                $this->setRelationValue($key, $results);
-            });
+        if ($meta->hasField($key, RelationField::class)) {
+            return tap(
+                $meta->getField($key, RelationField::class)->retrieve($this),
+                function ($results) use ($key) {
+                    $this->setRelationValue($key, $results);
+                }
+            );
         }
     }
 
@@ -503,10 +525,14 @@ trait HasLaramoreAttributes
      */
     public function setRelation($key, $value)
     {
-        if (static::getMeta()->hasField($key, RelationField::class)) {
-            $field = static::getMeta()->getField($key, RelationField::class);
+        $meta = static::getMeta();
 
-            $field->getOwner()->setFieldValue($field, $this, $value);
+        if ($meta->hasField($key, RelationField::class)) {
+            $field = $meta->getField($key, RelationField::class);
+            $value = $meta->sanitizeFieldValue($field, $this, $value);
+
+            $field->reverbate($this, $value);
+            $field->set($this, $value);
         } else {
             $this->setRelationValue($key, $value);
         }
@@ -561,10 +587,10 @@ trait HasLaramoreAttributes
      */
     public function resetExtra($key)
     {
-        if (static::getMeta()->hasField($key, ExtraField::class)) {
-            $field = static::getMeta()->getField($key, ExtraField::class);
+        $meta = static::getMeta();
 
-            $field->getOwner()->resetFieldValue($field, $this);
+        if ($meta->hasField($key, ExtraField::class)) {
+            $meta->getField($key, ExtraField::class)->reset($this);
         } else {
             $this->unsetExtra($key);
         }
@@ -580,9 +606,10 @@ trait HasLaramoreAttributes
     public function resetExtras()
     {
         $this->extras = [];
+        $meta = static::getMeta();
 
-        foreach (static::getMeta()->getFields(ExtraField::class) as $field) {
-            $field->getOwner()->resetFieldValue($field, $this);
+        foreach ($meta->getFields(ExtraField::class) as $field) {
+            $field->reset($this);
         }
 
         return $this;
@@ -622,11 +649,13 @@ trait HasLaramoreAttributes
      */
     public function hasExtra($key): bool
     {
-        if (static::getMeta()->hasField($key)) {
-            $field = static::getMeta()->getField($key);
+        $meta = static::getMeta();
+
+        if ($meta->hasField($key)) {
+            $field = $meta->getField($key);
 
             if (!($field instanceof RelationField) && !($field instanceof AttributeField)) {
-                return $field->getOwner()->hasFieldValue($field, $this);
+                return $field->has($this);
             }
         }
 
@@ -652,14 +681,16 @@ trait HasLaramoreAttributes
      */
     public function getExtra($key)
     {
-        if (static::getMeta()->hasField($key)) {
-            $field = static::getMeta()->getField($key);
+        $meta = static::getMeta();
+
+        if ($meta->hasField($key)) {
+            $field = $meta->getField($key);
 
             if ($field instanceof RelationField || $field instanceof AttributeField) {
                 throw new \LogicException("The field `$key` cannot be get via `getExtra`");
             }
 
-            return $field->getOwner()->getFieldValue($field, $this);
+            return $field->get($this);
         }
 
         return $this->getExtraValue($key);
@@ -696,7 +727,7 @@ trait HasLaramoreAttributes
                 throw new \LogicException("The field `$key` cannot be get via `getExtraValue` but only via `getRelationValue`");
             }
 
-            return tap($field->getOwner()->retrieveFieldValue($field, $this), function ($results) use ($key) {
+            return tap($field->retrieve($this), function ($results) use ($key) {
                 $this->setExtraValue($key, $results);
             });
         }
@@ -724,7 +755,9 @@ trait HasLaramoreAttributes
      */
     public function setExtra($key, $value)
     {
-        if (static::getMeta()->hasField($key, ExtraField::class)) {
+        $meta = static::getMeta();
+
+        if ($meta->hasField($key, ExtraField::class)) {
             // If the field is not fillable, throw an exception.
             if (!$this->isFillable($key)) {
                 throw new MassAssignmentException(sprintf(
@@ -734,13 +767,15 @@ trait HasLaramoreAttributes
                 ));
             }
 
-            $field = static::getMeta()->getField($key, ExtraField::class);
+            $field = $meta->getField($key, ExtraField::class);
 
             if ($field instanceof RelationField) {
                 throw new \LogicException("The field `$key` cannot be set via `setExtra` but only via `setRelation`");
             }
 
-            $field->getOwner()->setFieldValue($field, $this, $value);
+            $value = $meta->sanitizeFieldValue($field, $this, $value);
+
+            $field->set($this, $value);
         } else {
             $this->setExtraValue($key, $value);
         }
@@ -771,11 +806,14 @@ trait HasLaramoreAttributes
      */
     public function setRawAttributes(array $attributes, $sync=false)
     {
-        foreach ($attributes as $key => $value) {
-            if (static::getMeta()->hasField($key)) {
-                $field = static::getMeta()->getField($key);
+        $meta = static::getMeta();
 
-                $field->getOwner()->setFieldValue($field, $this, $value);
+        foreach ($attributes as $key => $value) {
+            if ($meta->hasField($key)) {
+                $field = $meta->getField($key);
+                $value = $meta->sanitizeFieldValue($field, $this, $value);
+
+                $field->set($this, $value);
             } else {
                 $this->setExtraValue($key, $value);
             }
@@ -881,10 +919,11 @@ trait HasLaramoreAttributes
             $mutatedAttributes
         );
 
+        $meta = static::getMeta();
+
         foreach ($attributes as $key => $value) {
-            if (static::getMeta()->hasField($key, AttributeField::class)) {
-                $field = static::getMeta()->getField($key, AttributeField::class);
-                $attributes[$key] = $field->getOwner()->serializeFieldValue($field, $value);
+            if ($meta->hasField($key, AttributeField::class)) {
+                $attributes[$key] = static::getMeta()->getField($key, AttributeField::class)->serialize($value);
             }
         }
 
@@ -925,12 +964,11 @@ trait HasLaramoreAttributes
         static::$recursiveRelations[] = $this;
 
         $relations = parent::relationsToArray();
+        $meta = static::getMeta();
 
         foreach ($relations as $key => $value) {
-            if (static::getMeta()->hasField($key, RelationField::class)) {
-                $field = static::getMeta()->getField($key, RelationField::class);
-
-                $relations[$key] = $field->getOwner()->serializeFieldValue($field, $value);
+            if ($meta->hasField($key, RelationField::class)) {
+                $relations[$key] = static::getMeta()->getField($key, RelationField::class)->serialize($value);
             }
         }
 
@@ -955,14 +993,13 @@ trait HasLaramoreAttributes
             $extras[$key] = $this->mutateAttributeForArray($key, null);
         }
 
-        foreach ($extras as $key => $value) {
-            if (static::getMeta()->hasField($key, ExtraField::class)) {
-                $field = static::getMeta()->getField($key, ExtraField::class);
+        $meta = static::getMeta();
 
-                $attributes[$key] = $field->getOwner()->serializeFieldValue($field, $value);
+        foreach ($extras as $key => $value) {
+            if ($meta->hasField($key, ExtraField::class)) {
+                $extras[$key] = static::getMeta()->getField($key, ExtraField::class)->serialize($value);
             }
         }
-
         return $extras;
     }
 

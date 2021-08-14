@@ -17,9 +17,7 @@ use Laramore\Traits\Field\ToOneRelation;
 
 class ManyToOne extends BaseComposed implements RelationField
 {
-    use ToOneRelation {
-        ToOneRelation::reset as protected resetRelation;
-    }
+    use ToOneRelation;
 
     /**
      * On update action.
@@ -49,9 +47,9 @@ class ManyToOne extends BaseComposed implements RelationField
     public function reset($model)
     {
         if ($model instanceof LaramoreModel) {
-            $this->resetRelation($model);
+            parent::reset($model);
         }
 
-        $this->resetFieldValue($this->getField('id'), $model);
+        $this->getField('id')->reset($model);
     }
 }

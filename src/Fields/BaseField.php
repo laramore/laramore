@@ -19,7 +19,7 @@ use Laramore\Contracts\{
     Eloquent\LaramoreMeta, Field\Field
 };
 use Laramore\Contracts\Field\{
-    AttributeField, ExtraField
+    AttributeField, RelationField, ExtraField
 };
 use Laramore\Elements\Element;
 use Laramore\Exceptions\FieldException;
@@ -306,6 +306,62 @@ abstract class BaseField implements Field
     }
 
     /**
+     * Indicate if the field has a value.
+     *
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
+     * @return mixed
+     */
+    public function has($model)
+    {
+        return $this->getOwner()->hasFieldValue($this, $model);
+    }
+
+    /**
+     * Get the value definied by the field.
+     *
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
+     * @return mixed
+     */
+    public function get($model)
+    {
+        return $this->getOwner()->getFieldValue($this, $model);
+    }
+
+    /**
+     * Set the value for the field.
+     *
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
+     * @param  mixed                                                          $value
+     * @return mixed
+     */
+    public function set($model, $value)
+    {
+        return $this->getOwner()->setFieldValue($this, $model, $value);
+    }
+
+    /**
+     * Reset the value for the field.
+     *
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
+     * @return mixed
+     */
+    public function reset($model)
+    {
+        return $this->getOwner()->resetFieldValue($this, $model);
+    }
+
+    /**
+    * Retrieve values from the database.
+    *
+    * @param LaramoreModel|array|\ArrayAccess $model
+    * @return mixed
+    */
+   public function retrieve($model)
+   {
+       return $this->getOwner()->retrieveFieldValue($this, $model);
+   }
+
+    /**
      * Create a Constraint handler for this meta.
      *
      * @return void
@@ -471,7 +527,7 @@ abstract class BaseField implements Field
             throw new FieldException($this, "Cannot be nullable and not nullable on the same time");
         }
 
-        if ($this->hasOption(Option::append()) && !($this instanceof ExtraField)) {
+        if ($this->hasOption(Option::append()) && !($this instanceof RelationField) && !($this instanceof ExtraField)) {
             throw new FieldException($this, "Cannot be appended if it is not an extra field");
         }
 
@@ -479,7 +535,7 @@ abstract class BaseField implements Field
             throw new FieldException($this, "Cannot be selected if it is not an attribute field");
         }
 
-        if (($this->hasOption(Option::with()) || $this->hasOption(Option::withCount())) && !($this instanceof ExtraField)) {
+        if (($this->hasOption(Option::with()) || $this->hasOption(Option::withCount())) && !($this instanceof RelationField) && !($this instanceof ExtraField)) {
             throw new FieldException($this, "Cannot be autoloaded if it is not a relation or extra field");
         }
     }

@@ -10,76 +10,16 @@
 
 namespace Laramore\Traits\Eloquent;
 
-use Illuminate\Support\Collection;
+use Illuminate\Support\Arr;
 use Laramore\Facades\Operator;
 use Laramore\Contracts\{
-	Field\Field, Field\RelationField, Field\ExtraField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder,
+	Field\Field, Field\RelationField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder,
 };
 use Laramore\Contracts\Field\AttributeField;
 use Laramore\Elements\OperatorElement;
 
 trait HasFields
 {
-    /**
-     * Transform a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function transformFieldValue(Field $field, $value)
-    {
-        return $field->transform($value);
-    }
-
-    /**
-     * Serialize a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function serializeFieldValue(Field $field, $value)
-    {
-        return $field->serialize($value);
-    }
-
-    /**
-     * Dry a value for a specific field.
-     *
-     * @param AttributeField $field
-     * @param mixed          $value
-     * @return mixed
-     */
-    public function dryFieldValue(AttributeField $field, $value)
-    {
-        return $field->dry($value);
-    }
-
-    /**
-     * Hydrate a value for a specific field.
-     *
-     * @param AttributeField $field
-     * @param mixed          $value
-     * @return mixed
-     */
-    public function hydrateFieldValue(AttributeField $field, $value)
-    {
-        return $field->hydrate($value);
-    }
-
-    /**
-     * Cast a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function castFieldValue(Field $field, $value)
-    {
-        return $field->cast($value);
-    }
-
     /**
      * Return the has value for a specific field.
      *
@@ -89,7 +29,25 @@ trait HasFields
      */
     public function hasFieldValue(Field $field, $model)
     {
-        return $field->has($model);
+        if ($model instanceof LaramoreModel) {
+            if ($field instanceof AttributeField) {
+                return $model->hasAttributeValue($field->getName());
+            }
+
+            if ($field instanceof RelationField) {
+                return $model->hasRelationValue($field->getName());
+            }
+
+            return $model->hasExtraValue($field->getName());
+        }
+
+        if (\is_array($model) || ($model instanceof \ArrayAccess)) {
+            if (\is_object($model) || Arr::isAssoc($model)) {
+                return isset($model[$field->getName()]);
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -101,7 +59,25 @@ trait HasFields
      */
     public function getFieldValue(Field $field, $model)
     {
-        return $field->get($model);
+        if ($model instanceof LaramoreModel) {
+            if ($field instanceof AttributeField) {
+                return $model->getAttributeValue($field->getName());
+            }
+
+            if ($field instanceof RelationField) {
+                return $model->getRelationValue($field->getName());
+            }
+
+            return $model->getExtraValue($field->getName());
+        }
+
+        if (\is_array($model) || ($model instanceof \ArrayAccess)) {
+            if (\is_object($model) || Arr::isAssoc($model)) {
+                return $model[$field->getName()];
+            } else if (isset($model[0])) {
+                return $model[0];
+            }
+        }
     }
 
     /**
@@ -114,23 +90,27 @@ trait HasFields
      */
     public function setFieldValue(Field $field, $model, $value)
     {
-        // Refuse any transformation and reverbation if the model is currently fetchingDatabase.
-        if (!($model instanceof LaramoreModel)) {
-            // Apply changes by the field.
-            $value = $this->castFieldValue($field, $value);
-        } else if (!$model->fetchingDatabase) {
-            // Apply changes by the field.
-            $value = $this->castFieldValue($field, $value);
-
-            if ($field instanceof RelationField) {
-                $value = $field->getOwner()->reverbateFieldValue($field, $model, $value);
-            }
-        } else if ($field instanceof AttributeField) {
-            $value = $this->hydrateFieldValue($field, $value);
+        if ($field instanceof RelationField) {
+            $field->reverbate($model, $value);
         }
 
-        // Set the value in the model.
-        return $field->set($model, $value);
+        if ($model instanceof LaramoreModel) {
+            if ($field instanceof AttributeField) {
+                return $model->setAttributeValue($field->getName(), $value);
+            }
+
+            if ($field instanceof RelationField) {
+                return $model->setRelationValue($field->getName(), $value);
+            }
+
+            return $model->setExtraValue($field->getName(), $value);
+        }
+
+        if (\is_array($model) || ($model instanceof \ArrayAccess)) {
+            if (\is_object($model) || Arr::isAssoc($model)) {
+                return $model[$field->getName()] = $value;
+            }
+        }
     }
 
     /**
@@ -142,11 +122,48 @@ trait HasFields
      */
     public function resetFieldValue(Field $field, $model)
     {
-        return $field->reset($model);
+        if ($field->hasDefault()) {
+            return $field->set($model, $field->getDefault());
+        }
+
+        if ($model instanceof LaramoreModel) {
+            if ($field instanceof AttributeField) {
+                return $model->unsetAttribute($field->getName());
+            }
+
+            if ($field instanceof RelationField) {
+                return $model->unsetRelation($field->getName());
+            }
+
+            return $model->unsetExtra($field->getName());
+        }
+
+        if (\is_array($model) || ($model instanceof \ArrayAccess)) {
+            if (\is_object($model) || Arr::isAssoc($model)) {
+                unset($model[$field->getName()]);
+            }
+        }
     }
 
     /**
-     * Return the set value for a relation field.
+     * Sanitize value for a field.
+     *
+     * @param Field                       $field
+     * @param LaramoreModel|array|\ArrayAccess $model
+     * @param mixed                            $value
+     * @return mixed
+     */
+    public function sanitizeFieldValue(Field $field, $model, $value)
+    {
+        if ($model instanceof LaramoreModel) {
+            return $model->fetchingDatabase
+                ? $field->hydrate($value)
+                : $field->cast($value);
+        }
+    }
+
+    /**
+     * Retrieve value for a field.
      *
      * @param Field                       $field
      * @param LaramoreModel|array|\ArrayAccess $model
@@ -154,32 +171,24 @@ trait HasFields
      */
     public function retrieveFieldValue(Field $field, $model)
     {
-        return $field->retrieve($model);
-    }
+        if ($field instanceof AttributeField) {
+            if (! ($model instanceof LaramoreModel) || ! $model->hasAttributeValue('id')) return;
 
-    /**
-     * Return the get value for a relation field.
-     *
-     * @param RelationField $field
-     * @param LaramoreModel $model
-     * @return mixed
-     */
-    public function relateFieldValue(RelationField $field, LaramoreModel $model)
-    {
-        return $field->relate($model);
-    }
+            // TODO: Must be improved
+            return $field->get(
+                $field->getModel()::find($model->id, [$field->getNative()])
+            );
+        }
 
-    /**
-     * Reverbate the relation value for a specific field.
-     *
-     * @param RelationField $field
-     * @param LaramoreModel $model
-     * @param mixed         $value
-     * @return mixed
-     */
-    public function reverbateFieldValue(RelationField $field, LaramoreModel $model, $value)
-    {
-        return $field->reverbate($model, $value);
+        if ($field instanceof RelationField) {
+            if ($model instanceof LaramoreModel) {
+                return $field->relate($model)->getResults();
+            }
+
+            return $field->getDefault();
+        }
+
+        $field->resolve($model);
     }
 
     /**
@@ -189,60 +198,16 @@ trait HasFields
      * @param LaramoreBuilder      $builder
      * @param Operator|string|null $operator
      * @param mixed                $value
-     * @param mixed                ...$args
+     * @param mixed                ...$params
      * @return mixed
      */
-    public function whereFieldValue(Field $field, LaramoreBuilder $builder, $operator, $value=null, ...$args)
+    public function whereFieldValue(Field $field, LaramoreBuilder $builder, OperatorElement $operator, $value=null, ...$params)
     {
-        if (func_num_args() === 3) {
-            [$operator, $value] = [Operator::equal(), $operator];
-        }
-
-        if (!($operator instanceof OperatorElement)) {
-            $operator = Operator::find($operator ?: '=');
-        }
-
-        if ($builder instanceof LaramoreModel) {
-            $builder = $builder->newModelQuery();
-        }
-
-        if ($operator->needs(OperatorElement::COLLECTION_TYPE) && !($value instanceof Collection)) {
-            $value = new Collection($value);
-        }
-
         if ($field instanceof AttributeField) {
-            switch ($operator->valueType) {
-                case OperatorElement::NULL_TYPE:
-                    $value = null;
-                    break;
-
-                case OperatorElement::BINARY_TYPE:
-                    $value = (integer) $value;
-                    break;
-            }
+            \call_user_func([$builder->getQuery(), 'where'], $field->getQualifiedName(), $operator, $value, ...$params);
         }
 
-        if ($operator->needs(OperatorElement::COLLECTION_TYPE)) {
-            $value = $value->map(function ($sub) use ($field) {
-                return $field->cast($sub);
-            });
-        } else {
-            $value = $field->cast($value);
-        }
-
-        if (\method_exists($field, $method = $operator->getWhereMethod())) {
-            if ($operator->needs(OperatorElement::NULL_TYPE)) {
-                return \call_user_func([$field, $method], $builder, ...$args) ?: $builder;
-            }
-
-            return \call_user_func([$field, $method], $builder, $value, ...$args) ?: $builder;
-        }
-
-        if (!\in_array($operator->native, $builder->getQuery()->operators)) {
-            throw new \LogicException("The operator {$operator->native} is not available for the field {$field->getName()}");
-        }
-
-        return $field->where($builder, $operator, $value, ...$args) ?: $builder;
+        return $builder;
     }
 
     /**

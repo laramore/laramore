@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Illuminate\Support\Facades\Hash;
+use Laramore\Contracts\Eloquent\LaramoreModel;
 use Laramore\Facades\Option;
 use Laramore\Contracts\Field\PatternField;
 
@@ -114,7 +115,7 @@ class Password extends Char implements PatternField
      */
     public function set($model, $value)
     {
-        if (!$model->fetchingDatabase) {
+        if ($model instanceof LaramoreModel && ! $model->fetchingDatabase) {
             $value = $this->hash($value);
         }
 

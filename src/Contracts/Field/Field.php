@@ -141,14 +141,6 @@ interface Field extends Locked, Owned
     public function get($model);
 
     /**
-    * Retrieve values from the database.
-    *
-    * @param LaramoreModel|array|\ArrayAccess $model
-    * @return mixed
-    */
-   public function retrieve($model);
-
-    /**
      * Set the value for the field.
      *
      * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
@@ -164,6 +156,14 @@ interface Field extends Locked, Owned
      * @return mixed
      */
     public function reset($model);
+
+    /**
+    * Retrieve values from the database.
+    *
+    * @param LaramoreModel|array|\ArrayAccess $model
+    * @return mixed
+    */
+   public function retrieve($model);
 
     /**
      * Add a where null condition from this field.

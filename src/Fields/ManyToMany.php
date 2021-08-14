@@ -12,9 +12,8 @@ namespace Laramore\Fields;
 
 use Illuminate\Support\Str;
 use Laramore\Facades\Option;
-use Laramore\Contracts\Eloquent\LaramoreModel;
 use Laramore\Contracts\Field\{
-    Field, RelationField, ManyRelationField, Constraint\Constraint
+    RelationField, ManyRelationField, Constraint\Constraint
 };
 use Laramore\Traits\Field\ManyToManyRelation;
 
@@ -374,22 +373,5 @@ class ManyToMany extends BaseComposed implements ManyRelationField
 
         return $this->getTargetModel()::getMeta()
             ->getConstraintHandler()->getPrimary();
-    }
-
-    /**
-     * Return the set value for a specific field.
-     *
-     * @param Field                            $field
-     * @param LaramoreModel|array|\ArrayAccess $model
-     * @param mixed                            $value
-     * @return mixed
-     */
-    public function setFieldValue(Field $field, $model, $value)
-    {
-        if ($field->get($model) !== $value) {
-            $this->reset($model);
-        }
-
-        return parent::setFieldValue($field, $model, $value);
     }
 }

@@ -17,14 +17,15 @@ use Laramore\Elements\OperatorElement;
 use Laramore\Contracts\{
     Field\AttributeField, Eloquent\LaramoreBuilder
 };
+use Laramore\Facades\Operator;
 use Laramore\Fields\Constraint\BaseRelationalConstraint;
 use Laramore\Traits\Field\{
-    ModelAttribute, IndexableConstraints, RelationalConstraints
+    IndexableConstraints, RelationalConstraints
 };
 
 abstract class BaseAttribute extends BaseField implements AttributeField
 {
-    use ModelAttribute, IndexableConstraints, RelationalConstraints;
+    use IndexableConstraints, RelationalConstraints;
 
     /**
      * AttributeField name of this field.
@@ -104,21 +105,6 @@ abstract class BaseAttribute extends BaseField implements AttributeField
     }
 
     /**
-     * Add an operation to a query builder.
-     *
-     * @param LaramoreBuilder $builder
-     * @param string          $operation
-     * @param mixed           ...$params
-     * @return LaramoreBuilder
-     */
-    public function addBuilderOperation(LaramoreBuilder $builder, string $operation, ...$params): LaramoreBuilder
-    {
-        \call_user_func([$builder->getQuery(), $operation], $this->getQualifiedName(), ...$params);
-
-        return $builder;
-    }
-
-    /**
      * Add a where null condition from this field.
      *
      * @param  LaramoreBuilder $builder
@@ -128,7 +114,7 @@ abstract class BaseAttribute extends BaseField implements AttributeField
      */
     public function whereNull(LaramoreBuilder $builder, string $boolean='and', bool $not=false): LaramoreBuilder
     {
-        return $this->addBuilderOperation($builder, 'whereNull', $boolean, $not);
+        return $this->where($builder, Operator::null(), null, $boolean, $not);
     }
 
     /**
@@ -155,7 +141,7 @@ abstract class BaseAttribute extends BaseField implements AttributeField
     public function whereIn(LaramoreBuilder $builder, Collection $value=null,
                             string $boolean='and', bool $notIn=false): LaramoreBuilder
     {
-        return $this->addBuilderOperation($builder, 'whereIn', $value->map(function ($subValue) {
+        return $this->where($builder, Operator::in(), $value->map(function ($subValue) {
             return $this->dry($subValue);
         }), $boolean, $notIn);
     }
@@ -185,6 +171,6 @@ abstract class BaseAttribute extends BaseField implements AttributeField
     public function where(LaramoreBuilder $builder, OperatorElement $operator,
                           $value=null, string $boolean='and'): LaramoreBuilder
     {
-        return $this->addBuilderOperation($builder, 'where', $operator, $this->dry($value), $boolean);
+        return $this->getOwner()->whereFieldValue($this, $builder, $operator, $this->dry($value), $boolean);
     }
 }

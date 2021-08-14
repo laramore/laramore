@@ -11,7 +11,7 @@
 namespace Laramore\Contracts\Field;
 
 use Laramore\Contracts\{
-    Eloquent\LaramoreBuilder, Field\Constraint\IndexableField, Field\Constraint\RelationalField
+    Field\Constraint\IndexableField, Field\Constraint\RelationalField
 };
 
 interface AttributeField extends Field, IndexableField, RelationalField
@@ -46,14 +46,4 @@ interface AttributeField extends Field, IndexableField, RelationalField
      * @return mixed
      */
     public function hydrate($value);
-
-    /**
-     * Add an operation to a query builder.
-     *
-     * @param LaramoreBuilder $builder
-     * @param string          $operation
-     * @param mixed           ...$params
-     * @return LaramoreBuilder
-     */
-    public function addBuilderOperation(LaramoreBuilder $builder, string $operation, ...$params): LaramoreBuilder;
 }

@@ -16,4 +16,11 @@ use Laramore\Contracts\Eloquent\LaramoreModel;
 
 interface ExtraField extends Field
 {
+    /**
+    * Resolve extra value.
+    *
+    * @param LaramoreModel|array|\ArrayAccess $model
+    * @return mixed
+    */
+   public function resolve($model);
 }

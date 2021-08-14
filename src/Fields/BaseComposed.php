@@ -388,31 +388,6 @@ abstract class BaseComposed extends BaseField implements ComposedField
     }
 
     /**
-     * Return the get value for a relation field.
-     *
-     * @param RelationField $field
-     * @param LaramoreModel $model
-     * @return mixed
-     */
-    public function relateFieldValue(RelationField $field, LaramoreModel $model)
-    {
-        return $this->getOwner()->relateFieldValue($field, $model);
-    }
-
-    /**
-     * Reverbate a saved relation value for a specific field.
-     *
-     * @param RelationField $field
-     * @param LaramoreModel $model
-     * @param mixed         $value
-     * @return mixed
-     */
-    public function reverbateFieldValue(RelationField $field, LaramoreModel $model, $value)
-    {
-        return $this->getOwner()->reverbateFieldValue($field, $model, $value);
-    }
-
-    /**
      * Return generally a Builder after adding to it a condition.
      *
      * @param Field                $field
@@ -424,71 +399,7 @@ abstract class BaseComposed extends BaseField implements ComposedField
      */
     public function whereFieldValue(Field $field, LaramoreBuilder $builder, $operator, $value=null, ...$args)
     {
-        if (func_num_args() === 3) {
-            return $this->getOwner()->whereFieldValue($field, $builder, $operator);
-        }
-
         return $this->getOwner()->whereFieldValue($field, $builder, $operator, $value, ...$args);
-    }
-
-    /**
-     * Serialize a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function serializeFieldValue(Field $field, $value)
-    {
-        return $this->getOwner()->serializeFieldValue($field, $value);
-    }
-
-    /**
-     * Check if the value is correct for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function checkFieldValue(Field $field, $value)
-    {
-        return $this->getOwner()->checkFieldValue($field, $value);
-    }
-
-    /**
-     * Dry a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function dryFieldValue(Field $field, $value)
-    {
-        return $this->getOwner()->dryFieldValue($field, $value);
-    }
-
-    /**
-     * Hydrate a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function hydrateFieldValue(Field $field, $value)
-    {
-        return $this->getOwner()->hydrateFieldValue($field, $value);
-    }
-
-    /**
-     * Cast a value for a specific field.
-     *
-     * @param Field $field
-     * @param mixed $value
-     * @return mixed
-     */
-    public function castFieldValue(Field $field, $value)
-    {
-        return $this->getOwner()->castFieldValue($field, $value);
     }
 
     /**

@@ -10,7 +10,7 @@
 
 namespace Laramore\Contracts\Field;
 
-interface ComposedField extends ExtraField, FieldsOwner
+interface ComposedField extends Field, FieldsOwner
 {
     /**
      * Decompose all fields by models.
