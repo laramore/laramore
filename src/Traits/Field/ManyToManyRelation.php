@@ -272,11 +272,11 @@ trait ManyToManyRelation
     /**
      * Detach value from the model relation.
      *
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
      * @param mixed         $value
      * @return LaramoreModel
      */
-    public function detach(LaramoreModel $model, $value)
+    public function detach($model, $value)
     {
         $this->relate($model)->detach($value);
 
@@ -288,11 +288,11 @@ trait ManyToManyRelation
     /**
      * Sync value with the model relation.
      *
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
      * @param mixed         $value
      * @return LaramoreModel
      */
-    public function sync(LaramoreModel $model, $value)
+    public function sync($model, $value)
     {
         $this->set($model, $value);
 
@@ -304,11 +304,11 @@ trait ManyToManyRelation
     /**
      * Toggle value to the model relation.
      *
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
      * @param mixed         $value
      * @return LaramoreModel
      */
-    public function toggle(LaramoreModel $model, $value)
+    public function toggle($model, $value)
     {
         $this->relate($model)->toggle($value);
 
@@ -320,11 +320,11 @@ trait ManyToManyRelation
     /**
      * Sync without detaching value from the model relation.
      *
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
      * @param mixed         $value
      * @return LaramoreModel
      */
-    public function syncWithoutDetaching(LaramoreModel $model, $value)
+    public function syncWithoutDetaching($model, $value)
     {
         $this->relate($model)->syncWithoutDetaching($value);
 
@@ -336,11 +336,11 @@ trait ManyToManyRelation
     /**
      * Update existing pivot for the value with the model relation.
      *
-     * @param LaramoreModel $model
+     * @param LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
      * @param mixed         $value
      * @return LaramoreModel
      */
-    public function updateExistingPivot(LaramoreModel $model, $value)
+    public function updateExistingPivot($model, $value)
     {
         $this->relate($model)->updateExistingPivot($value);
 

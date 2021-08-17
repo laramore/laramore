@@ -103,7 +103,7 @@ class MetaManager implements Prepared, LaramoreManager
     public function hasForTableName(string $tableName): bool
     {
         foreach ($this->all() as $meta) {
-            if ($meta->getTableName() === $tableName) {
+            if ($meta->getTableName() == $tableName) {
                 return true;
             }
         }
@@ -121,7 +121,7 @@ class MetaManager implements Prepared, LaramoreManager
     public function getForTableName(string $tableName): Meta
     {
         foreach ($this->all() as $meta) {
-            if ($meta->getTableName() === $tableName) {
+            if ($meta->getTableName() == $tableName) {
                 return $meta;
             }
         }

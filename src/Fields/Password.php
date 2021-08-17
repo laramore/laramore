@@ -136,13 +136,13 @@ class Password extends Char implements PatternField
     /**
      * Indicate if the password is the right one.
      *
-     * @param string  $value
-     * @param string  $password
+     * @param LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
+     * @param string|null  $value
      * @param boolean $expected
      * @return boolean
      */
-    public function isCorrect(string $value, string $password=null, bool $expected=true)
+    public function check($model, ?string $value, bool $expected=true)
     {
-        return Hash::check($password, $value) === $expected;
+        return Hash::check($value, $this->get($model)) == $expected;
     }
 }

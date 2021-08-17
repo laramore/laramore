@@ -32,7 +32,7 @@ class Decimal extends BaseAttribute implements NumericField
     {
         $this->needsToBeUnlocked();
 
-        if (\func_num_args() === 1) {
+        if (\func_num_args() == 1) {
             $this->decimalDigitsPrecision = $totalDigits;
         } else {
             $this->totalDigits = $totalDigits;

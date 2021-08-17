@@ -41,11 +41,11 @@ class ValueCollection extends Collection
     {
         if (empty($this->items)) return;
 
-        if ($this->type === static::LIST_COLLECTION) {
+        if ($this->type == static::LIST_COLLECTION) {
             if (Arr::isAssoc($this->items)) {
                 throw new \ValueError('List expected, got object: '.json_encode($this->items));
             }
-        } else if ($this->type === static::OBJECT_COLLECTION) {
+        } else if ($this->type == static::OBJECT_COLLECTION) {
             if (!Arr::isAssoc($this->items)) {
                 throw new \ValueError('Object expected, got list: '.json_encode($this->items));
             }
@@ -59,7 +59,7 @@ class ValueCollection extends Collection
      */
     public function jsonSerialize()
     {
-        if (empty($this->items) && $this->type === static::OBJECT_COLLECTION) {
+        if (empty($this->items) && $this->type == static::OBJECT_COLLECTION) {
             return (object) $this->items;
         }
 

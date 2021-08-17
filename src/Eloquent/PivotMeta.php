@@ -52,7 +52,7 @@ class PivotMeta extends Meta implements LaramorePivotMeta
      */
     protected function locking()
     {
-        if (count($this->pivots) !== 2) {
+        if (count($this->pivots) != 2) {
             throw new LaramoreException('You need to specify in your pivot __meta function, the two pivot attributes');
         }
 
@@ -68,7 +68,7 @@ class PivotMeta extends Meta implements LaramorePivotMeta
      */
     public function setField(string $name, Field $field)
     {
-        if (count($this->pivots) !== 2 && ($field instanceof ManyToOne)) {
+        if (count($this->pivots) != 2 && ($field instanceof ManyToOne)) {
             $this->pivots[] = $field;
         }
 

@@ -80,7 +80,7 @@ class FieldConstraintHandler extends BaseConstraintHandler
         $fields = $constraint->getFields();
 
         // The first field adds the new constraint to others.
-        if ($this->getField() === \array_shift($fields)) {
+        if ($this->getField() == \array_shift($fields)) {
             // Add all relations to other fields.
             foreach ($fields as $field) {
                 $field->getConstraintHandler()->add($constraint);
@@ -100,7 +100,7 @@ class FieldConstraintHandler extends BaseConstraintHandler
     {
         $fieldname = $this->getField()->getName();
 
-        if ($fieldname !== $name) {
+        if ($fieldname != $name) {
             throw new \LogicException("The field field `{$fieldname}` is not the same as `$name`");
         }
 

@@ -160,7 +160,7 @@ abstract class BaseComposed extends BaseField implements ComposedField
     public function findField(string $nativeName, string $class=null): Field
     {
         foreach ($this->getFields() as $field) {
-            if ($field->getNative() === $nativeName && (\is_null($class) || ($field instanceof $class))) {
+            if ($field->getNative() == $nativeName && (\is_null($class) || ($field instanceof $class))) {
                 return $field;
             }
         }
@@ -305,7 +305,7 @@ abstract class BaseComposed extends BaseField implements ComposedField
      */
     protected function locking()
     {
-        if (\count($this->fields) === 0) {
+        if (\count($this->fields) == 0) {
             throw new \Exception('A composed field needs at least one field');
         }
 

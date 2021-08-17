@@ -202,7 +202,7 @@ trait HasProperties
      */
     public function __call(string $method, array $args)
     {
-        if (\count($args) === 0) {
+        if (\count($args) == 0) {
             if (Str::startsWith($method, 'get')) {
                 return $this->getProperty(Str::camel(substr(Str::snake($method), 4)));
             } else if (Str::startsWith($method, 'has')) {
@@ -213,7 +213,7 @@ trait HasProperties
 
             return $this->setProperty($method, true);
         } else {
-            $args = (\count($args) === 1) ? $args[0] : $args;
+            $args = (\count($args) == 1) ? $args[0] : $args;
 
             if (Str::startsWith($method, 'set')) {
                 return $this->setProperty(Str::camel(\substr(Str::snake($method), 4)), $args);

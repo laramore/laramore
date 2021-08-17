@@ -177,7 +177,7 @@ class Enum extends BaseAttribute implements EnumField
      */
     protected function checkOptions()
     {
-        if (!$this->hasProperty('elements') || $this->elements->count() === 0) {
+        if (!$this->hasProperty('elements') || $this->elements->count() == 0) {
             throw new LockException("Need a list of elements for `{$this->getName()}`", 'elements');
         }
     }
@@ -241,25 +241,25 @@ class Enum extends BaseAttribute implements EnumField
     /**
      * Return if the value is the right element as expected or not.
      *
-     * @param  EnumElement $value
-     * @param  mixed       $element
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
+     * @param  mixed       $value
      * @param  boolean     $expected
      * @return boolean
      */
-    public function is(EnumElement $value, $element, bool $expected=true): bool
+    public function is($model, EnumElement $value, bool $expected=true): bool
     {
-        return ($value === $this->cast($element)) === $expected;
+        return ($this->get($model) == $value) == $expected;
     }
 
     /**
      * Return if the value is not the right element.
      *
-     * @param  EnumElement $value
-     * @param  mixed       $element
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
+     * @param  mixed       $value
      * @return boolean
      */
-    public function isNot(EnumElement $value, $element): bool
+    public function isNot($model, $value): bool
     {
-        return $this->is($value, $element, false);
+        return $this->is($model, $value, false);
     }
 }

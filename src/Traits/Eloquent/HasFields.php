@@ -90,17 +90,19 @@ trait HasFields
      */
     public function setFieldValue(Field $field, $model, $value)
     {
-        if ($field instanceof RelationField) {
-            $field->reverbate($model, $value);
-        }
-
         if ($model instanceof LaramoreModel) {
             if ($field instanceof AttributeField) {
                 return $model->setAttributeValue($field->getName(), $value);
             }
 
             if ($field instanceof RelationField) {
-                return $model->setRelationValue($field->getName(), $value);
+                $result = $model->setRelationValue($field->getName(), $value);
+
+                if (! $model->fetchingDatabase) {
+                    $field->reverbate($model, $value);
+                }
+
+                return $result;
             }
 
             return $model->setExtraValue($field->getName(), $value);
@@ -146,23 +148,6 @@ trait HasFields
     }
 
     /**
-     * Sanitize value for a field.
-     *
-     * @param Field                       $field
-     * @param LaramoreModel|array|\ArrayAccess $model
-     * @param mixed                            $value
-     * @return mixed
-     */
-    public function sanitizeFieldValue(Field $field, $model, $value)
-    {
-        if ($model instanceof LaramoreModel) {
-            return $model->fetchingDatabase
-                ? $field->hydrate($value)
-                : $field->cast($value);
-        }
-    }
-
-    /**
      * Retrieve value for a field.
      *
      * @param Field                       $field
@@ -204,7 +189,18 @@ trait HasFields
     public function whereFieldValue(Field $field, LaramoreBuilder $builder, OperatorElement $operator, $value=null, ...$params)
     {
         if ($field instanceof AttributeField) {
-            \call_user_func([$builder->getQuery(), 'where'], $field->getQualifiedName(), $operator, $value, ...$params);
+            $query = $builder->getQuery();
+            $methodName = $operator->getWhereMethod();
+
+            if (method_exists($query, $methodName) || $query::hasMacro($methodName)) {
+                if (! $operator->needs(OperatorElement::NULL_TYPE)) {
+                    array_unshift($params, $value);
+                }
+
+                \call_user_func([$builder->getQuery(), $methodName], $field->getQualifiedName(), ...$params);
+            } else {
+                \call_user_func([$builder->getQuery(), 'where'], $field->getQualifiedName(), (string) $operator, $value, ...$params);
+            }
         }
 
         return $builder;

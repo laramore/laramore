@@ -152,7 +152,7 @@ abstract class BaseHandler
     public function has(string $name, string $class=null): bool
     {
         foreach ($this->observers as $observer) {
-            if ($observer->getName() === $name) {
+            if ($observer->getName() == $name) {
                 if (\is_null($class) || ($observer instanceof $class)) {
                     return true;
                 }
@@ -172,7 +172,7 @@ abstract class BaseHandler
     public function get(string $name, string $class=null)
     {
         foreach ($this->observers as $observer) {
-            if ($observer->getName() === $name) {
+            if ($observer->getName() == $name) {
                 if (\is_null($class) || ($observer instanceof $class)) {
                     return $observer;
                 }
@@ -222,7 +222,7 @@ abstract class BaseHandler
         $this->needsToBeUnlocked();
 
         foreach ($this->observers as $key => $observer) {
-            if ($observer->getName() === $name) {
+            if ($observer->getName() == $name) {
                 if (\is_null($class) || ($observer instanceof $class)) {
                     unset($this->observers[$key]);
 

@@ -59,7 +59,7 @@ abstract class BaseIndexableConstraint extends BaseConstraint implements Indexab
         $this->modelClass = $this->getFields()[0]->getMeta()->getModelClass();
 
         foreach ($this->getFields() as $field) {
-            if ($field->getMeta()->getModelClass() !== $this->modelClass) {
+            if ($field->getMeta()->getModelClass() != $this->modelClass) {
                 throw new LockException('An indexable constraint can only be from a single model', 'modelClass');
             }
         }

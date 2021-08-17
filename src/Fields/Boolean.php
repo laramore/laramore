@@ -59,23 +59,23 @@ class Boolean extends BaseAttribute
     /**
      * Return if the value is true or false as expected.
      *
-     * @param  boolean|null $value
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
      * @param  boolean      $expected
      * @return boolean
      */
-    public function is(bool $value=null, bool $expected=true): bool
+    public function is($model, bool $expected=true): bool
     {
-        return $value === $expected;
+        return $this->get($model) == $expected;
     }
 
     /**
      * Return if the value is false.
      *
-     * @param  boolean|null $value
+     * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
      * @return boolean
      */
-    public function isNot(bool $value): bool
+    public function isNot($model): bool
     {
-        return $this->is($value, false);
+        return $this->is($model, false);
     }
 }

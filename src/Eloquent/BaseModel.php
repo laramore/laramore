@@ -193,8 +193,8 @@ abstract class BaseModel extends Model implements LaramoreModel
     {
         return ! is_null($model) &&
                $this->getKey() == $model->getKey() &&
-               $this->getTable() === $model->getTable() &&
-               $this->getConnectionName() === $model->getConnectionName();
+               $this->getTable() == $model->getTable() &&
+               $this->getConnectionName() == $model->getConnectionName();
     }
 
     /**
@@ -383,6 +383,44 @@ abstract class BaseModel extends Model implements LaramoreModel
         return new ModelCollection($models);
     }
 
+    protected static function resolveFieldMethod(string $method)
+    {
+        $meta = static::getMeta();
+        $fieldParts = \explode('_', Str::lower(Str::snake($method)));
+        $methodParts = [];
+
+        while (count($fieldParts) > 0) {
+            $methodParts[] = array_shift($fieldParts);
+            $name = implode('_', $fieldParts);
+
+            if (! $meta->hasField($name)) continue;
+
+            $field = $meta->getField($name);
+            $fieldMethod = Str::camel(implode('_', $methodParts));
+
+            if (! method_exists($field, $fieldMethod) && ! $field::hasMacro($fieldMethod)) continue;
+
+            return [$field, $fieldMethod];
+        }
+
+        return null;
+    }
+
+    public function dynamicMethod(string $method, array $parameters)
+    {
+        if (Str::startsWith($method, ['where', 'andWhere', 'orWhere'])) {
+            return $this->forwardCallTo($this->newQuery(), $method, $parameters);
+        }
+
+        $fieldMethod = static::resolveFieldMethod($method, $parameters);
+
+        if ($fieldMethod) {
+            return call_user_func($fieldMethod, $this, ...$parameters);
+        }
+
+        return $this->forwardCallTo($this->newQuery(), $method, $parameters);
+    }
+
     /**
      * Dynamically retrieve attributes on the model.
      *
@@ -449,6 +487,12 @@ abstract class BaseModel extends Model implements LaramoreModel
             return static::__callMacro($method, $parameters);
         }
 
+        $fieldMethod = static::resolveFieldMethod($method, $parameters);
+
+        if ($fieldMethod) {
+            return call_user_func($fieldMethod, $this, ...$parameters);
+        }
+
         return parent::__call($method, $parameters);
     }
 
@@ -463,6 +507,12 @@ abstract class BaseModel extends Model implements LaramoreModel
     {
         if (static::hasMacro($method)) {
             return static::__callStaticMacro($method, $parameters);
+        }
+
+        $fieldMethod = static::resolveFieldMethod($method, $parameters);
+
+        if ($fieldMethod) {
+            return call_user_func($fieldMethod, ...$parameters);
         }
 
         return parent::__callStatic($method, $parameters);

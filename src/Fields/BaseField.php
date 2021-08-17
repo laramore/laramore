@@ -156,9 +156,9 @@ abstract class BaseField implements Field
      */
     public function getProperty(string $key)
     {
-        if ($key === 'native' || $key === 'attname') {
+        if ($key == 'native' || $key == 'attname') {
             return \call_user_func([$this, 'getNative']);
-        } else if ($key === 'reversed' && \method_exists($this, 'getReversed')) {
+        } else if ($key == 'reversed' && \method_exists($this, 'getReversed')) {
             return \call_user_func([$this, 'getReversed']);
         }
 
@@ -404,7 +404,7 @@ abstract class BaseField implements Field
         }
 
         // Only define the owner if it is different from the meta.
-        if ($this->owner === $this->getMeta()) {
+        if ($this->owner == $this->getMeta()) {
             $this->owner = $this->model;
         }
     }
@@ -444,7 +444,7 @@ abstract class BaseField implements Field
     {
         $owner = $this->owner;
 
-        if (\is_string($owner) && $owner === $this->model) {
+        if (\is_string($owner) && $owner == $this->model) {
             return $owner::getMeta();
         }
 

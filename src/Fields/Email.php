@@ -125,7 +125,7 @@ class Email extends Char implements PatternField, FixableField
         parent::checkOptions();
 
         if ($this->hasOption(Option::fixable())
-            && (\is_null($this->getProperty('allowedDomains')) || \count($this->getProperty('allowedDomains')) === 0)
+            && (\is_null($this->getProperty('allowedDomains')) || \count($this->getProperty('allowedDomains')) == 0)
         ) {
             throw new \LogicException("The field `{$this->getQualifiedName()}` cannot be fixable and have no allowed domains");
         }

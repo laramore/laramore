@@ -38,7 +38,7 @@ class DateTime extends BaseAttribute
      */
     public function isTimestamped(): bool
     {
-        return $this->getFormat() === static::TIMESTAMP_FORMAT;
+        return $this->getFormat() == static::TIMESTAMP_FORMAT;
     }
 
     /**

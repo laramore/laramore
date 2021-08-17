@@ -142,7 +142,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
 
         $this->defineProperty('targetModel', $model);
 
-        if ($model === 'self') {
+        if ($model == 'self') {
             $this->addOption(Option::nullable());
         } else {
             $this->getField('reversed')->setMeta($model::getMeta());
@@ -174,7 +174,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
     {
         $model = $this->getTargetModel();
 
-        return $model === $this->getMeta()->getModelClass() || $model === 'self';
+        return $model == $this->getMeta()->getModelClass() || $model == 'self';
     }
 
     /**
@@ -277,7 +277,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
      */
     protected function owned()
     {
-        if ($this->getTargetModel() === 'self') {
+        if ($this->getTargetModel() == 'self') {
             $this->on($this->getSourceModel());
         }
 

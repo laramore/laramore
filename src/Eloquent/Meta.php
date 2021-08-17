@@ -112,7 +112,7 @@ class Meta implements LaramoreMeta
                 $elements = explode('\\', $base);
 
                 $this->modelName = Str::snake(\array_pop($elements));
-                $this->modelGroup = \count($elements) === 0 ? null : Str::snake(implode('_', $elements));
+                $this->modelGroup = \count($elements) == 0 ? null : Str::snake(implode('_', $elements));
 
                 return;
             }
@@ -284,11 +284,11 @@ class Meta implements LaramoreMeta
         $this->needsToBeUnlocked();
 
         if ($field->isOwned()) {
-            if ($field->getName() !== $name) {
+            if ($field->getName() != $name) {
                 throw new \Exception("The field name must be the same as the given one, expecting `{$field->getName()}`, got `$name`.");
             }
 
-            if ($field->getMeta() !== $this) {
+            if ($field->getMeta() != $this) {
                 throw new \LogicException("The field `$name` is already".'owned by another meta.');
             }
         } else {
@@ -345,7 +345,7 @@ class Meta implements LaramoreMeta
     public function findField(string $nativeName, string $class=null): Field
     {
         foreach ($this->getFields() as $field) {
-            if ($field->getNative() === $nativeName
+            if ($field->getNative() == $nativeName
                 && (\is_null($class) || ($field instanceof $class))) {
                 return $field;
             }
@@ -474,7 +474,7 @@ class Meta implements LaramoreMeta
         }
 
         foreach ($this->getFields() as $field) {
-            if ($field->getOwner() === $this) {
+            if ($field->getOwner() == $this) {
                 $field->lock();
             }
         }

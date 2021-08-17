@@ -127,7 +127,7 @@ trait IsOwned
      */
     protected function checkNeedsToBeOwned(bool $owned, string $ownedElement=null)
     {
-        if ($this->isOwned() !== $owned) {
+        if ($this->isOwned() != $owned) {
             // Load the method calling the needsToBeOwned.
             if (\is_null($ownedElement)) {
                 $ownedElement = $this->getDebugMethodName();

@@ -39,6 +39,6 @@ class OperatorElement extends Element
      */
     public function needs(string $valueType): bool
     {
-        return $this->get('value_type') === $valueType;
+        return $this->get('value_type') == $valueType;
     }
 }

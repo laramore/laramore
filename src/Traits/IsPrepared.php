@@ -156,7 +156,7 @@ trait IsPrepared
      */
     protected function checkNeedsToBePreparing(bool $preparing, string $preparingElement=null)
     {
-        if ($this->isPreparing() !== $preparing) {
+        if ($this->isPreparing() != $preparing) {
             // Load the method calling the needsToBePreparing.
             if (\is_null($preparingElement)) {
                 $preparingElement = $this->getDebugMethodName();
@@ -204,7 +204,7 @@ trait IsPrepared
      */
     protected function checkNeedsToBePrepared(bool $prepared, string $preparedElement=null)
     {
-        if ($this->isPrepared() !== $prepared) {
+        if ($this->isPrepared() != $prepared) {
             // Load the method calling the needsToBePrepared.
             if (\is_null($preparedElement)) {
                 $preparedElement = $this->getDebugMethodName();

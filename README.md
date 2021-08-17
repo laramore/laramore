@@ -40,12 +40,13 @@ use Uuid;
 
 class User extends Model
 {
+    // All fillable fields.
     protected $fillable = ['firstname', 'lastname', 'email', 'password', 'admin', 'score', 'group_id'];
 
     // Here we use UUIDs, not incremental ids.
     protected $increment = false;
 
-    // Casts.
+    // Auto cast some fields.
     protected $casts = [
         'admin' => 'boolean',
         'score' => 'integer',
@@ -100,7 +101,14 @@ class User extends Model
         return $value;
     }
 
-    public function isPasswordCorrect($password)
+    // Set password by hash.
+    public function setPasswordAttribute($value)
+    {
+        return Hash::make($value);
+    }
+
+    // Check if the password is the same.
+    public function checkPassword($password)
     {
         return Hash::check($this->password, $password);
     }
@@ -109,7 +117,7 @@ class User extends Model
 ?>
 ```
 
-### After, with Laravel + Laramore
+### Now, with Laravel + Laramore
 
 The examples use all possible Laramore packages.
 
@@ -128,30 +136,21 @@ class User extends BaseUser
     public function meta($meta) {
         // Auto generate uuid, no params required.
         $meta->id = PrimaryUuid::field();
-        // Generate two attributes: firstname ("First Name" format) and lastname ("LAST NAME" format).
-        // It is possible to set names directly from "name".
+        // Generate two attributes: firstname ("First Name" format) and lastname ("LAST NAME" format). It is possible to set names directly from "name".
         $meta->name = Name::field();
         // Email field: regex filter.
         $meta->email = Email::field()->unique();
-        // Password field: auto hashed.
+        // Password field: auto hashed and hidden.
         $meta->password = Password::field();
         // Auto cast into a boolean and hide the field by default.
-        $meta->admin = Boolean::field()->default(false)
-                                       ->hidden();
+        $meta->admin = Boolean::field()->default(false)->hidden();
         // Incremental score.
         $meta->score = Increment::field()->default(0);
         // Foreign field. Relation defined in both sides. Eager loaded.
-        $meta->group = ManyToOne::field()->to(Group::class)
-                                         ->with()
-                                         ->nullable();
+        $meta->group = ManyToOne::field()->to(Group::class)->with()->nullable();
 
         // Use timestamps.
         $meta->useTimestamps();
-    }
-
-    public function isPasswordCorrect($password)
-    {
-        return $this->meta->password->isCorrect($this->password, $password);
     }
 }
 
@@ -207,16 +206,16 @@ class CreateUsersTable extends Migration
 
 ```
 
-### After, with Laravel + Laramore
+### Now, with Laravel + Laramore
 
 Laramore follows your model meta configuration. Each time you edit your models, run this following commands to update your migrations:
-
-It will generate the diff between your current models and what are migrated.
 
 ```bash
 php artisan migrate:generate
 php artisan migrate:fresh
 ```
+
+It will generate the diff between your current models and what is migrated.
 
 ## Model interaction
 
@@ -233,7 +232,7 @@ $user = new User();
 $user->lastname = 'NaStUZzi'; // "NASTUZZI" (uppercased via setter).
 $user->firstname = 'SAMY'; // "Samy" (titled via setter).
 $user->email = 'email@example.org'; // "email@example.org".
-$user->password = \Illuminate\Support\Facades\Hash::make('password'); // Generated hash.
+$user->password = 'password'; // Set the password throught setAttribute method: generate a hash.
 $user->admin = false; // false (required only if not set as default in database).
 $user->score = 0; // 0 (required only if not set as default in database).
 $user->group_id = Group::first()->id; // 1.
@@ -242,14 +241,14 @@ $user->save() // true (uuid generated at this moment).
 // Let's fetch the group relation:
 $group = $user->group; // The group was fetched in the database even if we already have loaded it.
 
-// Check if a password is correct:
-$user->password = Illuminate\Support\Facades\Hash::make('password'); // true (fastidious).
+// Check the password throught written checkPassword method:
+$user->checkPassword('password'); // true.
 
 // Check if a user is not an admin:
 !$user->admin; // true.
 
-// Increment score:
-$user->score += 1; // 1.
+// Throught increment method:
+$user->increment('score'); // 1.
 
 // Check if the user created its account before now:
 (new \Carbon\Carbon($user->created_at))->before(now()); // true
@@ -301,13 +300,13 @@ $user->save() // true.
 // Let's fetch the group relation:
 $group = $user->group; // As the group was already fetched, return the group we had fetched.
 
-// Check if a password is correct:
-$user->checkPassword('password'); // true (clerver nah ?).
+// Check the password throught check method defined in the class field Password:
+$user->checkPassword('password'); // true.
 
-// Check if a user is not an admin:
+// Check if a user is not an admin (auto defined in class field):
 $user->isNotAdmin(); // true (reverse possible: isAdmin).
 
-// Increment score:
+// Increment score (auto defined in class field):
 $user->incrementScore(); // 1.
 
 // Check if the user created its account before now:
@@ -416,9 +415,9 @@ User::factory()->has(Group::factory()->count(3), 'group');
 ?>
 ```
 
-### After, with Laravel + Laramore
+### Now, with Laravel + Laramore
 
-No files to configure, it is autonomous !
+No files to configure, it is automaticly generated !
 
 ```php
 <?php
@@ -439,12 +438,12 @@ User::new(); // Simplier
 
 // Make multiple models:
 factory(User::class, 3)->make();
-User::generate(3); // Simplier
+User::generate([], 3); // Simplier
 // Make 3 times all required fields (id, name, email, password, admin, number).
 
 // Create multiple models:
 factory(User::class, 5)->create();
-User::new(5); // Simplier
+User::new([], 5); // Simplier
 // Save 3 times all required fields (id, name, email, password, admin, number).
 
 // Add group factory (by default it generates 5 times).
@@ -453,8 +452,219 @@ User::factory()->with('group');
 ?>
 ```
 
-## More to come with:
-- Validations
-- Requests
-- Serializers
-- Routers
+## Validations and requests
+
+Validations must be written for each controller/request.
+
+### Before, with Laravel
+
+In a controller, if we need to validate inputs, we do it like that or throught FormRequest:
+
+```php
+<?php
+
+Validator::make(
+    $request->all(),
+    [
+        'name' => 'required',
+        'email' => 'required|unique|max:255',
+        (...)
+    ]
+)->validate();
+```
+
+With a FormRequest, you have to do that:
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use App\Models\User;
+use Illuminate\Foundation\Http\FormRequest;
+
+class UserRequest extends FormRequest
+{
+    /**
+     * Indicate if the user is allowed to access to this request.
+     *
+     * @return boolean
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+    /**
+     * User rules.
+     *
+     * @return array
+     */
+    public function rules()
+    {
+        return [
+            'name' => 'required',
+            'email' => 'required|unique|max:255',
+            (...)
+        ];
+    }
+}
+```
+
+Let's use the UserRequest in a controller.
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Routing\Controller;
+use App\Http\Requests\UserRequest;
+use App\Models\User;
+
+
+class UserController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(UserRequest $request)
+    {
+        $builder = User::query();
+
+        // Here is a filter example, with trashed items.
+        if ($request->input('trash') === 'with') {
+            $builder->withTrashed();
+        }
+
+        return $builder->get();
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  UserRequest  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(UserRequest $request)
+    {
+        // Create a user based on validated inputs, maybe more checks are required.
+        $model = User::create($request->validated());
+        $model->save();
+
+        return response($model, 201);
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show(UserRequest $request)
+    {
+        return response($request->model());
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  UserRequest  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(UserRequest $request)
+    {
+        $model = $request->model();
+        $model->save();
+
+        return response($model);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(UserRequest $request)
+    {
+        $request->model()->delete();
+
+        return abort(202);
+    }
+}
+
+
+```
+
+### Now, with Laravel + Laramore
+
+Nothing to configure, just use build in getRules method. It is based on field configurations.
+
+```php
+<?php
+
+Validator::make(
+    $request->all(),
+    User::getRules()
+)->validate();
+
+?>
+```
+
+With a ModelRequest, you can work with FormRequest, validations, filters, and models. Here no rules to define.
+
+```php
+<?php
+
+namespace App\Http\Requests;
+
+use Laramore\Http\Requests\ModelRequest;
+use Laramore\Eloquent\FilterMeta;
+use Laramore\Http\Filters\{
+    Search, OrderBy, Page, PerPage, Trash
+};
+use App\Models\User;
+
+class UserRequest extends ModelRequest
+{
+    /**
+     * Define the model class used for this request.
+     * Not required because it cas be resolved.
+     *
+     * @var string
+     */
+    protected $modelClass = User::class;
+
+    /**
+     * Indicate if the user is allowed to access to this request.
+     *
+     * @return boolean
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Define all filters of this request.
+     *
+     * @param FilterMeta $filter
+     * @return void
+     */
+    public static function filter(FilterMeta $meta)
+    {
+        $meta->search = Search::filter()->operators('=', 'like');
+        $meta->date = Date::filter()->operators('=', '>=', '<')->field('created_at');
+        $meta->orderBy = OrderBy::filter()->fields(['firstname', 'lastname', 'name', 'created_at', 'updated_at']);
+
+        // $meta->page = Page::filter();
+        // $meta->perPage = PerPage::filter();
+        $meta->trash = Trash::filter();
+    }
+}
+
+
+```

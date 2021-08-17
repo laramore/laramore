@@ -39,14 +39,14 @@ abstract class BaseConstraintHandler extends BaseHandler
         if (\is_null($type)) {
             foreach ($this->observers as $types) {
                 foreach ($types as $observer) {
-                    if ($observer->getName() === $name) {
+                    if ($observer->getName() == $name) {
                         return true;
                     }
                 }
             }
         } else {
             foreach ($this->observers[$type] as $observer) {
-                if ($observer->getName() === $name) {
+                if ($observer->getName() == $name) {
                     return true;
                 }
             }
@@ -67,14 +67,14 @@ abstract class BaseConstraintHandler extends BaseHandler
         if (\is_null($type)) {
             foreach ($this->observers as $types) {
                 foreach ($types as $observer) {
-                    if ($observer->getName() === $name) {
+                    if ($observer->getName() == $name) {
                         return $observer;
                     }
                 }
             }
         } else {
             foreach ($this->observers[$type] as $observer) {
-                if ($observer->getName() === $name) {
+                if ($observer->getName() == $name) {
                     return $observer;
                 }
             }

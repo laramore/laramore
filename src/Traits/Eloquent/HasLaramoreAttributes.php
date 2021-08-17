@@ -302,7 +302,9 @@ trait HasLaramoreAttributes
             // }
 
             $field = $meta->getField($key);
-            $value = $meta->sanitizeFieldValue($field, $this, $value);
+            $value = $this->fetchingDatabase
+                ? $field->hydrate($value)
+                : $field->cast($value);
 
             $field->set($this, $value);
         } else {
@@ -461,7 +463,7 @@ trait HasLaramoreAttributes
                 ));
             }
 
-            return $meta->getField($key, RelationField::class)->getFieldValue($this);
+            return $meta->getField($key, RelationField::class)->get($this);
         }
 
         return $this->getRelationValue($key);
@@ -529,9 +531,9 @@ trait HasLaramoreAttributes
 
         if ($meta->hasField($key, RelationField::class)) {
             $field = $meta->getField($key, RelationField::class);
-            $value = $meta->sanitizeFieldValue($field, $this, $value);
+            $value = $field->cast($value);
 
-            $field->reverbate($this, $value);
+            // $field->reverbate($this, $value);
             $field->set($this, $value);
         } else {
             $this->setRelationValue($key, $value);
@@ -773,9 +775,7 @@ trait HasLaramoreAttributes
                 throw new \LogicException("The field `$key` cannot be set via `setExtra` but only via `setRelation`");
             }
 
-            $value = $meta->sanitizeFieldValue($field, $this, $value);
-
-            $field->set($this, $value);
+            $field->set($this, $field->cast($value));
         } else {
             $this->setExtraValue($key, $value);
         }
@@ -811,7 +811,9 @@ trait HasLaramoreAttributes
         foreach ($attributes as $key => $value) {
             if ($meta->hasField($key)) {
                 $field = $meta->getField($key);
-                $value = $meta->sanitizeFieldValue($field, $this, $value);
+                $value = $field instanceof AttributeField && $this->fetchingDatabase
+                    ? $field->hydrate($value)
+                    : $field->cast($value);
 
                 $field->set($this, $value);
             } else {
@@ -876,7 +878,7 @@ trait HasLaramoreAttributes
 
         $this->load(collect($this->relations)->except('pivot')->keys()->toArray());
 
-        if ($attributes === ['*']) {
+        if ($attributes == ['*']) {
             $this->syncOriginal();
         } else {
             foreach ($attributes as $attribute) {

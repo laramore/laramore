@@ -93,7 +93,7 @@ class Element implements Locked, Arrayable
      */
     public function is(Element $element): bool
     {
-        return (static::class === \get_class($element)) && ($this->getNative() === $element->getNative());
+        return (static::class == \get_class($element)) && ($this->getNative() == $element->getNative());
     }
 
     /**
@@ -143,7 +143,7 @@ class Element implements Locked, Arrayable
             return \call_user_func([$this, $method], $value);
         }
 
-        if ($key === 'native') {
+        if ($key == 'native') {
             $this->native = $value;
         } else {
             $this->values[$key] = $value;

@@ -54,7 +54,7 @@ trait ToOneRelation
     {
         $this->defineProperty('targetModel', $model);
 
-        if ($model === 'self') {
+        if ($model == 'self') {
             $this->addOption(Option::nullable());
         } else {
             $this->getField('reversed')->setMeta($model::getMeta());
@@ -92,7 +92,7 @@ trait ToOneRelation
     {
         $model = $this->getTargetModel();
 
-        return $model === $this->getMeta()->getModelClass() || $model === 'self';
+        return $model == $this->getMeta()->getModelClass() || $model == 'self';
     }
 
     /**
@@ -196,7 +196,7 @@ trait ToOneRelation
     {
         if (\is_null($this->getTargetModel())) {
             throw new \Exception('Related model settings needed. Set it by calling `on` method');
-        } else if ($this->getTargetModel() === 'self') {
+        } else if ($this->getTargetModel() == 'self') {
             $this->on($this->getSourceModel());
         }
 
@@ -219,8 +219,12 @@ trait ToOneRelation
     {
         $modelClass = $this->getTargetModel();
 
-        if (\is_null($value) || ($value instanceof $modelClass)) {
+        if (\is_null($value) || get_class($value) == $modelClass) {
             return $value;
+        }
+
+        if ($value instanceof LaramoreModel) {
+            throw new \Exception("Wrong model given, should of type $modelClass");
         }
 
         return new $modelClass($value);
@@ -358,7 +362,7 @@ trait ToOneRelation
      */
     public function setFieldValue(Field $field, $model, $value)
     {
-        if ($field->has($model) && $field->get($model) !== $value) {
+        if ($field->has($model) && $field->get($model) != $value) {
             $this->reset($model);
         }
 

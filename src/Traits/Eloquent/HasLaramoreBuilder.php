@@ -161,11 +161,11 @@ trait HasLaramoreBuilder
 
         $parts = explode('.', $column);
 
-        if (\count($parts) === 2) {
+        if (\count($parts) == 2) {
             [$table, $column] = $parts;
             $originalTable = $this->getModel()->getTable();
 
-            if ($table !== $originalTable) {
+            if ($table != $originalTable) {
                 $modelClass = Meta::getForTableName($table)->getModelClass();
                 $model = new $modelClass;
                 $builder = $model->newEloquentBuilder($this->getQuery())->setModel($model);
@@ -185,7 +185,7 @@ trait HasLaramoreBuilder
 
         $field = $meta->getField($column);
 
-        if (func_num_args() === 2) {
+        if (func_num_args() == 2) {
             [$operator, $value] = [Operator::equal(), $operator];
         }
 
@@ -243,7 +243,7 @@ trait HasLaramoreBuilder
         foreach ($values as $key => $value) {
             $parts = explode('.', $key);
 
-            if (\count($parts) === 2) {
+            if (\count($parts) == 2) {
                 [$table, $attname] = $parts;
                 $meta = Meta::getForTableName($table);
                 $model = $meta->getModelClass();
@@ -274,7 +274,7 @@ trait HasLaramoreBuilder
     {
         $parts = explode('.', $attname);
 
-        if (\count($parts) === 2) {
+        if (\count($parts) == 2) {
             [$table, $attname] = $parts;
 
             $meta = Meta::getForTableName($table);
@@ -368,8 +368,8 @@ trait HasLaramoreBuilder
         $parts = \explode('_', Str::lower(Str::snake($method)));
         $nextParts = [];
 
-        if (\count($parts) === 1 && \count($parameters)) {
-            if (Operator::has($parameters[0])) {
+        if (\count($parts) == 1 && \count($parameters)) {
+            if (is_string($parameters[0]) && Operator::has($parameters[0])) {
                 return $this->where($parts[0], Operator::get(array_shift($parameters)), (array_shift($parameters) ?? null), $boolean);
             }
 
@@ -415,7 +415,7 @@ trait HasLaramoreBuilder
                 $operators[] = $operator;
                 $booleans[] = $boolean;
 
-                if (\count($nextParts) === 1) {
+                if (\count($nextParts) == 1) {
                     throw new \Exception("Cannot end dynamic where with `{$nextParts[0]}`");
                 }
 
@@ -443,14 +443,14 @@ trait HasLaramoreBuilder
         if (\count($nextParts)) {
             $part = implode('_', $nextParts);
 
-            if (\count($columns) === 0 && Operator::has($part)) {
+            if (\count($columns) == 0 && Operator::has($part)) {
                 return $this->where(\array_shift($parameters), Operator::get($part), (\array_shift($parameters) ?? null), $boolean);
             }
 
             throw new \Exception("Dynamic where was not able to understand `$part`");
         }
 
-        if (\count($columns) !== \count($parameters)) {
+        if (\count($columns) != \count($parameters)) {
             throw new \Exception('They are more values than columns in dynamic where.');
         }
 
@@ -472,7 +472,7 @@ trait HasLaramoreBuilder
             return $this->multiWhere(\array_keys($column), $operator, \array_values($value), $boolean);
         }
 
-        if (\func_num_args() === 2) {
+        if (\func_num_args() == 2) {
             [$operator, $value] = [$value, $operator];
         }
 
@@ -507,7 +507,7 @@ trait HasLaramoreBuilder
      */
     public function __call($method, $parameters)
     {
-        if ($method === 'macro') {
+        if ($method == 'macro') {
             $this->localMacros[$parameters[0]] = $parameters[1];
 
             return;

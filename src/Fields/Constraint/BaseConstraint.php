@@ -34,7 +34,7 @@ abstract class BaseConstraint extends BaseObserver implements Constraint
         $this->on($fields);
         $this->setPriority($priority);
 
-        if ($this->count() === 0) {
+        if ($this->count() == 0) {
             throw new \LogicException('A constraints works on at least one field');
         }
     }

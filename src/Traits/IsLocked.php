@@ -98,7 +98,7 @@ trait IsLocked
      */
     protected function checkNeedsToBeLocked(bool $locked, string $lockedElement=null)
     {
-        if ($this->isLocked() !== $locked) {
+        if ($this->isLocked() != $locked) {
             // Load the method calling the needsToBeLocked.
             if (\is_null($lockedElement)) {
                 $lockedElement = $this->getDebugMethodName();
