@@ -406,21 +406,6 @@ abstract class BaseModel extends Model implements LaramoreModel
         return null;
     }
 
-    public function dynamicMethod(string $method, array $parameters)
-    {
-        if (Str::startsWith($method, ['where', 'andWhere', 'orWhere'])) {
-            return $this->forwardCallTo($this->newQuery(), $method, $parameters);
-        }
-
-        $fieldMethod = static::resolveFieldMethod($method, $parameters);
-
-        if ($fieldMethod) {
-            return call_user_func($fieldMethod, $this, ...$parameters);
-        }
-
-        return $this->forwardCallTo($this->newQuery(), $method, $parameters);
-    }
-
     /**
      * Dynamically retrieve attributes on the model.
      *
@@ -487,10 +472,12 @@ abstract class BaseModel extends Model implements LaramoreModel
             return static::__callMacro($method, $parameters);
         }
 
-        $fieldMethod = static::resolveFieldMethod($method, $parameters);
+        if (! Str::startsWith($method, ['where', 'andWhere', 'orWhere'])) {
+            $fieldMethod = static::resolveFieldMethod($method, $parameters);
 
-        if ($fieldMethod) {
-            return call_user_func($fieldMethod, $this, ...$parameters);
+            if ($fieldMethod) {
+                return call_user_func($fieldMethod, $this, ...$parameters);
+            }
         }
 
         return parent::__call($method, $parameters);
@@ -509,10 +496,12 @@ abstract class BaseModel extends Model implements LaramoreModel
             return static::__callStaticMacro($method, $parameters);
         }
 
-        $fieldMethod = static::resolveFieldMethod($method, $parameters);
+        if (! Str::startsWith($method, ['where', 'andWhere', 'orWhere'])) {
+            $fieldMethod = static::resolveFieldMethod($method, $parameters);
 
-        if ($fieldMethod) {
-            return call_user_func($fieldMethod, ...$parameters);
+            if ($fieldMethod) {
+                return call_user_func($fieldMethod, ...$parameters);
+            }
         }
 
         return parent::__callStatic($method, $parameters);
