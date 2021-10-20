@@ -19,6 +19,7 @@ use Closure;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Laramore\Contracts\Field\AttributeField;
+use Laramore\Contracts\Field\RelationField;
 use Laramore\Elements\OperatorElement;
 
 trait HasLaramoreBuilder
@@ -230,6 +231,117 @@ trait HasLaramoreBuilder
         }
 
         return $field->where($this, $operator, $value, $boolean);
+    }
+
+    /**
+     * Add a relationship count / exists condition to the query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Relations\Relation|string  $relation
+     * @param  string  $operator
+     * @param  int  $count
+     * @param  string  $boolean
+     * @param  \Closure|null  $callback
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     *
+     * @throws \RuntimeException
+     */
+    public function has($relation, $operator = null, $count = null, $boolean = 'and', $callback = null)
+    {
+        if (is_array($callback)) {
+            $meta = $this->getModel()::getMeta();
+
+            if ($meta->hasField($relation)) {
+                $field = $meta->getField($relation);
+
+                if ($field instanceof RelationField) {
+                    $attname = $field->getTarget()->getAttribute()->getNative();
+
+                    return parent::has($relation, $operator ?? '=', $count ?? count($callback), $boolean, function ($query) use ($callback, $attname) {
+                        return $query->whereIn($attname, $callback);
+                    });
+                }
+            }
+        }
+
+        return parent::has($relation, $operator ?? '>=', $count ?? 1, $boolean, $callback);
+    }
+
+    /**
+     * Add a relationship count / exists condition to the query with an "or".
+     *
+     * @param  string  $relation
+     * @param  string  $operator
+     * @param  int  $count
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function orHas($relation, $operator = '>=', $count = 1)
+    {
+        return parent::orHas($relation, $operator, $count);
+    }
+
+    /**
+     * Add a relationship count / exists condition to the query.
+     *
+     * @param  string  $relation
+     * @param  string  $boolean
+     * @param  \Closure|\Illuminate\Support\Collection|array\null  $callback
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function doesntHave($relation, $boolean = 'and', $callback = null)
+    {
+        return parent::doesntHave($relation, $boolean, $callback);
+    }
+
+    /**
+     * Add a relationship count / exists condition to the query with where clauses.
+     *
+     * @param  string  $relation
+     * @param  \Closure|\Illuminate\Support\Collection|array\null  $callback
+     * @param  string  $operator
+     * @param  int  $count
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function whereHas($relation, $callback = null, $operator = null, $count = null)
+    {
+        return parent::whereHas($relation, $callback, $operator, $count);
+    }
+
+    /**
+     * Add a relationship count / exists condition to the query with where clauses and an "or".
+     *
+     * @param  string  $relation
+     * @param  \Closure|\Illuminate\Support\Collection|array\null  $callback
+     * @param  string  $operator
+     * @param  int  $count
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function orWhereHas($relation, $callback = null, $operator = null, $count = null)
+    {
+        return parent::orWhereHas($relation, $callback, $operator, $count);
+    }
+
+    /**
+     * Add a relationship count / exists condition to the query with where clauses.
+     *
+     * @param  string  $relation
+     * @param  \Closure|\Illuminate\Support\Collection|array\null  $callback
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function whereDoesntHave($relation, $callback = null)
+    {
+        return parent::whereDoesntHave($relation, $callback);
+    }
+
+    /**
+     * Add a relationship count / exists condition to the query with where clauses and an "or".
+     *
+     * @param  string  $relation
+     * @param  \Closure|\Illuminate\Support\Collection|array\null  $callback
+     * @return \Illuminate\Database\Eloquent\Builder|static
+     */
+    public function orWhereDoesntHave($relation, $callback = null)
+    {
+        return parent::orWhereDoesntHave($relation, $callback);
     }
 
     /**
@@ -447,7 +559,7 @@ trait HasLaramoreBuilder
                 return $this->where(\array_shift($parameters), Operator::get($part), (\array_shift($parameters) ?? null), $boolean);
             }
 
-            throw new \Exception("Dynamic where was not able to understand `$part`");
+            throw new \Exception("Dynamic where was not able to understand `$part` from `$where`");
         }
 
         if (\count($columns) != \count($parameters)) {
@@ -537,7 +649,7 @@ trait HasLaramoreBuilder
             return $this->toBase()->{$method}(...$parameters);
         }
 
-        if (Str::startsWith($method, ['where', 'orWhere', 'andWhere']) && !Str::endsWith($method, 'hereIntegerInRaw')) {
+        if (Str::startsWith($method, ['where', 'orWhere', 'andWhere']) && ! Str::endsWith($method, ['hereIntegerInRaw', 'hereColumn'])) {
             return $this->dynamicWhere($method, $parameters);
         }
 
