@@ -15,6 +15,9 @@ use Illuminate\Support\{
 };
 use Laramore\Exceptions\MetaException;
 use Laramore\Facades\FieldConstraint;
+use Laramore\Contracts\Field\{
+    ExtraField, IncrementField, NumericField, RelationField
+};
 use Laramore\Fields\{
     DateTime, Constraint\ConstraintHandler, Constraint\Primary
 };
@@ -41,7 +44,7 @@ class Meta implements LaramoreMeta
     protected $modelClass;
     protected $modelGroup;
     protected $modelName;
-
+    protected $modelConfig;
 
     protected $description;
     protected $tableName;
@@ -487,6 +490,39 @@ class Meta implements LaramoreMeta
         if (!$this->hasDeletedTimestamp()) {
             $this->hasDeletedTimestamp = $this->hasField($this->modelClass::DELETED_AT);
         }
+
+        $this->generateModelConfig();
+    }
+
+    protected function generateModelConfig()
+    {
+        $this->modelConfig = [
+            'fillable' => $this->getFieldNamesWithOption('fillable'),
+            'visible' => $this->getFieldNamesWithOption('visible'),
+            'required' => $this->getFieldNamesWithOption('required'),
+            'with' => ($with = $this->getFieldNamesWithOption('with', RelationField::class)),
+            'with_count' => $this->getFieldNamesWithOption('with_count'),
+            'appends' => array_values(array_diff($this->getFieldNamesWithOption('with', ExtraField::class), $with)),
+            'select' => $this->getFieldNamesWithOption('select'),
+
+            'timestamps' => $this->hasTimestamps(),
+
+            'table' => $this->getTableName(),
+            'connection' => $this->getConnectionName(),
+
+            'incrementing' => false,
+            'key_type' => 'int',
+        ];
+
+        if ($primary = $this->getPrimary()) {
+            $this->modelConfig['incrementing'] = !$primary->isComposed() && $primary->getAttribute() instanceof IncrementField;
+            $this->modelConfig['key_type'] = $primary->getAttribute() && $primary->getAttribute() instanceof NumericField ? 'int' : 'string';
+        }
+    }
+
+    public function getModelConfig()
+    {
+        return $this->modelConfig;
     }
 
     /**

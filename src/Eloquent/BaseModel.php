@@ -17,9 +17,6 @@ use Laramore\Facades\{
     Meta as MetaManager, Operator
 };
 use Laramore\Contracts\Eloquent\LaramoreModel;
-use Laramore\Contracts\Field\{
-    ExtraField, IncrementField, NumericField
-};
 use Laramore\Exceptions\PrepareException;
 use Laramore\Fields\Constraint\Primary;
 use Laramore\Contracts\Eloquent\LaramoreMeta;
@@ -87,27 +84,24 @@ abstract class BaseModel extends Model implements LaramoreModel
             throw new \Exception('The meta is not locked and cannot be used correctly');
         }
 
-        // Define here fillable and visible fields.
-        $this->fillable = $meta->getFieldNamesWithOption('fillable');
-        $this->visible = $meta->getFieldNamesWithOption('visible');
-        $this->required = $meta->getFieldNamesWithOption('required');
-        $this->with = $meta->getFieldNamesWithOption('with', RelationField::class);
-        $this->withCount = $meta->getFieldNamesWithOption('with_count');
-        $this->appends = array_values(array_diff($meta->getFieldNamesWithOption('with', ExtraField::class), $this->with));
-        $this->select = $meta->getFieldNamesWithOption('select');
+        // Get model base config from meta (pre-calculated after locking).
+        $modelConfig = $meta->getModelConfig();
 
-        $this->timestamps = $meta->hasTimestamps();
+        $this->fillable = $modelConfig['fillable'];
+        $this->visible = $modelConfig['visible'];
+        $this->required = $modelConfig['required'];
+        $this->with = $modelConfig['with'];
+        $this->withCount = $modelConfig['with_count'];
+        $this->appends = $modelConfig['appends'];
+        $this->select = $modelConfig['select'];
+        $this->timestamps = $modelConfig['timestamps'];
 
-        // Define all model metas.
-        if ($primary = $meta->getPrimary()) {
-            $this->setIncrementing(!$primary->isComposed() && $primary->getAttribute() instanceof IncrementField);
-            $this->setKeyType($primary->getAttribute() && $primary->getAttribute() instanceof NumericField ? 'int' : 'string');
-        }
+        $this->setTable($modelConfig['table']);
+        $this->setConnection($modelConfig['connection']);
+        $this->setIncrementing($modelConfig['incrementing']);
+        $this->setKeyType($modelConfig['key_type']);
 
-        $this->setTable($meta->getTableName());
-        $this->setConnection($meta->getConnectionName());
-
-        if (!$this->fetchingDatabase) {
+        if (! $this->fetchingDatabase) {
             static::unguarded(function () {
                 $this->presetAttributes();
             });
@@ -504,6 +498,6 @@ abstract class BaseModel extends Model implements LaramoreModel
             }
         }
 
-        return parent::__callStatic($method, $parameters);
+        return (new static([], true))->$method(...$parameters);
     }
 }
