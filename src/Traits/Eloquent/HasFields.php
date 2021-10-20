@@ -11,6 +11,7 @@
 namespace Laramore\Traits\Eloquent;
 
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Laramore\Facades\Operator;
 use Laramore\Contracts\{
 	Field\Field, Field\RelationField, Eloquent\LaramoreModel, Eloquent\LaramoreBuilder,
@@ -72,6 +73,10 @@ trait HasFields
         }
 
         if (\is_array($model) || ($model instanceof \ArrayAccess)) {
+            if ($model instanceof Collection) {
+                $model = $model->toArray();
+            }
+
             if (\is_object($model) || Arr::isAssoc($model)) {
                 return $model[$field->getName()];
             } else if (isset($model[0])) {
@@ -173,7 +178,7 @@ trait HasFields
             return $field->getDefault();
         }
 
-        $field->resolve($model);
+        return $field->resolve($model);
     }
 
     /**

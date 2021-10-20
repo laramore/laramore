@@ -33,14 +33,6 @@ return [
         'native' => 'null',
         'value_type' => OperatorElement::NULL_TYPE,
     ],
-    'dont_exist' => [
-        'native' => 'null',
-        'value_type' => OperatorElement::NULL_TYPE,
-    ],
-    'exist' => [
-        'native' => 'not null',
-        'value_type' => OperatorElement::NULL_TYPE,
-    ],
     'exists' => [
         'native' => 'not null',
         'value_type' => OperatorElement::NULL_TYPE,
