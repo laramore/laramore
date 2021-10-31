@@ -32,7 +32,7 @@ trait SessionMeta
         static::generateIdField($meta);
         static::generateUserField($meta);
 
-        $meta->ipAdress = Char::field()->maxLength(45)->nullable();
+        $meta->ipAddress = Char::field()->maxLength(45)->nullable();
         $meta->userAgent = Text::field()->nullable();
         $meta->payload = Text::field();
         $meta->lastActivity = Integer::field()->index();
