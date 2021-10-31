@@ -148,10 +148,10 @@ trait ManyToManyRelation
         $relation = $model->belongsToMany(
             $this->getTargetModel(),
             $this->getPivotMeta()->getTableName(),
-            $this->getPivotTarget()->getSource()->getAttribute()->getNative(),
             $this->getPivotSource()->getSource()->getAttribute()->getNative(),
-            $this->getTarget()->getAttribute()->getNative(),
+            $this->getPivotTarget()->getSource()->getAttribute()->getNative(),
             $this->getSource()->getAttribute()->getNative(),
+            $this->getTarget()->getAttribute()->getNative(),
             $this->getName()
         )->withPivot($this->getPivotAttributes())
             ->using($this->getPivotMeta()->getModelClass())
