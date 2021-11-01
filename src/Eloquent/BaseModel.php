@@ -351,7 +351,7 @@ abstract class BaseModel extends Model implements LaramoreModel
     {
         $field = static::getMeta()->getField($relation, RelationField::class);
 
-        return $field->getOwner()->relateFieldValue($field, $this);
+        return $field->relate($this);
     }
 
     /**

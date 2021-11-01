@@ -181,7 +181,7 @@ trait HasLaramoreBuilder
         $meta = $this->getModel()::getMeta();
 
         if (! $meta->hasField($column)) {
-            throw new \Exception("The column $column is not defined as attribute");
+            throw new \Exception("The column $column is not defined as attribute for model {$meta->getModelClass()}");
         }
 
         $field = $meta->getField($column);

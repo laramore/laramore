@@ -217,9 +217,15 @@ class ManyToMany extends BaseComposed implements ManyRelationField
     {
         $offMeta = $this->getMeta();
         $offName = Str::snake($offMeta->getModelName());
+        $onMeta = $this->getTargetModel()::getMeta();
         $onName = Str::snake(Str::singular($this->getName()));
         $namespaceName = $this->pivotNamespace;
         $pivotClassName = ucfirst(Str::camel($offName)).ucfirst(Str::camel($onName));
+
+        if ($offMeta->getModelGroup() && $offMeta->getModelGroup() === $onMeta->getModelGroup()) {
+            $namespaceName .= '\\'.Str::ucfirst($offMeta->getModelGroup());
+        }
+
         $pivotClass = "$namespaceName\\$pivotClassName";
 
         if ($this->usePivot) {
@@ -231,7 +237,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
             $this->reversedPivotName = $this->replaceInFieldTemplate($this->templates['reversed_pivot'], $onName);
 
             // Create dynamically the pivot class (only and first time I use eval, really).
-            if (!\class_exists($pivotClass)) {
+            if (! class_exists($pivotClass)) {
                 eval("namespace $namespaceName; class $pivotClassName extends \Laramore\Eloquent\FakePivot {}");
 
                 $meta = $pivotClass::getMeta();

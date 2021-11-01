@@ -195,7 +195,7 @@ class Meta implements LaramoreMeta
         return \implode('_', \array_map(function ($element) {
             return Str::plural($element);
         }, \array_merge(
-            \is_null($this->modelGroup) ? [] : \explode('_', $this->modelGroup),
+            \is_null($this->getModelGroup()) ? [] : \explode('_', $this->getModelGroup()),
             \explode('_', $this->modelName),
         )));
     }

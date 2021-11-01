@@ -10,6 +10,7 @@
 
 namespace Laramore\Eloquent;
 
+use Illuminate\Support\Str;
 use Laramore\Exceptions\LaramoreException;
 use Laramore\Contracts\{
     Eloquent\LaramorePivotMeta, Field\Field, Field\RelationField
@@ -18,6 +19,22 @@ use Laramore\Fields\ManyToOne;
 
 class PivotMeta extends Meta implements LaramorePivotMeta
 {
+    /**
+     * Return the default table name for this meta.
+     *
+     * @return string
+     */
+    public function getDefaultTableName(): string
+    {
+        return \implode('_', \array_map(function ($element) {
+            return Str::plural($element);
+        }, \array_merge(
+            \is_null($this->getModelGroup()) ? [] : \explode('_', $this->getModelGroup()),
+            ['pivot'],
+            \explode('_', $this->modelName),
+        )));
+    }
+
     /**
      * List of pivot relations.
      *

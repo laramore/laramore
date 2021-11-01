@@ -103,7 +103,7 @@ class MetaManager implements Prepared, LaramoreManager
     public function hasForTableName(string $tableName): bool
     {
         foreach ($this->all() as $meta) {
-            if ($meta->getTableName() == $tableName) {
+            if ($meta && $meta->getTableName() == $tableName) {
                 return true;
             }
         }
@@ -121,7 +121,7 @@ class MetaManager implements Prepared, LaramoreManager
     public function getForTableName(string $tableName): Meta
     {
         foreach ($this->all() as $meta) {
-            if ($meta->getTableName() == $tableName) {
+            if ($meta && $meta->getTableName() == $tableName) {
                 return $meta;
             }
         }
@@ -166,6 +166,10 @@ class MetaManager implements Prepared, LaramoreManager
     public function set(Meta $meta)
     {
         $this->needsToBeUnlocked();
+
+        if ($this->hasForTableName($meta->getTableName())) {
+            throw new \Exception("Cannot create meta {$meta->getModelClass()} for the table name {$meta->getTableName()} already exists for ");
+        }
 
         return $this->metas[$meta->getModelClass()] = $meta;
     }
@@ -220,7 +224,10 @@ class MetaManager implements Prepared, LaramoreManager
             throw new \LogicException("Cannot create a meta from a non LaramoreModel. `$modelClass` given.");
         }
 
-        $this->metas[$modelClass] = $meta = \is_a($modelClass, LaramorePivot::class, true) ? new PivotMeta($modelClass) : new Meta($modelClass);
+        $meta = $this->set(\is_a($modelClass, LaramorePivot::class, true)
+            ? new PivotMeta($modelClass)
+            : new Meta($modelClass)
+        );
 
         $modelClass::prepareMeta($meta);
 
