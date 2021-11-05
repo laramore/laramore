@@ -114,7 +114,7 @@ abstract class BaseAttribute extends BaseField implements AttributeField
      */
     public function whereNull(LaramoreBuilder $builder, string $boolean='and', bool $not=false): LaramoreBuilder
     {
-        return $this->where($builder, Operator::null(), null, $boolean, $not);
+        return $this->where($builder, $not ? Operator::notNull() : Operator::null(), null, $boolean, $not);
     }
 
     /**
