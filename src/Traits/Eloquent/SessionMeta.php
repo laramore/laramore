@@ -10,26 +10,23 @@
 
 namespace Laramore\Traits\Eloquent;
 
+use Illuminate\Support\Facades\Schema;
 use Laramore\Contracts\Eloquent\LaramoreMeta;
 use Laramore\Fields\{
-    Integer, ManyToOne, PrimaryId, Char, Text
+    Integer, Char, Text
 };
 
 trait SessionMeta
 {
-    protected static function generateIdField(LaramoreMeta $meta)
-    {
-        $meta->id = PrimaryId::field();
-    }
-
     protected static function generateUserField(LaramoreMeta $meta)
     {
-        $meta->user = ManyToOne::field()->on(static::$userClass)->nullable()->index();
+        $meta->user = static::$userFieldClass::field()->on(static::$userClass)->nullable()->index();
     }
 
     public static function meta(LaramoreMeta $meta)
     {
-        static::generateIdField($meta);
+        $meta->id = Char::field()->primary()->maxLength(Schema::getFacadeRoot()::$defaultStringLength);
+
         static::generateUserField($meta);
 
         $meta->ipAddress = Char::field()->maxLength(45)->nullable();

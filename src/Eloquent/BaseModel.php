@@ -80,8 +80,8 @@ abstract class BaseModel extends Model implements LaramoreModel
         $meta = static::getMeta();
 
         // Should be locked by a specific Provider later.
-        if (!$meta->isLocked()) {
-            throw new \Exception('The meta is not locked and cannot be used correctly');
+        if (! $meta->isLocked()) {
+            throw new \Exception("The meta of {$meta->getModelClass()} is not locked and cannot be used correctly");
         }
 
         // Get model base config from meta (pre-calculated after locking).

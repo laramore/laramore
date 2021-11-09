@@ -502,7 +502,7 @@ class Meta implements LaramoreMeta
             'required' => $this->getFieldNamesWithOption('required'),
             'with' => ($with = $this->getFieldNamesWithOption('with', RelationField::class)),
             'with_count' => $this->getFieldNamesWithOption('with_count'),
-            'appends' => array_values(array_diff($this->getFieldNamesWithOption('with', ExtraField::class), $with)),
+            'appends' => $this->getFieldNamesWithOption('append', ExtraField::class),
             'select' => $this->getFieldNamesWithOption('select'),
 
             'timestamps' => $this->hasTimestamps(),

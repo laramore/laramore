@@ -260,7 +260,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
 
                 // $this->reversedPivotName = $onField->getReversedField()->getName();
 
-                $meta->pivots($onField, $offField);
+                $meta->pivots($offField, $onField);
             }
         }
 

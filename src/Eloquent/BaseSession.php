@@ -11,10 +11,13 @@
 namespace Laramore\Eloquent;
 
 use Laramore\Traits\Eloquent\SessionMeta;
+use Laramore\Fields\ManyToOne;
 
 class BaseSession extends BaseModel
 {
+    use SessionMeta;
+
     protected static $userClass = \App\Models\User::class;
 
-    use SessionMeta;
+    protected static $userFieldClass = ManyToOne::class;
 }
