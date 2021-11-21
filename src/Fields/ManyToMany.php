@@ -57,13 +57,6 @@ class ManyToMany extends BaseComposed implements ManyRelationField
     protected $pivotTarget;
 
     /**
-     * Indicate if this use a specific pivot.
-     *
-     * @var boolean
-     */
-    protected $usePivot;
-
-    /**
      * Pivot class name.
      *
      * @var string
@@ -198,11 +191,10 @@ class ManyToMany extends BaseComposed implements ManyRelationField
      * @param string $pivotClass
      * @return self
      */
-    public function usePivot(string $pivotClass=null)
+    public function usePivot(string $pivotClass)
     {
         $this->needsToBeUnlocked();
 
-        $this->defineProperty('usePivot', true);
         $this->defineProperty('pivotClass', $pivotClass);
 
         return $this;
@@ -215,58 +207,33 @@ class ManyToMany extends BaseComposed implements ManyRelationField
      */
     protected function loadPivotMeta()
     {
-        $offMeta = $this->getMeta();
-        $offName = Str::snake($offMeta->getModelName());
-        $onMeta = $this->getTargetModel()::getMeta();
-        $onName = Str::snake(Str::singular($this->getName()));
+        $sourceMeta = $this->getMeta();
+        $sourceName = Str::snake($sourceMeta->getModelName());
+        $targetMeta = $this->getTargetModel()::getMeta();
+        $targetName = Str::snake(Str::singular($this->getName()));
         $namespaceName = $this->pivotNamespace;
-        $pivotClassName = ucfirst(Str::camel($offName)).ucfirst(Str::camel($onName));
+        $pivotClassName = ucfirst(Str::camel($sourceName)).ucfirst(Str::camel($targetName));
 
-        if ($offMeta->getModelGroup() && $offMeta->getModelGroup() === $onMeta->getModelGroup()) {
-            $namespaceName .= '\\'.Str::ucfirst($offMeta->getModelGroup());
+        if ($sourceMeta->getModelGroup() && $sourceMeta->getModelGroup() === $targetMeta->getModelGroup()) {
+            $namespaceName .= '\\'.Str::ucfirst($sourceMeta->getModelGroup());
         }
 
         $pivotClass = "$namespaceName\\$pivotClassName";
 
-        if ($this->usePivot) {
-            if ($this->pivotClass) {
-                $pivotClass = $this->pivotClass;
-            }
-        } else {
-            $this->pivotName = $this->replaceInFieldTemplate($this->templates['pivot'], $offName);
-            $this->reversedPivotName = $this->replaceInFieldTemplate($this->templates['reversed_pivot'], $onName);
-
-            // Create dynamically the pivot class (only and first time I use eval, really).
-            if (! class_exists($pivotClass)) {
-                eval("namespace $namespaceName; class $pivotClassName extends \Laramore\Eloquent\FakePivot {}");
-
-                $meta = $pivotClass::getMeta();
-
-                $meta->setField(
-                    $offName,
-                    $offField = $this->pivotField::field()->on($this->getMeta()->getModelClass())
-                );
-
-                $onField = $this->pivotField::field()->on($this->getTargetModel());
-
-                if ($this->isOnSelf()) {
-                    $onField->reversedName($this->templates['self_reversed_pivot']);
-                }
-
-                $meta->setField(
-                    $onName,
-                    $onField
-                );
-
-                // $this->reversedPivotName = $onField->getReversedField()->getName();
-
-                $meta->pivots($offField, $onField);
-            }
-        }
+        $this->pivotName = $this->replaceInFieldTemplate($this->templates['pivot'], $sourceName);
+        $this->reversedPivotName = $this->replaceInFieldTemplate($this->templates['reversed_pivot'], $targetName);
 
         $this->setProperty('pivotMeta', $pivotClass::getMeta());
 
         [$source, $target] = $this->pivotMeta->getPivots();
+
+        if ($source->getTargetModel() !== $sourceMeta->getModelClass()) {
+            throw new \Exception("Pivot class `{$pivotClass}` must define the first relation with model `{$sourceMeta->getModelClass()}` and not `{$source->getTargetModel()}`");
+        }
+
+        if ($target->getTargetModel() !== $targetMeta->getModelClass()) {
+            throw new \Exception("Pivot class `{$pivotClass}` must define the second relation with model `{$targetMeta->getModelClass()}` and not `{$target->getTargetModel()}`");
+        }
 
         $this->setProperty('pivotSource', $source);
         $this->setProperty('pivotTarget', $target);
@@ -277,7 +244,7 @@ class ManyToMany extends BaseComposed implements ManyRelationField
     }
 
     /**
-     * Define on and off variables after being owned.
+     * Define on and source variables after being owned.
      *
      * @return void
      */

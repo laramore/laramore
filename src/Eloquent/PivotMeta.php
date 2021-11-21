@@ -93,25 +93,6 @@ class PivotMeta extends Meta implements LaramorePivotMeta
     }
 
     /**
-     * Define pivots for this meta pivot.
-     *
-     * @param RelationField $pivotSource
-     * @param RelationField $pivotTarget
-     * @return self
-     */
-    public function pivots(RelationField $pivotSource, RelationField $pivotTarget)
-    {
-        $this->needsToBeUnlocked();
-
-        $this->pivots = [];
-
-        $this->addPivot($pivotSource);
-        $this->addPivot($pivotTarget);
-
-        return $this;
-    }
-
-    /**
      * Add a pivot for this pivot meta.
      *
      * @param RelationField $pivot

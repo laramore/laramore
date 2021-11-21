@@ -29,13 +29,4 @@ interface LaramorePivotMeta extends FieldsOwner
      * @return array
      */
     public function getPivots(): array;
-
-    /**
-     * Define pivots for this meta pivot.
-     *
-     * @param RelationField $pivotSource
-     * @param RelationField $pivotTarget
-     * @return self
-     */
-    public function pivots(RelationField $pivotSource, RelationField $pivotTarget);
 }

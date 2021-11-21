@@ -19,6 +19,7 @@ use Laramore\Contracts\Field\{
     ExtraField, IncrementField, NumericField, RelationField
 };
 use Laramore\Fields\{
+    BaseField,
     DateTime, Constraint\ConstraintHandler, Constraint\Primary
 };
 use Laramore\Contracts\{
@@ -632,7 +633,7 @@ class Meta implements LaramoreMeta
      */
     public function __get(string $name): Field
     {
-        return $this->getField($name);
+        return $this->getField(BaseField::parseName($name));
     }
 
     /**
