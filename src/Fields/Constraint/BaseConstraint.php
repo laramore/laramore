@@ -11,6 +11,7 @@
 namespace Laramore\Fields\Constraint;
 
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
 use Laramore\Contracts\Field\{
     AttributeField, ComposedField, Field, Constraint\Constraint
 };
@@ -115,9 +116,11 @@ abstract class BaseConstraint extends BaseObserver implements Constraint
     {
         $tableName = $this->getTableNames()[0];
 
-        return $tableName.'_'.implode('_', \array_map(function (AttributeField $field) {
+        $fullName = $tableName.'_'.implode('_', \array_map(function (AttributeField $field) {
             return $field->getAttname();
         }, $this->getAttributes())).'_'.$this->getConstraintType();
+
+        return substr($fullName, 0, Schema::getFacadeRoot()::$defaultStringLength);
     }
 
     /**

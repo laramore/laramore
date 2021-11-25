@@ -10,6 +10,8 @@
 
 namespace Laramore\Fields;
 
+use Illuminate\Support\Facades\Schema;
+
 class Char extends Text
 {
     /**
@@ -65,5 +67,19 @@ class Char extends Text
     public function serialize($value)
     {
         return $value;
+    }
+
+    /**
+     * If no max length defined, get it from schema.
+     *
+     * @return void
+     */
+    protected function locking()
+    {
+        parent::locking();
+
+        if (is_null($this->maxLength)) {
+            $this->maxLength = Schema::getFacadeRoot()::$defaultStringLength;
+        }
     }
 }
