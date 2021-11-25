@@ -16,7 +16,7 @@ use Illuminate\Support\{
 };
 use Laramore\Facades\Option;
 use Laramore\Contracts\{
-    Eloquent\LaramoreMeta, Field\Field
+    Eloquent\LaramoreMeta, Eloquent\LaramoreBuilder, Field\Field
 };
 use Laramore\Contracts\Field\{
     AttributeField, RelationField, ExtraField
@@ -309,11 +309,21 @@ abstract class BaseField implements Field
     /**
      * Find model from database with attribute value.
      *
+     * @param  LaramoreBuilder $builder
+     * @param  mixed           $value
      * @return mixed
      */
-    public function fetch($value)
+    public function fetch($builder=null, $value=null)
     {
-        return $this->getMeta()->getModelClass()::where($this->getName(), $value)->first();
+        if (func_num_args() === 1) {
+            [$builder, $value] = [$value, $builder];
+        }
+
+        if (! $builder) {
+            $builder = $this->getMeta()->getModelClass()::query();
+        }
+
+        return $this->where($builder, Operator::equal(), $value)->first();
     }
 
     /**
