@@ -125,6 +125,13 @@ interface Field extends Locked, Owned
     public function serialize($value);
 
     /**
+     * Find model from database with attribute value.
+     *
+     * @return mixed
+     */
+    public function fetch($value);
+
+    /**
      * Indicate if the field has a value.
      *
      * @param  LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model

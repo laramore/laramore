@@ -23,6 +23,7 @@ use Laramore\Contracts\Field\{
 };
 use Laramore\Elements\Element;
 use Laramore\Exceptions\FieldException;
+use Laramore\Facades\Operator;
 use Laramore\Traits\{
     IsOwned, IsLocked, HasProperties, HasOptions, HasLockedMacros
 };
@@ -303,6 +304,16 @@ abstract class BaseField implements Field
         }
 
         return $value;
+    }
+
+    /**
+     * Find model from database with attribute value.
+     *
+     * @return mixed
+     */
+    public function fetch($value)
+    {
+        return $this->getMeta()->getModelClass()::where($this->getName(), $value)->first();
     }
 
     /**
