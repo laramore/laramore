@@ -10,6 +10,7 @@
 
 namespace Laramore\Eloquent;
 
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model as Model;
 use Illuminate\Support\Str;
 use Illuminate\Support\Traits\Macroable;
@@ -275,6 +276,25 @@ abstract class BaseModel extends Model implements LaramoreModel
     public static function getField(string $key)
     {
         return static::getMeta()->getField($key);
+    }
+
+    /**
+     * Perform a model insert operation.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return bool
+     */
+    protected function performInsert(EloquentBuilder $query)
+    {
+        $result = parent::performInsert($query);
+
+        if ($result) {
+            foreach (array_keys($this->relations) as $name) {
+                $this->getField($name)->reverbate($this);
+            }
+        }
+
+        return $result;
     }
 
     /**

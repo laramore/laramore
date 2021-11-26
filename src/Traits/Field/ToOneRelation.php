@@ -246,14 +246,13 @@ trait ToOneRelation
      * It should be called by the set method.
      *
      * @param  LaramoreModel $model
-     * @param  mixed         $value
-     * @return mixed
+     * @return boolean
      */
-    public function reverbate(LaramoreModel $model, $value)
+    public function reverbate(LaramoreModel $model)
     {
-        $this->getField('id')->set($model, $this->getTarget()->getAttribute()->get($value));
+        $this->getField('id')->set($model, $this->getTarget()->getAttribute()->get($this->get($model)));
 
-        return $value;
+        return true;
     }
 
     /**

@@ -91,13 +91,15 @@ class HasOne extends BaseField implements RelationField
 
     /**
      * Reverbate the relation into database or other fields.
+     * It should be called by the set method.
      *
      * @param  LaramoreModel $model
-     * @param  mixed         $value
-     * @return mixed
+     * @return boolean
      */
-    public function reverbate(LaramoreModel $model, $value)
+    public function reverbate(LaramoreModel $model)
     {
+        $value = $this->get($model);
+
         if (!\is_null($value)) {
             $this->getField('id')->set(
                 $model,
@@ -106,7 +108,7 @@ class HasOne extends BaseField implements RelationField
         }
 
         if (!$model->exists) {
-            return $value;
+            return false;
         }
 
         $modelClass = $this->getSourceModel();
@@ -126,6 +128,6 @@ class HasOne extends BaseField implements RelationField
             $valueId
         )->update([$this->to => $id]);
 
-        return $value;
+        return true;
     }
 }

@@ -27,4 +27,19 @@ class BelongsToMany extends BaseBelongsToMany
 
         return array_merge($columns, $this->aliasedPivotColumns());
     }
+
+    /**
+     * Get all of the IDs from the given mixed value.
+     *
+     * @param  mixed  $value
+     * @return array
+     */
+    protected function parseIds($value)
+    {
+        $field = $this->related::getMeta()->getField($this->relatedKey);
+
+        return array_map(function ($id) use ($field) {
+            return $field->dry($id);
+        }, parent::parseIds($value));
+    }
 }

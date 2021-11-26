@@ -104,7 +104,7 @@ trait HasFields
                 $result = $model->setRelationValue($field->getName(), $value);
 
                 if (! $model->fetchingDatabase) {
-                    $field->reverbate($model, $value);
+                    $field->reverbate($model);
                 }
 
                 return $result;

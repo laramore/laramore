@@ -37,10 +37,9 @@ interface RelationField extends Field
      * It should be called by the set method.
      *
      * @param  LaramoreModel $model
-     * @param  mixed         $value
-     * @return mixed
+     * @return boolean
      */
-    public function reverbate(LaramoreModel $model, $value);
+    public function reverbate(LaramoreModel $model);
 
     /**
      * Return the reversed field.

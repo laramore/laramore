@@ -68,10 +68,10 @@ trait ManyToManyRelation
         }
 
         if (\is_null($value) || \is_array($value)) {
-            return collect($value);
+            return (new ($this->getTargetModel()))->newCollection($value);
         }
 
-        return collect($this->castModel($value));
+        return (new ($this->getTargetModel()))->newCollection($this->castModel($value));
     }
 
     /**
@@ -107,16 +107,17 @@ trait ManyToManyRelation
      * It should be called by the set method.
      *
      * @param  LaramoreModel $model
-     * @param  mixed         $value
-     * @return mixed
+     * @return boolean
      */
-    public function reverbate(LaramoreModel $model, $value)
+    public function reverbate(LaramoreModel $model)
     {
         if ($model->exists) {
-            $this->relate($model)->sync($value);
+            $this->relate($model)->sync($this->get($model));
+
+            return true;
         }
 
-        return $value;
+        return false;
     }
 
     /**

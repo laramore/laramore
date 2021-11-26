@@ -140,13 +140,12 @@ class HasMany extends BaseField implements ManyRelationField
      * It should be called by the set method.
      *
      * @param  LaramoreModel $model
-     * @param  mixed         $value
-     * @return mixed
+     * @return boolean
      */
-    public function reverbate(LaramoreModel $model, $value)
+    public function reverbate(LaramoreModel $model)
     {
         if (!$model->exists) {
-            return $value;
+            return false;
         }
 
         $modelClass = $this->getTargetModel();
@@ -157,7 +156,7 @@ class HasMany extends BaseField implements ManyRelationField
         $primaryAttname = $primaryField->getNative();
 
         $foreignId = $model->getKey();
-        $valueIds = $value->map(function ($subModel) use ($primaryAttname) {
+        $valueIds = $this->get($model)->map(function ($subModel) use ($primaryAttname) {
             return $subModel->getAttribute($primaryAttname);
         });
 
@@ -179,6 +178,6 @@ class HasMany extends BaseField implements ManyRelationField
             $valueIds
         )->update([$foreignAttname => $foreignId]);
 
-        return $value;
+        return true;
     }
 }
