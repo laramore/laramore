@@ -175,7 +175,9 @@ abstract class BaseModel extends Model implements LaramoreModel
             return $values;
         }
 
-        return $this->getAttribute($this->getKeyName());
+        $field = $this->getField($this->getKeyName());
+
+        return $field->dry($field->get($this));
     }
 
     /**
