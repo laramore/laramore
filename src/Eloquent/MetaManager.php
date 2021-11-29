@@ -53,7 +53,7 @@ class MetaManager implements Prepared, LaramoreManager
      * @var string
      */
     public static $modelsPaths = [
-        'app/Models', 'app/Pivots',
+        'app'.DIRECTORY_SEPARATOR.'Models', 'app'.DIRECTORY_SEPARATOR.'Pivots',
     ];
 
     /**
