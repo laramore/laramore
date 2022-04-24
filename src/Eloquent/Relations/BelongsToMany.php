@@ -2,6 +2,7 @@
 
 namespace Laramore\Eloquent\Relations;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as BaseBelongsToMany;
 
 
@@ -41,5 +42,29 @@ class BelongsToMany extends BaseBelongsToMany
         return array_map(function ($id) use ($field) {
             return $field->dry($id);
         }, parent::parseIds($value));
+    }
+
+    /**
+     * Get the pivot attributes from a model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return array
+     */
+    protected function migratePivotAttributes(Model $model)
+    {
+        $values = [];
+
+        foreach ($model->getExtras() as $key => $value) {
+            // To get the pivots attributes we will just take any of the attributes which
+            // begin with "pivot_" and add those to this arrays, as well as unsetting
+            // them from the parent's models since they exist in a different table.
+            if (strpos($key, 'pivot_') === 0) {
+                $values[substr($key, 6)] = $value;
+
+                unset($model->$key);
+            }
+        }
+
+        return $values;
     }
 }

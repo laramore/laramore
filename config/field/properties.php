@@ -60,6 +60,11 @@ return [
             'select', 'visible', 'fillable', 'required',
         ],
     ],
+    Hashed::class => [
+        'options' => [
+            'select', 'fillable', 'required',
+        ],
+    ],
     Increment::class => [
         'options' => [
             'select', 'visible', 'fillable', 'required',

@@ -4,10 +4,10 @@
     "keywords": ["ORM", "Laravel", "Model", "Migration", "Automatic", "Auto", "Fields", "Field", "Uuid", "Meta", "Table", "Database", "Validations"],
     "license": "MIT",
     "config": {
-       "platform": {
-           "php": "7.3"
-       }
-   },
+        "platform": {
+            "php": "7.3"
+        }
+    },
     "require": {
         "php": "^7.3|^8.0",
         "laravel/framework": ">=8.0",

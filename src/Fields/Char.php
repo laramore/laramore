@@ -19,24 +19,24 @@ class Char extends Text
      *
      * @var integer
      */
-    protected $maxLength;
+    protected $length;
 
     /**
      * Define the max length for this field.
      *
-     * @param integer $maxLength
+     * @param integer $length
      *
      * @return self
      */
-    public function maxLength(int $maxLength)
+    public function length(int $length)
     {
         $this->needsToBeUnlocked();
 
-        if ($maxLength <= 0) {
+        if ($length <= 0) {
             throw new \Exception('The max length must be a positive number');
         }
 
-        $this->defineProperty('maxLength', $maxLength);
+        $this->defineProperty('length', $length);
 
         return $this;
     }
@@ -51,8 +51,8 @@ class Char extends Text
     {
         $value = parent::cast($value);
 
-        if ($this->hasProperty('maxLength') && \strlen($value) > $this->maxLength) {
-            return \substr($value, 0, $this->maxLength);
+        if ($this->hasProperty('length') && \strlen($value) > $this->length) {
+            return \substr($value, 0, $this->length);
         }
 
         return $value;
@@ -78,8 +78,8 @@ class Char extends Text
     {
         parent::locking();
 
-        if (is_null($this->maxLength)) {
-            $this->maxLength = Schema::getFacadeRoot()::$defaultStringLength;
+        if (is_null($this->length)) {
+            $this->length = Schema::getFacadeRoot()::$defaultStringLength;
         }
     }
 }

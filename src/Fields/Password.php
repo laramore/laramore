@@ -10,12 +10,11 @@
 
 namespace Laramore\Fields;
 
-use Illuminate\Support\Facades\Hash;
 use Laramore\Contracts\Eloquent\LaramoreModel;
 use Laramore\Facades\Option;
 use Laramore\Contracts\Field\PatternField;
 
-class Password extends Char implements PatternField
+class Password extends Hashed implements PatternField
 {
     /**
      * Min length for a password.
@@ -23,6 +22,13 @@ class Password extends Char implements PatternField
      * @var int
      */
     protected $minLength;
+
+    /**
+     * Max length for a password.
+     *
+     * @var int
+     */
+    protected $maxLength;
 
     /**
      * All patterns defined for this field.
@@ -82,67 +88,5 @@ class Password extends Char implements PatternField
         }
 
         return $options;
-    }
-
-    /**
-     * Cast the value to correspond to the field desire.
-     *
-     * @param  mixed $value
-     * @return mixed
-     */
-    public function cast($value)
-    {
-        // Do not cast with max length for passwords !
-        $maxLength = $this->maxLength;
-        $this->maxLength = null;
-
-        $value = parent::cast($value);
-        $this->maxLength = $maxLength;
-
-        if (\is_null($value) || !Hash::needsRehash($value)) {
-            return $value;
-        }
-
-        return $value;
-    }
-
-    /**
-     * Set the value for the field.
-     *
-     * @param LaramoreModel|array|\ArrayAccess $model
-     * @param  mixed                            $value
-     * @return mixed
-     */
-    public function set($model, $value)
-    {
-        if ($model instanceof LaramoreModel && ! $model->fetchingDatabase) {
-            $value = $this->hash($value);
-        }
-
-        return parent::set($model, $value);
-    }
-
-    /**
-     * Hash the password so it is not retrievible.
-     *
-     * @param string $value
-     * @return string
-     */
-    public function hash(string $value)
-    {
-        return Hash::make($value);
-    }
-
-    /**
-     * Indicate if the password is the right one.
-     *
-     * @param LaramoreModel|array|\Illuminate\Contracts\Support\\ArrayAccess $model
-     * @param string|null  $value
-     * @param boolean $expected
-     * @return boolean
-     */
-    public function check($model, ?string $value, bool $expected=true)
-    {
-        return Hash::check($value, $this->get($model)) == $expected;
     }
 }

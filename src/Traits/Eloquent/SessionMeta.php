@@ -25,11 +25,11 @@ trait SessionMeta
 
     public static function meta(LaramoreMeta $meta)
     {
-        $meta->id = Char::field()->primary()->maxLength(Schema::getFacadeRoot()::$defaultStringLength);
+        $meta->id = Char::field()->primary()->length(Schema::getFacadeRoot()::$defaultStringLength);
 
         static::generateUserField($meta);
 
-        $meta->ipAddress = Char::field()->maxLength(45)->nullable();
+        $meta->ipAddress = Char::field()->length(45)->nullable();
         $meta->userAgent = Text::field()->nullable();
         $meta->payload = Text::field();
         $meta->lastActivity = Integer::field()->index();

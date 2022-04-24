@@ -120,7 +120,7 @@ abstract class BaseConstraint extends BaseObserver implements Constraint
             return $field->getAttname();
         }, $this->getAttributes())).'_'.$this->getConstraintType();
 
-        return substr($fullName, 0, Schema::getFacadeRoot()::$defaultStringLength);
+        return substr($fullName, 0, 64); # MySql and PostgresSql only accepts 64 caracters.
     }
 
     /**

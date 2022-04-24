@@ -71,7 +71,7 @@ abstract class BaseField implements Field
     /**
      * Create a new field with basic properties.
      * The constructor is protected so the field is created writing left to right.
-     * ex: Char::field()->maxLength(255) insteadof (new Char)->maxLength(255).
+     * ex: Char::field()->length(255) insteadof (new Char)->length(255).
      *
      * @param array $properties
      */

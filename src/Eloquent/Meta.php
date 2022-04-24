@@ -442,7 +442,7 @@ class Meta implements LaramoreMeta
     protected function prepared()
     {
         if (!\is_null($this->afterPreparating)) {
-            $this->afterPreparating($this);
+            call_user_func($this->afterPreparating, $this);
         }
     }
 

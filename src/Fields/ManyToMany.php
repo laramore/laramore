@@ -212,27 +212,29 @@ class ManyToMany extends BaseComposed implements ManyRelationField
         $targetMeta = $this->getTargetModel()::getMeta();
         $targetName = Str::snake(Str::singular($this->getName()));
         $namespaceName = $this->pivotNamespace;
-        $pivotClassName = ucfirst(Str::camel($sourceName)).ucfirst(Str::camel($targetName));
 
         if ($sourceMeta->getModelGroup() && $sourceMeta->getModelGroup() === $targetMeta->getModelGroup()) {
             $namespaceName .= '\\'.Str::ucfirst($sourceMeta->getModelGroup());
         }
 
-        $pivotClass = "$namespaceName\\$pivotClassName";
+        if (is_null($this->pivotClass)) {
+            $pivotClassName = ucfirst(Str::camel($sourceName)).ucfirst(Str::camel($targetName));
+            $this->pivotClass = "$namespaceName\\$pivotClassName";
+        }
 
         $this->pivotName = $this->replaceInFieldTemplate($this->templates['pivot'], $sourceName);
         $this->reversedPivotName = $this->replaceInFieldTemplate($this->templates['reversed_pivot'], $targetName);
 
-        $this->setProperty('pivotMeta', $pivotClass::getMeta());
+        $this->setProperty('pivotMeta', $this->pivotClass::getMeta());
 
         [$source, $target] = $this->pivotMeta->getPivots();
 
         if ($source->getTargetModel() !== $sourceMeta->getModelClass()) {
-            throw new \Exception("Pivot class `{$pivotClass}` must define the first relation with model `{$sourceMeta->getModelClass()}` and not `{$source->getTargetModel()}`");
+            throw new \Exception("Pivot class `{$this->pivotClass}` must define the first relation with model `{$sourceMeta->getModelClass()}` and not `{$source->getTargetModel()}`");
         }
 
         if ($target->getTargetModel() !== $targetMeta->getModelClass()) {
-            throw new \Exception("Pivot class `{$pivotClass}` must define the second relation with model `{$targetMeta->getModelClass()}` and not `{$target->getTargetModel()}`");
+            throw new \Exception("Pivot class `{$this->pivotClass}` must define the second relation with model `{$targetMeta->getModelClass()}` and not `{$target->getTargetModel()}`");
         }
 
         $this->setProperty('pivotSource', $source);

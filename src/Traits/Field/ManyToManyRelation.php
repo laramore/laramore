@@ -154,7 +154,8 @@ trait ManyToManyRelation
             $this->getSource()->getAttribute()->getNative(),
             $this->getTarget()->getAttribute()->getNative(),
             $this->getName()
-        )->withPivot($this->getPivotAttributes())
+        )
+            ->withPivot($this->getPivotAttributes())
             ->using($this->getPivotMeta()->getModelClass())
             ->as($this->getPivotName());
 
