@@ -36,7 +36,7 @@ class HasOne extends BaseField implements RelationField
                             string $boolean='and', bool $notIn=false): LaramoreBuilder
     {
         return $this->getTarget()->getAttribute()
-            ->addBuilderOperation($builder, 'whereIn', $value, $boolean, $notIn);
+            ->whereIn($builder, $value, $boolean, $notIn);
     }
 
     /**
@@ -65,7 +65,7 @@ class HasOne extends BaseField implements RelationField
                           $value=null, string $boolean='and'): LaramoreBuilder
     {
         return $this->getTarget()->getAttribute()
-            ->addBuilderOperation($builder, 'where', $operator, $value, $boolean);
+            ->where($builder, $operator, $value, $boolean);
     }
 
     /**

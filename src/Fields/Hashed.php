@@ -54,9 +54,9 @@ class Hashed extends Char
      * @param string $value
      * @return string
      */
-    public function hash(string $value)
+    public function hash(string $value=null)
     {
-        return Hash::make($value);
+        return is_null($value) ? null : Hash::make($value);
     }
 
     /**
