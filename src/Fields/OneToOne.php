@@ -11,6 +11,7 @@
 namespace Laramore\Fields;
 
 use Laramore\Contracts\Field\Constraint\UniqueField;
+use Laramore\Contracts\Field\Constraint\PrimaryField;
 use Laramore\Traits\Field\ToOneRelation;
 use Laramore\Contracts\Field\RelationField;
 
@@ -26,9 +27,9 @@ class OneToOne extends BaseComposed implements RelationField
     public function locking()
     {
         parent::locking();
-
-        if (!($this->getField('id') instanceof UniqueField)) {
-            throw new \LogicException('The field defining the unique relation must implement `UniqueField`');
+        $field = $this->getField('id');
+        if (!($field instanceof UniqueField || $field instanceof PrimaryField)) {
+            throw new \LogicException('The field defining the unique relation must implement `UniqueField` or `PrimaryField`');
         }
     }
 }
