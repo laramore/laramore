@@ -250,7 +250,7 @@ trait ToOneRelation
      */
     public function reverbate(LaramoreModel $model)
     {
-        $this->getField('id')->set($model, $this->getTarget()->getAttribute()->get($this->get($model)));
+        parent::setFieldValue($this->getField('id'), $model, $this->getTarget()->getAttribute()->get($this->get($model)));
 
         return true;
     }

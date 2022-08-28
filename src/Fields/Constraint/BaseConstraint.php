@@ -120,7 +120,11 @@ abstract class BaseConstraint extends BaseObserver implements Constraint
             return $field->getAttname();
         }, $this->getAttributes())).'_'.$this->getConstraintType();
 
-        return substr($fullName, 0, 64); # MySql and PostgresSql only accepts 64 caracters.
+        if (\strlen($fullName) > 64) {
+            return substr($fullName, \strlen($fullName) - 64); # MySql and PostgresSql only accepts 64 caracters.
+        }
+
+        return $fullName;
     }
 
     /**
@@ -140,7 +144,7 @@ abstract class BaseConstraint extends BaseObserver implements Constraint
      */
     public function getName(): string
     {
-        if (!$this->hasName()) {
+        if (! $this->hasName()) {
             return $this->getDefaultName();
         }
 

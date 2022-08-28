@@ -62,6 +62,24 @@ trait HasLaramoreBuilder
     }
 
     /**
+     * Get the first record matching the attributes or create it.
+     *
+     * @param  array  $attributes
+     * @param  array  $values
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public function firstOrCreate(array $attributes = [], array $values = [])
+    {
+        if (! is_null($instance = $this->where($attributes)->first())) {
+            return $instance;
+        }
+
+        return tap($this->newModelInstance(array_merge($attributes, $values), false), function ($instance) {
+            $instance->save();
+        });
+    }
+
+    /**
      * Add a where clause on the primary key to the query.
      *
      * @param  mixed  $ids
@@ -157,7 +175,7 @@ trait HasLaramoreBuilder
         // and can add them each as a where clause. We will maintain the boolean we
         // received when the method was called and pass it into the nested where.
         if (\is_array($column)) {
-            $this->multiWhere(...\func_get_args());
+            return $this->multiWhere(...\func_get_args());
         }
 
         $parts = explode('.', $column);
@@ -581,7 +599,7 @@ trait HasLaramoreBuilder
     public function multiWhere(array $column, $operator=null, $value=null, $boolean='and')
     {
         if (Arr::isAssoc($column)) {
-            return $this->multiWhere(\array_keys($column), $operator, \array_values($value), $boolean);
+            return $this->multiWhere(\array_keys($column), $operator, \array_values($column), $boolean);
         }
 
         if (\func_num_args() == 2) {

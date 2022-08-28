@@ -13,7 +13,7 @@ namespace Laramore\Fields;
 use Laramore\Contracts\Field\Constraint\PrimaryField;
 use Laramore\Fields\Constraint\PrimaryConstraintHandler;
 
-class PrimaryId extends Increment implements PrimaryField
+class PrimaryIncrement extends Increment implements PrimaryField
 {
     /**
      * Create a Constraint handler for this meta.

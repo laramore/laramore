@@ -150,7 +150,7 @@ return [
             'one_special_part' => '(?=\S*[\W])',
         ],
     ],
-    PrimaryId::class => [
+    PrimaryIncrement::class => [
         'options' => [
             'select', 'visible', 'fillable', 'required', 'unsigned',
         ],

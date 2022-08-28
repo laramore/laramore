@@ -306,12 +306,12 @@ abstract class BaseModel extends Model implements LaramoreModel
      * @param  boolean|mixed $fetchingDatabase
      * @return static
      */
-    public function newInstance($attributes=[], $fetchingDatabase=false)
+    public function newInstance($attributes=[], $exists = false, $fetchingDatabase=false)
     {
         // This method just provides a convenient way for us to generate fresh model
         // instances of this current model. It is particularly useful during the
         // hydration of new objects via the Eloquent query builder instances.
-        $model = new static((array) $attributes, $fetchingDatabase);
+        $model = new static((array) $attributes, $exists);
 
         $model->setConnection(
             $this->getConnectionName()

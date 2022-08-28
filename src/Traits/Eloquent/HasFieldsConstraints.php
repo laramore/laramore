@@ -27,12 +27,14 @@ trait HasFieldsConstraints
         $attributes = [];
         $fields = \is_array($fields) ? $fields : [$fields];
 
-        foreach ($fields as $field) {
+        while (count($fields) > 0) {
+            $field = array_shift($fields);
+
             if ($field instanceof AttributeField) {
                 $attributes[] = $field;
             } else if ($field instanceof ComposedField) {
-                $attributes = \array_merge($attributes, $field->getFields(AttributeField::class));
-                $fields = \array_merge($fields, $field->getFields(CompositeField::class));
+                $attributes = \array_merge($attributes, \array_values($field->getFields(AttributeField::class)));
+                $fields = \array_merge($fields, \array_values($field->getFields(CompositeField::class)));
             } else if (\is_string($field)) {
                 $attributes[] = $this->getField($field);
             } else {
@@ -93,6 +95,7 @@ trait HasFieldsConstraints
         $this->needsToBeUnlocked();
 
         $constrainted = $this->extractAttributes($constrainted);
+
         $carrier = \array_shift($constrainted);
 
         $carrier->unique($name, $constrainted);
